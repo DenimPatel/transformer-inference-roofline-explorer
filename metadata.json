@@ -1,0 +1,6 @@
+{
+  "name": "Transformer Inference Roofline Explorer",
+  "description": "Interactive visualizer for Reiner Pope's transformer roofline analysis, illustrating latency and cost tradeoffs vs batch size.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
