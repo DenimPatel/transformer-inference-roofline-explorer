@@ -1,0 +1,13 @@
+{
+  "id": "qwen-2.4t-a95b",
+  "name": "Qwen 2.4T-A95B (proposed)",
+  "family": "Qwen frontier",
+  "vendor": "Alibaba",
+  "type": "moe",
+  "totalParamsB": 2400,
+  "activeParamsB": 95,
+  "contextLen": 131072,
+  "kvPerTokenKb": 192,
+  "bytesPerParam": 1,
+  "description": "User-specified frontier-class MoE: ~2.4T total / 95B active. Illustrates that even with tiny active compute, streaming ~2.4T weights is bandwidth-dominant."
+}

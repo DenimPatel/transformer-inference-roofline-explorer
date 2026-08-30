@@ -1,0 +1,12 @@
+{
+  "vendor": "AMD",
+  "id": "Instinct MI300X",
+  "tflops": 1307,
+  "memBw": 5.30,
+  "capacity": 192,
+  "arch": "CDNA 3 (GPU)",
+  "bytesPerParam": 2,
+  "tdp": 750,
+  "price": 15000,
+  "color": "#ed1c24"
+}

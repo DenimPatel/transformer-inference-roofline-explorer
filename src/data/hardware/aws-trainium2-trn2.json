@@ -1,0 +1,12 @@
+{
+  "vendor": "AWS",
+  "id": "Trainium2 (Trn2)",
+  "tflops": 1300,
+  "memBw": 2.90,
+  "capacity": 96,
+  "arch": "NeuronCore-v2",
+  "bytesPerParam": 1,
+  "tdp": 600,
+  "price": 15000,
+  "color": "#ff9900"
+}

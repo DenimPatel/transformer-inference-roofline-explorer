@@ -4,21 +4,24 @@ import {
   ReferenceLine, ComposedChart, Scatter,
 } from 'recharts';
 import {
-  BarChart3, Cpu, Server, Info, Layers, DollarSign, HelpCircle, GraduationCap, Activity,
+  BarChart3, Cpu, Server, Info, Layers, DollarSign, HelpCircle, GraduationCap, Activity, Braces, Rocket,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { HARDWARE_PROFILES } from '../lib/hardware';
+import { MODEL_PROFILES, findModel } from '../lib/models';
 import { physicalUnits, makeCurve, optimalBatch, drainTimeMs, contextCrossover, maxThroughput, currentIntensity, RowInputs } from '../lib/roofline';
 import KpiCard from './ui/KpiCard';
 import SliderControl from './ui/SliderControl';
 import InfoPopover from './ui/InfoPopover';
 import ConceptTag from './ui/ConceptTag';
 import DeepDiveTab from './DeepDive';
+import TokenGenerationTab from './TokenGeneration';
 import LearnJourney from './learn/LearnJourney';
 import ConceptGlossary from './learn/ConceptGlossary';
 import CompetitiveAnalysis from './CompetitiveAnalysis';
+import ServingTab from './Serving';
 
-type Tab = 'learn' | 'simulator' | 'comparison' | 'deep_dive';
+type Tab = 'learn' | 'simulator' | 'comparison' | 'deep_dive' | 'token_generation' | 'serving';
 
 const ECONOMICS_REGIONS = [
   { id: 'US Hyperscale', priceKwh: 0.07, pue: 1.10, desc: 'Texas/Iowa' },
@@ -33,6 +36,8 @@ const TABS: { key: Tab; label: string; icon: React.ComponentType<{ style?: React
   { key: 'simulator', label: 'Interactive Lab', icon: Server },
   { key: 'comparison', label: 'Competitive Analysis', icon: BarChart3 },
   { key: 'deep_dive', label: 'Deep Dive', icon: Info },
+  { key: 'token_generation', label: 'Token Generation', icon: Braces },
+  { key: 'serving', label: 'Serving', icon: Rocket },
 ];
 
 function initialTab(): Tab {
@@ -65,11 +70,12 @@ export default function Dashboard() {
   const [amortizationYears, setAmortizationYears] = useState(3);
 
   // Model
-  const [totalParamsB, setTotalParamsB] = useState(1059);
+  const [activeModelId, setActiveModelId] = useState('deepseek-v3');
+  const [totalParamsB, setTotalParamsB] = useState(671);
   const [activeParamsB, setActiveParamsB] = useState(37);
   const [bytesPerParam, setBytesPerParam] = useState(2);
-  const [contextLen, setContextLen] = useState(4096);
-  const [bytesPerTokenKb, setBytesPerTokenKb] = useState(128);
+  const [contextLen, setContextLen] = useState(16384);
+  const [bytesPerTokenKb, setBytesPerTokenKb] = useState(96);
 
   // Current Operation
   const [currentBatchSize, setCurrentBatchSize] = useState(256);
@@ -94,6 +100,19 @@ export default function Dashboard() {
     utilization,
     amortizationYears,
     isLiquid,
+  };
+
+  const handleModelSelect = (id: string) => {
+    setActiveModelId(id);
+    if (id === 'custom' || id === '') return;
+    const m = MODEL_PROFILES.find((x) => x.id === id);
+    if (m) {
+      setTotalParamsB(m.totalParamsB);
+      setActiveParamsB(m.activeParamsB);
+      setBytesPerParam(m.bytesPerParam);
+      setContextLen(m.contextLen);
+      setBytesPerTokenKb(m.kvPerTokenKb);
+    }
   };
 
   const handleProfileSelect = (id: string) => {
@@ -202,11 +221,11 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <main className={cn("w-full max-w-[1600px] mx-auto p-4 sm:p-6 flex-1", (activeTab === 'learn' || activeTab === 'deep_dive') ? "block" : "grid grid-cols-1 xl:grid-cols-12 gap-6")}>
+      <main className={cn("w-full max-w-[1600px] mx-auto p-4 sm:p-6 flex-1", (activeTab === 'learn' || activeTab === 'deep_dive' || activeTab === 'token_generation' || activeTab === 'serving') ? "block" : "grid grid-cols-1 xl:grid-cols-12 gap-6")}>
 
         {activeTab === 'learn' && <LearnJourney onLab={() => setActiveTab('simulator')} />}
 
-        {activeTab !== 'learn' && activeTab !== 'deep_dive' && (
+        {activeTab !== 'learn' && activeTab !== 'deep_dive' && activeTab !== 'token_generation' && activeTab !== 'serving' && (
           <section className="xl:col-span-3 space-y-5">
             {activeTab === 'simulator' && (
               <ControlPanel title="Hardware Environment" icon={<Server className="w-4 h-4 text-[var(--color-accent)]" />} conceptId="roofline">
@@ -270,6 +289,30 @@ export default function Dashboard() {
             )}
 
             <ControlPanel title="Model Architecture" icon={<Layers className="w-4 h-4 text-blue-500" />} conceptId="matmul-intensity">
+              <div className="mb-4">
+                <label className="text-xs font-semibold text-slate-500 mb-1.5 block uppercase tracking-wider flex items-center gap-1.5">
+                  Open-Source Model Preset <InfoPopover conceptId="kv-cache" iconSize={13} />
+                </label>
+                <select
+                  className="glass-input w-full text-sm py-2 px-3 text-slate-800 font-medium"
+                  value={activeModelId}
+                  onChange={(e) => handleModelSelect(e.target.value)}
+                >
+                  <option value="custom">Custom Architecture</option>
+                  {Array.from(new Set(MODEL_PROFILES.map((m) => m.family))).map((family) => (
+                    <optgroup key={family} label={family}>
+                      {MODEL_PROFILES.filter((m) => m.family === family).map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {m.name} ({m.type === 'moe' ? `${m.totalParamsB}B / ${m.activeParamsB}B active` : `${m.totalParamsB}B`})
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+                {findModel(activeModelId)?.description && (
+                  <p className="mt-2 text-[11px] leading-snug text-slate-500">{findModel(activeModelId)?.description}</p>
+                )}
+              </div>
               <SliderControl label="Total Parameters" value={totalParamsB} min={1} max={10000} step={1} onChange={setTotalParamsB} unit="B" />
               <SliderControl label="Active Parameters" value={activeParamsB} min={1} max={totalParamsB} step={1} onChange={setActiveParamsB} unit="B" comment={`Sparsity: ${(totalParamsB / activeParamsB).toFixed(1)}x`} conceptId="kv-cache" />
               <div className="pt-2">
@@ -299,7 +342,7 @@ export default function Dashboard() {
           </section>
         )}
 
-        {activeTab !== 'learn' && activeTab !== 'deep_dive' && (
+        {activeTab !== 'learn' && activeTab !== 'deep_dive' && activeTab !== 'token_generation' && activeTab !== 'serving' && (
           <section className="xl:col-span-9 space-y-5 flex flex-col min-h-0">
             {activeTab === 'simulator' && (
               <>
@@ -402,6 +445,8 @@ export default function Dashboard() {
         )}
 
         {activeTab === 'deep_dive' && <DeepDiveTab hardwareProfileId={activeProfileId} />}
+        {activeTab === 'token_generation' && <TokenGenerationTab />}
+        {activeTab === 'serving' && <ServingTab />}
       </main>
     </div>
   );

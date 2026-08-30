@@ -1,0 +1,12 @@
+{
+  "vendor": "NVIDIA",
+  "id": "H200 SXM",
+  "tflops": 989,
+  "memBw": 4.80,
+  "capacity": 141,
+  "arch": "Hopper (HBM3e)",
+  "bytesPerParam": 2,
+  "tdp": 700,
+  "price": 40000,
+  "color": "#3f8c00"
+}

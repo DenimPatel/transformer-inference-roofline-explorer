@@ -1,0 +1,12 @@
+{
+  "vendor": "Hybrid",
+  "id": "Groq + Rubin Pipeline",
+  "tflops": 50000,
+  "memBw": 80.0,
+  "capacity": 288.5,
+  "arch": "Hybrid (LPU + GPU)",
+  "bytesPerParam": 0.5,
+  "tdp": 2250,
+  "price": 90000,
+  "color": "#f59e0b"
+}

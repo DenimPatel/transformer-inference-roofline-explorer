@@ -1,0 +1,12 @@
+{
+  "vendor": "NVIDIA",
+  "id": "L40S",
+  "tflops": 366,
+  "memBw": 0.86,
+  "capacity": 48,
+  "arch": "Ada Lovelace",
+  "bytesPerParam": 2,
+  "tdp": 350,
+  "price": 10000,
+  "color": "#00af50"
+}

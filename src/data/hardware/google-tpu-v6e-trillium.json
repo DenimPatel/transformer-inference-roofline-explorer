@@ -1,0 +1,12 @@
+{
+  "vendor": "Google",
+  "id": "TPU v6e (Trillium)",
+  "tflops": 918,
+  "memBw": 1.64,
+  "capacity": 32,
+  "arch": "TPU (Inference)",
+  "bytesPerParam": 2,
+  "tdp": 300,
+  "price": 10000,
+  "color": "#fbbc04"
+}

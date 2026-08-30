@@ -1,0 +1,13 @@
+{
+  "id": "deepseek-v3",
+  "name": "DeepSeek-V3",
+  "family": "DeepSeek",
+  "vendor": "DeepSeek",
+  "type": "moe",
+  "totalParamsB": 671,
+  "activeParamsB": 37,
+  "contextLen": 16384,
+  "kvPerTokenKb": 96,
+  "bytesPerParam": 2,
+  "description": "671B-total MoE with 37B active. Massive weights to stream, but cheap compute per token among frontier open models."
+}

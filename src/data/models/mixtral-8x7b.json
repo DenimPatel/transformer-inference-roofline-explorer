@@ -1,0 +1,13 @@
+{
+  "id": "mixtral-8x7b",
+  "name": "Mixtral 8x7B",
+  "family": "Mixtral",
+  "vendor": "Mistral",
+  "type": "moe",
+  "totalParamsB": 46.7,
+  "activeParamsB": 12.9,
+  "contextLen": 32768,
+  "kvPerTokenKb": 72,
+  "bytesPerParam": 2,
+  "description": "Pioneering 8-expert MoE: 46.7B total, ~12.9B active."
+}

@@ -1,0 +1,13 @@
+{
+  "id": "deepseek-r1",
+  "name": "DeepSeek-R1",
+  "family": "DeepSeek",
+  "vendor": "DeepSeek",
+  "type": "moe",
+  "totalParamsB": 671,
+  "activeParamsB": 37,
+  "contextLen": 131072,
+  "kvPerTokenKb": 96,
+  "bytesPerParam": 2,
+  "description": "Reasoning-tuned 671B MoE, long output generation drives KV-cache and bandwidth pressure."
+}

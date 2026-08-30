@@ -1,0 +1,13 @@
+{
+  "id": "llama-3.3-70b",
+  "name": "Llama 3.3 70B",
+  "family": "Llama",
+  "vendor": "Meta",
+  "type": "dense",
+  "totalParamsB": 70,
+  "activeParamsB": 70,
+  "contextLen": 131072,
+  "kvPerTokenKb": 320,
+  "bytesPerParam": 2,
+  "description": "Popular dense 70B-class model. Fits on a single H200/B200 or a few GPUs; the classic memory-bound decode workload."
+}

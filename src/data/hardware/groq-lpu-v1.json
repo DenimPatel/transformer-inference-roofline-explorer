@@ -1,0 +1,12 @@
+{
+  "vendor": "Groq",
+  "id": "Groq LPU v1",
+  "tflops": 18.8,
+  "memBw": 80.0,
+  "capacity": 0.23,
+  "arch": "LPU (Inference)",
+  "bytesPerParam": 2,
+  "tdp": 185,
+  "price": 20000,
+  "color": "#f3522a"
+}

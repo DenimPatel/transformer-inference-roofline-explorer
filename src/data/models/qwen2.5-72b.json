@@ -1,0 +1,13 @@
+{
+  "id": "qwen2.5-72b",
+  "name": "Qwen2.5 72B-Instruct",
+  "family": "Qwen2.5",
+  "vendor": "Alibaba",
+  "type": "dense",
+  "totalParamsB": 72,
+  "activeParamsB": 72,
+  "contextLen": 131072,
+  "kvPerTokenKb": 320,
+  "bytesPerParam": 2,
+  "description": "Highly adopted 72B dense house model. Classic multi-GPU memory-bound generation target."
+}

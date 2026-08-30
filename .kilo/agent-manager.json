@@ -1,5 +1,32 @@
 {
-  "worktrees": {},
-  "sessions": {},
+  "worktrees": {
+    "wt-1786734684460-1": {
+      "branch": "comptetitive-analysis-expand-to-actual-models",
+      "path": "/Users/denimpatel/Desktop/transformer-inference-roofline-explorer/.kilo/worktrees/comptetitive-analysis-expand-to-actual-models",
+      "parentBranch": "main",
+      "createdAt": "2026-08-14T19:11:24.460Z",
+      "label": "Comptetitive analysis - expand to actual models",
+      "branchOwned": true
+    }
+  },
+  "sessions": {
+    "ses_ffe504d22ffeePZ013cMvjyUik": {
+      "worktreeId": "wt-1786734684460-1",
+      "createdAt": "2026-08-14T19:11:26.999Z"
+    },
+    "ses_ffdc29aedffeddnuIC2HaOakgR": {
+      "worktreeId": "wt-1786734684460-1",
+      "createdAt": "2026-08-14T21:46:13.241Z"
+    }
+  },
+  "tabOrder": {
+    "wt-1786734684460-1": [
+      "ses_ffe504d22ffeePZ013cMvjyUik",
+      "ses_ffdc29aedffeddnuIC2HaOakgR"
+    ]
+  },
+  "worktreeOrder": [
+    "wt-1786734684460-1"
+  ],
   "sessionsCollapsed": true
 }

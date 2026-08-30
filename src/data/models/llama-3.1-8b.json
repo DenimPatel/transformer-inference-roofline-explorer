@@ -1,0 +1,13 @@
+{
+  "id": "llama-3.1-8b",
+  "name": "Llama 3.1 8B",
+  "family": "Llama",
+  "vendor": "Meta",
+  "type": "dense",
+  "totalParamsB": 8,
+  "activeParamsB": 8,
+  "contextLen": 131072,
+  "kvPerTokenKb": 128,
+  "bytesPerParam": 2,
+  "description": "Small dense model that fits a single device, easy to beat the ridge with reasonable batching."
+}

@@ -1,0 +1,12 @@
+{
+  "vendor": "Google",
+  "id": "TPU v8i (Inference)",
+  "tflops": 10100,
+  "memBw": 8.60,
+  "capacity": 288,
+  "arch": "TPU (Inference)",
+  "bytesPerParam": 0.5,
+  "tdp": 750,
+  "price": 30000,
+  "color": "#fbbc04"
+}

@@ -1,0 +1,13 @@
+{
+  "id": "mistral-7b",
+  "name": "Mistral 7B",
+  "family": "Mistral",
+  "vendor": "Mistral",
+  "type": "dense",
+  "totalParamsB": 7,
+  "activeParamsB": 7,
+  "contextLen": 32768,
+  "kvPerTokenKb": 64,
+  "bytesPerParam": 2,
+  "description": "Compact dense baseline, easy to push across the ridge at modest batch."
+}

@@ -1,0 +1,13 @@
+{
+  "id": "llama-3.1-405b",
+  "name": "Llama 3.1 405B",
+  "family": "Llama",
+  "vendor": "Meta",
+  "type": "dense",
+  "totalParamsB": 405,
+  "activeParamsB": 405,
+  "contextLen": 131072,
+  "kvPerTokenKb": 504,
+  "bytesPerParam": 2,
+  "description": "Flagship dense open-weight model. Massive memory footprint; generation is fully memory-bandwidth bound on any single accelerator."
+}

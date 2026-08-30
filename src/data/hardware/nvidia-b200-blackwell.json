@@ -1,0 +1,12 @@
+{
+  "vendor": "NVIDIA",
+  "id": "B200 (Blackwell)",
+  "tflops": 9000,
+  "memBw": 8.00,
+  "capacity": 192,
+  "arch": "Blackwell (GPU)",
+  "bytesPerParam": 1,
+  "tdp": 1000,
+  "price": 45000,
+  "color": "#b9ff42"
+}

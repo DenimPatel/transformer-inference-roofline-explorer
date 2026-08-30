@@ -1,0 +1,13 @@
+{
+  "id": "qwen3-27b",
+  "name": "Qwen3 27B (proposed)",
+  "family": "Qwen3",
+  "vendor": "Alibaba",
+  "type": "dense",
+  "totalParamsB": 27,
+  "activeParamsB": 27,
+  "contextLen": 131072,
+  "kvPerTokenKb": 224,
+  "bytesPerParam": 2,
+  "description": "Dense 27B reference preset (user-specified). Serves as a mid-size host option between 8B and 32B."
+}

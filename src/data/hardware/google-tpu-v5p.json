@@ -1,0 +1,12 @@
+{
+  "vendor": "Google",
+  "id": "TPU v5p",
+  "tflops": 459,
+  "memBw": 2.58,
+  "capacity": 95,
+  "arch": "TPU (Pod-scale)",
+  "bytesPerParam": 2,
+  "tdp": 450,
+  "price": 15000,
+  "color": "#ea4335"
+}

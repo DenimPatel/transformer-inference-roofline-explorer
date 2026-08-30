@@ -1,0 +1,12 @@
+{
+  "vendor": "NVIDIA",
+  "id": "H100 SXM5",
+  "tflops": 989,
+  "memBw": 3.35,
+  "capacity": 80,
+  "arch": "Hopper (GPU)",
+  "bytesPerParam": 2,
+  "tdp": 700,
+  "price": 30000,
+  "color": "#76b900"
+}

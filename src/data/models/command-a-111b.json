@@ -1,0 +1,13 @@
+{
+  "id": "command-a-111b",
+  "name": "Command A 111B",
+  "family": "Command",
+  "vendor": "Cohere",
+  "type": "moe",
+  "totalParamsB": 111,
+  "activeParamsB": 4.5,
+  "contextLen": 131072,
+  "kvPerTokenKb": 64,
+  "bytesPerParam": 2,
+  "description": "Cohere enterprise MoE, ~111B total with ~4.5B active. Cost-efficient enterprise serving."
+}

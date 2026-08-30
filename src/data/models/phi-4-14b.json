@@ -1,0 +1,13 @@
+{
+  "id": "phi-4-14b",
+  "name": "Phi-4 14B",
+  "family": "Phi",
+  "vendor": "Microsoft",
+  "type": "dense",
+  "totalParamsB": 14,
+  "activeParamsB": 14,
+  "contextLen": 16384,
+  "kvPerTokenKb": 96,
+  "bytesPerParam": 2,
+  "description": "Reasoning-capable dense 14B model, efficient single-GPU target."
+}

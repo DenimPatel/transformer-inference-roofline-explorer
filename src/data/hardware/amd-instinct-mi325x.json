@@ -1,0 +1,12 @@
+{
+  "vendor": "AMD",
+  "id": "Instinct MI325X",
+  "tflops": 1307,
+  "memBw": 6.00,
+  "capacity": 256,
+  "arch": "CDNA 3 (HBM3e)",
+  "bytesPerParam": 2,
+  "tdp": 1000,
+  "price": 20000,
+  "color": "#a00e12"
+}

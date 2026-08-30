@@ -1,0 +1,12 @@
+{
+  "vendor": "NVIDIA",
+  "id": "Rubin GPU (R100)",
+  "tflops": 50000,
+  "memBw": 22.00,
+  "capacity": 288,
+  "arch": "Rubin (GPU)",
+  "bytesPerParam": 0.5,
+  "tdp": 2000,
+  "price": 60000,
+  "color": "#00af50"
+}

@@ -1,0 +1,13 @@
+{
+  "id": "nemotron-70b",
+  "name": "Nemotron 70B",
+  "family": "Nemotron",
+  "vendor": "NVIDIA",
+  "type": "dense",
+  "totalParamsB": 70,
+  "activeParamsB": 70,
+  "contextLen": 16384,
+  "kvPerTokenKb": 320,
+  "bytesPerParam": 2,
+  "description": "NVIDIA open dense 70B, tuned for enterprise/agentic use."
+}

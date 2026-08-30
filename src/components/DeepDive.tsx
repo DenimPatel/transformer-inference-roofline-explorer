@@ -1,232 +1,478 @@
 import React, { useState, useMemo } from 'react';
 import {
-  ComposedChart, Line, LineChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine,
-  Scatter, AreaChart, Area, Bar, Cell
+  ComposedChart, Line, LineChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+  ReferenceLine, ReferenceArea, Scatter, AreaChart, Area, Bar, BarChart, Cell,
 } from 'recharts';
-import { Info, Calculator, Cpu, Network, Zap, Activity, BookOpen } from 'lucide-react';
+import {
+  Info, Calculator, Cpu, Network, Zap, Activity, BookOpen, MemoryStick, Gauge, ArrowDownWideNarrow,
+  Layers, Sigma, Eye, ShieldCheck, Sparkles,
+} from 'lucide-react';
 import { cn } from '../lib/utils';
 import { HARDWARE_PROFILES } from '../lib/hardware';
 import ConceptTag from './ui/ConceptTag';
+import KvUsageExplain from './ui/KvUsageExplain';
 
-export default function DeepDiveTab({ hardwareProfileId }: { hardwareProfileId: string }) {
-  const hw = HARDWARE_PROFILES.find(h => h.id === hardwareProfileId) || HARDWARE_PROFILES[0];
-  const peakFlops = hw.tflops * 1e12;
-  const peakBw = hw.memBw * 1e12;
-  const hardwareIntensity = peakFlops / peakBw;
+// ---------------------------------------------------------------------------
+// Shared teaching palette + formatters
+// ---------------------------------------------------------------------------
+const C = {
+  compute: '#22c48b',   // mint
+  memory: '#f25f7d',    // rose
+  ridge: '#f43f5e',
+  accent: '#5b7cfa',
+  accentSoft: '#8aa0ff',
+  sky: '#0ea5e9',
+  amber: '#f59e0b',
+  violet: '#8b5cf6',
+  slate: '#94a3b8',
+  rose: '#f25f7d',
+  ink: '#0b1220',
+};
 
+function fmtNum(v: number, digits = 0) {
+  return Number(v).toLocaleString('en-US', { maximumFractionDigits: digits });
+}
+
+function fmtBytes(b: number): string {
+  if (b >= 1e12) return `${(b / 1e12).toFixed(1)} TB`;
+  if (b >= 1e9) return `${(b / 1e9).toFixed(1)} GB`;
+  if (b >= 1e6) return `${(b / 1e6).toFixed(1)} MB`;
+  if (b >= 1e3) return `${(b / 1e3).toFixed(1)} KB`;
+  return `${b.toFixed(0)} B`;
+}
+
+function fmtFlops(f: number): string {
+  if (f >= 1e15) return `${(f / 1e15).toFixed(2)} PFLOP/s`;
+  if (f >= 1e12) return `${(f / 1e12).toFixed(1)} TFLOP/s`;
+  return `${(f / 1e9).toFixed(1)} GFLOP/s`;
+}
+
+// Generic glass tooltip used by every chart.
+function ChartTip({ active, payload, label, title, unit = '' }: any) {
+  if (!active || !payload || !payload.length) return null;
   return (
-    <div className="space-y-12 pb-12 max-w-5xl mx-auto mt-8">
-      <section className="glass-card p-6">
-        <h2 className="text-2xl font-bold flex items-center text-slate-900 mb-6">
-          <Calculator className="w-6 h-6 mr-3 text-blue-500" />
-          1. Formalized Mathematical Framework
-        </h2>
-        <div className="flex flex-wrap gap-2 mb-4">
-          <ConceptTag id="overlap" /><ConceptTag id="roofline" /><ConceptTag id="arithmetic-intensity" />
+    <div className="glass-tooltip px-3 py-2 text-xs space-y-1">
+      {label !== undefined && label !== '' && (
+        <div className="font-semibold text-slate-800">
+          {title ? `${title}: ` : ''}{typeof label === 'number' ? fmtNum(label) : label}
         </div>
-        <div className="prose prose-slate max-w-none text-slate-600 mb-6 space-y-4">
-          <p>
-            The core framework for determining the runtime of an algorithm on hardware is the interaction
-            between <strong>computation time</strong> (<i>T<sub>math</sub></i>) and
-            <strong>communication time</strong> (<i>T<sub>comms</sub></i>).
-          </p>
-          <ul className="list-disc pl-5 space-y-2">
-            <li><strong>Time Equations:</strong> <i>T<sub>math</sub> = (Computation FLOPs) / (Accelerator FLOPs/s)</i>, and <i>T<sub>comms</sub> = (Communication Bytes) / (Bandwidth Bytes/s)</i>.</li>
-            <li><strong>Lower vs Upper Bound:</strong> A <strong>lower bound</strong> (<i>T<sub>lower</sub> = max(T<sub>math</sub>, T<sub>comms</sub>)</i>) assumes perfect overlap of math and communication. An <strong>upper bound</strong> (<i>T<sub>upper</sub> = T<sub>math</sub> + T<sub>comms</sub></i>) assumes no overlap. Since <i>T<sub>math</sub> + T<sub>comms</sub> ≤ 2·max(...)</i>, the two bounds differ by at most 2× — which is exactly the room available for overlap optimizations (like collective matmuls).</li>
-            <li><strong>Arithmetic (Operational) Intensity:</strong> <i>I = (Total FLOPs) / (Communication Bytes)</i>. An algorithm is <strong>compute-bound</strong> when its intensity exceeds the hardware's peak intensity (<i>I<sub>hw</sub> = peak FLOPs/s ÷ bandwidth</i>), and <strong>memory/communication-bound</strong> otherwise.</li>
-          </ul>
+      )}
+      {payload.map((p: any, i: number) => (
+        <div key={i} className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full" style={{ background: p.color || p.fill }} />
+          <span className="text-slate-500 capitalize">{p.name}:</span>
+          <span className="font-mono font-semibold text-slate-800">
+            {typeof p.value === 'number' ? fmtNum(p.value) : p.value}{p.unit || unit}
+          </span>
         </div>
-
-        {/* Overlap visual: lower vs upper bound */}
-        <div className="glass rounded-xl p-5 mb-6">
-          <h3 className="font-bold text-slate-800 mb-3 flex items-center">
-            <Activity className="w-4 h-4 mr-2 text-blue-500" /> How Much Can Overlap Help?
-          </h3>
-          <OverlapBoundsChart />
-          <p className="text-sm text-slate-500 mt-3">
-            When <i>T<sub>math</sub> = T<sub>comms</sub></i> the gap between the no-overlap upper bound and
-            the perfect-overlap lower bound is largest, so this is where scheduling (e.g. overlapping one
-            matmul's communication with the next block's compute) buys you the most.
-          </p>
-        </div>
-
-        <div className="glass rounded-xl p-5">
-          <h3 className="font-bold text-slate-800 mb-4 flex items-center">
-            Roofline Plot: {hw.id}
-          </h3>
-          <p className="text-sm text-slate-500 mb-6">
-            Log–log throughput (FLOPs/s) vs arithmetic intensity. The "ridge point" is the hardware
-            intensity threshold (≈{hardwareIntensity.toFixed(1)} FLOPs/Byte). Left of the ridge you are
-            bandwidth-bound; right of it you saturate peak FLOPs.
-          </p>
-          <div className="h-80 w-full">
-            <RooflineChart peakFlops={peakFlops} peakBw={peakBw} ridge={hardwareIntensity} showOps />
-          </div>
-        </div>
-      </section>
-
-      {/* 2. Arithmetic Intensity & The Ridge Point (NEW) */}
-      <section className="glass-card p-6">
-        <h2 className="text-2xl font-bold flex items-center text-slate-900 mb-6">
-          <Info className="w-6 h-6 mr-3 text-cyan-500" />
-          2. Arithmetic Intensity &amp; The Ridge Point
-        </h2>
-        <div className="flex flex-wrap gap-2 mb-4">
-          <ConceptTag id="arithmetic-intensity" /><ConceptTag id="ridge-point" /><ConceptTag id="critical-batch" />
-        </div>
-        <div className="prose prose-slate max-w-none text-slate-600 mb-6 space-y-4">
-          <p>
-            The single most useful number in roofline analysis is the <strong>arithmetic intensity</strong>,
-            <i>I = FLOPs ÷ bytes</i>. It measures how much math you get out of every byte you drag through
-            the memory system. The crossover where an operation stops being limited by bandwidth and starts
-            saturating the FLOPs/s is the hardware's <strong>ridge point</strong>, <i>I<sub>hw</sub> = peak
-            FLOPs/s ÷ bandwidth</i>.
-          </p>
-          <ul className="list-disc pl-5 space-y-2">
-            <li><strong>If <i>I &lt; I<sub>hw</sub></i>:</strong> the operation is <em>bandwidth-bound</em> — bytes limit you before FLOPs do, and you leave arithmetic throughput on the table.</li>
-            <li><strong>If <i>I &gt; I<sub>hw</sub></i>:</strong> the operation is <em>compute-bound</em> — you use essentially all the accelerator's FLOPs/s.</li>
-            <li><strong>For a matmul</strong> (see Section 3) the intensity is ≈ the per-replica <strong>token batch size B</strong>. So the familiar rule falls out: <em>a bf16 matmul is compute-bound iff <i>B &gt; I<sub>hw</sub></i></em> (≈240 tokens on most TPUs, ≈295 on an H100).</li>
-          </ul>
-        </div>
-        <ArithmeticIntensitySection hardwareIntensity={hardwareIntensity} />
-      </section>
-
-      {/* 3. Detailed Matrix Multiplication (Matmul) Math */}
-      <section className="glass-card p-6">
-        <h2 className="text-2xl font-bold flex items-center text-slate-900 mb-6">
-          <Cpu className="w-6 h-6 mr-3 text-emerald-500" />
-          3. Detailed Matrix Multiplication (Matmul) Math
-        </h2>
-        <div className="flex flex-wrap gap-2 mb-4">
-          <ConceptTag id="matmul-intensity" /><ConceptTag id="critical-batch" />
-        </div>
-        <div className="prose prose-slate max-w-none text-slate-600 mb-6 space-y-4">
-          <p>Matrix multiplication is the fundamental operation of deep learning, and its arithmetic intensity decides how efficiently a model uses hardware.</p>
-          <ul className="list-disc pl-5 space-y-2">
-            <li><strong>Variables:</strong> For <i>X[B, D] × Y[D, F] → Z[B, F]</i>, the total FLOPs are <i>2BDF</i>.</li>
-            <li><strong>Memory Movement:</strong> Load the two inputs (<i>2BD + 2DF</i>) and write the result (<i>2BF</i>).</li>
-            <li><strong>Intensity:</strong> <i>I = 2BDF / (2BD + 2DF + 2BF)</i>. When <i>B</i> is small relative to <i>D, F</i> (typical: <i>B &lt; 1024</i> tokens, <i>D, F &gt; 8000</i>), this simplifies to <i>I ≈ B</i>.</li>
-            <li><strong>Critical Threshold:</strong> Compute-bound iff <i>B &gt; I<sub>hw</sub></i> — ~240 tokens for TPUs, ~295 for an H100 (per-replica token batch, not sequences).</li>
-            <li><strong>Tiling caveat:</strong> Large matmuls are decomposed into tiles that fit high-bandwidth on-chip memory (VMEM/SMEM/TMEM) and are re-loaded multiple times, so bytes are <em>not</em> exactly <i>O(N²)</i>. For tile sizes <i>bm × bn</i> the effective intensity becomes ≈ <i>bm·bn/(bm+bn)</i> — so tuning tiles also tunes intensity.</li>
-          </ul>
-        </div>
-        <MatmulInteractiveSection hardwareIntensity={hardwareIntensity} />
-      </section>
-
-      {/* 4. Prefill vs Generation (NEW) */}
-      <section className="glass-card p-6">
-        <h2 className="text-2xl font-bold flex items-center text-slate-900 mb-6">
-          <Activity className="w-6 h-6 mr-3 text-sky-500" />
-          4. Prefill vs Generation: Why Inference Flips the Roofline
-        </h2>
-        <div className="flex flex-wrap gap-2 mb-4">
-          <ConceptTag id="prefill" /><ConceptTag id="generation" /><ConceptTag id="kv-cache" />
-        </div>
-        <div className="prose prose-slate max-w-none text-slate-600 mb-6 space-y-4">
-          <p>
-            Transformer inference is really <em>two different workloads</em>. Understanding which side of the
-            ridge each sits on explains why the Interactive Lab's decode (generation) model looks the way it
-            does.
-          </p>
-          <ul className="list-disc pl-5 space-y-2">
-            <li><strong>Prefill</strong> processes a long prompt of <i>T</i> tokens at once. Linear ops reuse their weights across <i>B·T</i> tokens, and attention intensity is <i>≈ T/2</i>. So prefill is essentially <strong>always compute-bound</strong> (for real prompts) — maximizing MFU directly improves TTFT.</li>
-            <li><strong>Generation</strong> runs one token at a time (<i>T = 1</i>). Weights are not amortized; each token streams the full parameter set plus its own KV cache. Attention intensity <i>ST/(S+T) ≈ 1</i> (constant). So generation is <strong>basically always memory-bandwidth-bound</strong>, and batching many requests together is what pushes per-token intensity back toward the ridge.</li>
-            <li><strong>Step-time bound:</strong> for small generate batches, <i>T<sub>step</sub> ≥ (B · KV-cache + parameters) / bandwidth</i>. This is the theoretical minimum you should aim for — and the exact equation the Interactive Lab simulates.</li>
-          </ul>
-        </div>
-        <PrefillGenerationSection hw={hw} />
-      </section>
-
-      {/* 5. Inter-Chip Network Rooflines */}
-      <section className="glass-card p-6">
-        <h2 className="text-2xl font-bold flex items-center text-slate-900 mb-6">
-          <Network className="w-6 h-6 mr-3 text-purple-500" />
-          5. Inter-Chip Network Rooflines
-        </h2>
-        <div className="flex flex-wrap gap-2 mb-4">
-          <ConceptTag id="network-roofline" /><ConceptTag id="model-parallelism" />
-        </div>
-        <div className="prose prose-slate max-w-none text-slate-600 mb-6 space-y-4">
-          <p>When models are distributed across multiple accelerators, the communication bottleneck shifts from on-chip HBM bandwidth to inter-chip network bandwidth.</p>
-          <ul className="list-disc pl-5 space-y-2">
-            <li><strong>Sharding Math:</strong> For two chips splitting the contracting <i>D</i> dimension, each chip does <i>BDF</i> FLOPs and must exchange <i>2BF</i> bytes of partial sums.</li>
-            <li><strong>Change in Bottlenecks:</strong> Unlike single-chip operations (limited by <i>B</i>), inter-chip rooflines depend on the <strong>model dimension D</strong>: <i>BDF/(2BF) = D/2</i>.</li>
-            <li><strong>Threshold Example:</strong> With a network bandwidth of 4.5e10 bytes/s and 1.97e14 FLOPs/s per chip, the op becomes compute-bound when <i>D/2 &gt; 4377</i>, i.e. <i>D &gt; 8755</i>, regardless of batch size.</li>
-          </ul>
-        </div>
-        <NetworkRooflineInteractiveSection hw={hw} />
-      </section>
-
-      {/* 6. Quantization and Mixed Precision Analysis */}
-      <section className="glass-card p-6">
-        <h2 className="text-2xl font-bold flex items-center text-slate-900 mb-6">
-          <Zap className="w-6 h-6 mr-3 text-amber-500" />
-          6. Quantization and Mixed Precision Analysis
-        </h2>
-        <div className="flex flex-wrap gap-2 mb-4">
-          <ConceptTag id="quantization" /><ConceptTag id="critical-batch" />
-        </div>
-        <div className="prose prose-slate max-w-none text-slate-600 mb-6 space-y-4">
-          <p>Quantization changes arithmetic intensity by changing the bytes-per-parameter — and precision changes how much effective FLOPs/s the accelerator can do. The two interact:</p>
-          <ul className="list-disc pl-5 space-y-2">
-            <li><strong>bf16 weights + bf16 math:</strong> critical batch <i>B<sub>crit</sub> ≈ I<sub>hw</sub></i> (~240 on TPU v5e).</li>
-            <li><strong>int8/fp8 weights, bf16 compute (mixed):</strong> weight bytes halve while FLOPs stay bf16, so <i>B<sub>crit</sub> ≈ I<sub>hw</sub>/2 ≈ 120</i>. This is the "easy win": lower <i>B<sub>crit</sub></i> means you become compute-bound sooner.</li>
-            <li><strong>int8 weights + int8 math:</strong> FLOPs/s roughly doubles, so <i>B<sub>crit</sub></i> returns to ~240 — the two effects cancel.</li>
-            <li><strong>Batch-specific weights (e.g. per-token MoE paths):</strong> comms explode to <i>BD + BDF + BF</i>; since <i>BDF</i> dominates, intensity collapses to a constant <i>≈ 2</i>, so the op is <strong>always communication-bound</strong>.</li>
-          </ul>
-        </div>
-        <QuantizationInteractiveSection hardwareIntensity={hardwareIntensity} />
-      </section>
-
-      {/* 7. Low-Level "Tiling" and Vector Math */}
-      <section className="glass-card p-6">
-        <h2 className="text-2xl font-bold flex items-center text-slate-900 mb-6">
-          <Calculator className="w-6 h-6 mr-3 text-slate-600" />
-          7. Low-Level "Tiling" and Vector Math
-        </h2>
-        <div className="flex flex-wrap gap-2 mb-4">
-          <ConceptTag id="matmul-intensity" /><ConceptTag id="arithmetic-intensity" />
-        </div>
-        <div className="prose prose-slate max-w-none text-slate-600 space-y-4">
-          <p>The matrix multiply unit (MXU / Tensor Core) and the vector processing unit (VPU / SIMT core) have very different rooflines, so you must compute them separately and take the max.</p>
-          <ul className="list-disc pl-5 space-y-2">
-            <li><strong>Tiling:</strong> Large matmuls are broken into tiles that fit on-chip (VMEM/SMEM/TMEM) and re-loaded from HBM repeatedly — so actual bytes exceed the naïve <i>O(N²)</i> estimate and intensity drops to ≈ <i>bm·bn/(bm+bn)</i>.</li>
-            <li><strong>Vector Operations (Dot Products):</strong> A dot product loads <i>2N</i> input bytes for ≈ <i>2N</i> FLOPs → intensity <i>1/2</i>. Low <em>and constant</em>, so it is essentially always bandwidth-bound.</li>
-            <li><strong>Hardware Mapping:</strong> Matmuls run on the MXU (high ridge); softmax/relu run on the VPU (lower ridge). To bound a model's time, build the roofline for <em>both</em> units and take the maximum at each intensity.</li>
-          </ul>
-        </div>
-      </section>
-
-      {/* 8. Worked Problems (NEW) */}
-      <section className="glass-card p-6">
-        <h2 className="text-2xl font-bold flex items-center text-slate-900 mb-6">
-          <BookOpen className="w-6 h-6 mr-3 text-rose-500" />
-          8. Worked Problems (from the scaling-book, Part 1)
-        </h2>
-        <WorkedProblemsSection hw={hw} peakFlops={peakFlops} peakBw={peakBw} hardwareIntensity={hardwareIntensity} />
-      </section>
+      ))}
     </div>
   );
 }
 
-// -------------------------------------------------------------
-// 1. Overlap: lower vs upper bound
-// -------------------------------------------------------------
+// Renders a "bound" badge with semantic colour.
+function BoundBadge({ compute }: { compute: boolean }) {
+  return (
+    <span className={cn(
+      'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold',
+      compute ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700',
+    )}>
+      <span className={cn('w-2 h-2 rounded-full', compute ? 'bg-emerald-500' : 'bg-rose-500')} />
+      {compute ? 'Compute-bound' : 'Bandwidth-bound'}
+    </span>
+  );
+}
+
+// Reusable labelled slider.
+function Slider({ label, value, min, max, step = 1, onChange, format }: any) {
+  return (
+    <div>
+      <div className="flex justify-between text-sm mb-1">
+        <label className="font-medium text-slate-700">{label}</label>
+        <span className="font-mono text-slate-900">{format ? format(value) : value}</span>
+      </div>
+      <input
+        type="range" min={min} max={max} step={step} value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        className="glass-slider w-full"
+      />
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Main tab
+// ---------------------------------------------------------------------------
+export default function DeepDiveTab({ hardwareProfileId }: { hardwareProfileId: string }) {
+  const hw = HARDWARE_PROFILES.find((h) => h.id === hardwareProfileId) || HARDWARE_PROFILES[0];
+  const peakFlops = hw.tflops * 1e12;
+  const peakBw = hw.memBw * 1e12;
+  const hardwareIntensity = peakFlops / peakBw;
+  const criticalBatch = hardwareIntensity; // bf16 matmul becomes compute-bound when B > ridge
+
+  const sections = [
+    { id: 'framework', label: 'Roofline', icon: Activity },
+    { id: 'intensity', label: 'Intensity', icon: Sigma },
+    { id: 'matmul', label: 'Matmul', icon: Cpu },
+    { id: 'prefill-gen', label: 'Prefill vs Gen', icon: Gauge },
+    { id: 'kv-cache', label: 'KV Cache', icon: MemoryStick },
+    { id: 'latency', label: 'Latency vs TP', icon: ArrowDownWideNarrow },
+    { id: 'network', label: 'Network', icon: Network },
+    { id: 'attention', label: 'Attn FLOPs', icon: Eye },
+    { id: 'quant', label: 'Quantization', icon: Zap },
+    { id: 'memory', label: 'Memory Hierarchy', icon: Layers },
+    { id: 'moe', label: 'MoE', icon: Sparkles },
+    { id: 'problems', label: 'Problems', icon: BookOpen },
+  ];
+
+  return (
+    <div className="pb-16 max-w-6xl mx-auto mt-6 px-4">
+      {/* ---- Hero ---- */}
+      <section className="text-center mb-10">
+        <div className="inline-flex items-center gap-2 glass-chip px-3 py-1 text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-4">
+          <BookOpen className="w-3.5 h-3.5 text-accent" /> Interactive deep dive
+        </div>
+        <h1 className="text-4xl sm:text-5xl font-extrabold text-slate-900 tracking-tight mb-4">
+          The Roofline, <span className="text-accent">Intuitively</span>
+        </h1>
+        <p className="text-slate-500 max-w-2xl mx-auto leading-relaxed">
+          Every plot below is live — drag the sliders to feel where an operation sits.
+          Move <strong>left of the ridge</strong> and you are <em>bandwidth-bound</em> (wasting FLOPs);
+          move <strong>right</strong> and you saturate the silicon.
+        </p>
+        {/* hardware KPIs */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-8 max-w-3xl mx-auto">
+          <HeroKpi icon={Cpu} label="Peak compute" value={fmtFlops(peakFlops)} sub={`${hw.id}`} />
+          <HeroKpi icon={MemoryStick} label="Memory bandwidth" value={fmtBytes(peakBw) + '/s'} sub="HBM" />
+          <HeroKpi icon={Sigma} label="Ridge point" value={fmtNum(hardwareIntensity)} sub="FLOPs / byte" />
+          <HeroKpi icon={Activity} label="Critical batch" value={`≈${fmtNum(criticalBatch)}`} sub="bf16 tokens" />
+        </div>
+      </section>
+
+      {/* ---- Section nav ---- */}
+      <nav className="sticky top-0 z-30 -mx-2 px-2 py-3 mb-8 blur-[1px] backdrop-blur-md bg-[#eef1fb]/70 rounded-2xl">
+        <div className="flex gap-1.5 overflow-x-auto custom-scrollbar py-1">
+          {sections.map((s) => (
+            <a
+              key={s.id}
+              href={`#${s.id}`}
+              className="shrink-0 inline-flex items-center gap-1.5 glass-chip px-3 py-1.5 text-[11px] font-semibold text-slate-600 hover:text-accent hover:border-accent/40 transition-colors"
+            >
+              <s.icon className="w-3.5 h-3.5" /> {s.label}
+            </a>
+          ))}
+        </div>
+      </nav>
+
+      {/* ---- 1. Framework ---- */}
+      <SectionCard id="framework" icon={Calculator} color={C.accent} number="01"
+        title="Formalized Mathematical Framework"
+        tags={['overlap', 'roofline', 'arithmetic-intensity']}>
+        <div className="prose prose-slate max-w-none text-slate-600 mb-6 space-y-4">
+          <p>
+            The runtime of an algorithm on hardware is governed by exactly two clocks: how long the <strong>math</strong> takes
+            (<i>T<sub>math</sub></i>) and how long the <strong>data movement</strong> takes (<i>T<sub>comms</sub></i>).
+          </p>
+          <ul className="list-disc pl-5 space-y-2">
+            <li><strong>Time equations:</strong> <i>T<sub>math</sub> = FLOPs &divide; (FLOPs/s)</i>, &nbsp;<i>T<sub>comms</sub> = Bytes &divide; (Bytes/s)</i>.</li>
+            <li><strong>Lower vs upper bound:</strong> <i>T<sub>lower</sub> = max(T<sub>math</sub>, T<sub>comms</sub>)</i> assumes perfect overlap;
+              <i>T<sub>upper</sub> = T<sub>math</sub> + T<sub>comms</sub></i> assumes none. Because <i>a + b &le; 2·max(a,b)</i>,
+              the two bounds are never more than <strong>2&times;</strong> apart — that factor of two is exactly the room
+              available for overlap tricks like <em>collective matmuls</em>.</li>
+            <li><strong>Arithmetic intensity:</strong> <i>I = FLOPs &divide; Bytes</i>. Compare it to the hardware ridge
+              <i> I<sub>hw</sub> = peak FLOPs/s &divide; bandwidth</i> to know which bound wins.</li>
+          </ul>
+        </div>
+
+        <div className="grid lg:grid-cols-2 gap-5 mb-6">
+          <div className="glass rounded-xl p-5">
+            <h3 className="font-bold text-slate-800 mb-3 flex items-center">
+              <Activity className="w-4 h-4 mr-2 text-accent" /> How Much Can Overlap Help?
+            </h3>
+            <OverlapBoundsChart />
+            <p className="text-sm text-slate-500 mt-3">
+              When <i>T<sub>math</sub> = T<sub>comms</sub></i> the gap between the bounds is largest — the sweet spot
+              for scheduling compute behind communication.
+            </p>
+          </div>
+
+          <div className="glass rounded-xl p-5">
+            <h3 className="font-bold text-slate-800 mb-3 flex items-center">
+              <Cpu className="w-4 h-4 mr-2 text-accent" /> Achievable FLOPs &amp; the Ridge
+            </h3>
+            <div className="space-y-3 text-sm text-slate-600">
+              <div className="flex justify-between items-center p-3 glass rounded-lg">
+                <span>Compute roof (peak)</span>
+                <span className="font-mono font-bold text-emerald-600">{fmtFlops(peakFlops)}</span>
+              </div>
+              <div className="flex justify-between items-center p-3 glass rounded-lg">
+                <span>Bandwidth roof slope</span>
+                <span className="font-mono text-slate-700">BW &times; I = {fmtFlops(peakBw)} per 1 FLOP/B</span>
+              </div>
+              <div className="flex justify-between items-center p-3 glass rounded-lg">
+                <span>Ridge crossover</span>
+                <span className="font-mono font-bold text-rose-600">I<sub>hw</sub> ≈ {fmtNum(hardwareIntensity)}</span>
+              </div>
+              <p className="text-xs text-slate-400">
+                Your <code className="bg-slate-100 px-1 rounded">{hw.id}</code> reaches its peak FLOPs/s only at an
+                intensity of ≈{fmtNum(hardwareIntensity)} FLOPs/byte. Below that, bandwidth drags you down the slope.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="glass rounded-xl p-5">
+          <h3 className="font-bold text-slate-800 mb-2 flex items-center">
+            <Activity className="w-4 h-4 mr-2 text-accent" /> The Live Roofline
+          </h3>
+          <p className="text-sm text-slate-500 mb-4">
+            Log&ndash;log throughput vs intensity. Below the ridge you ride the <span className="text-sky-600 font-medium">bandwidth slope</span>;
+            above it you sit on the flat <span className="text-emerald-600 font-medium">compute roof</span>. The dots are real operations.
+          </p>
+          <div className="h-[380px] w-full">
+            <RooflineChart peakFlops={peakFlops} peakBw={peakBw} ridge={hardwareIntensity} showOps />
+          </div>
+        </div>
+      </SectionCard>
+
+      {/* ---- 2. Arithmetic Intensity ---- */}
+      <SectionCard id="intensity" icon={Info} color={C.sky} number="02"
+        title="Arithmetic Intensity &amp; the Ridge Point"
+        tags={['arithmetic-intensity', 'ridge-point', 'critical-batch']}>
+        <div className="prose prose-slate max-w-none text-slate-600 mb-6">
+          <p>
+            Arithmetic intensity, <i>I = FLOPs &divide; bytes</i>, is the single most useful number in roofline analysis:
+            it tells you how much math you get out of every byte you drag through memory, and therefore which side of the
+            ridge the operation sits on. A bf16 matmul has <i>I ≈ B</i> — its per-replica <strong>token batch</strong> —
+            so the famous rule falls out: <em>compute-bound iff <i>B &gt; I<sub>hw</sub></i></em>.
+          </p>
+        </div>
+        <ArithmeticIntensitySection hardwareIntensity={hardwareIntensity} />
+      </SectionCard>
+
+      {/* ---- 3. Matmul Math ---- */}
+      <SectionCard id="matmul" icon={Cpu} color={C.compute} number="03"
+        title="Matrix Multiplication Math"
+        tags={['matmul-intensity', 'critical-batch']}>
+        <div className="prose prose-slate max-w-none text-slate-600 mb-6">
+          <p>
+            Matmul is the fundamental operation of deep learning. For <i>X[B,D] &middot; Y[D,F] &rarr; Z[B,F]</i> the
+            math is <i>2BDF</i> FLOPs, the traffic is <i>2BD + 2DF + 2BF</i> bytes, and the intensity
+            is <i>I = 2BDF&divide;(2BD + 2DF + 2BF) ≈ B</i> when <i>B</i> is small relative to <i>D, F</i>.
+          </p>
+        </div>
+        <MatmulInteractiveSection hardwareIntensity={hardwareIntensity} />
+      </SectionCard>
+
+      {/* ---- 4. Prefill vs Generation ---- */}
+      <SectionCard id="prefill-gen" icon={Activity} color={C.accentSoft} number="04"
+        title="Prefill vs Generation: Why Inference Flips the Roofline"
+        tags={['prefill', 'generation', 'attention-intensity']}>
+        <div className="prose prose-slate max-w-none text-slate-600 mb-6">
+          <p>
+            Transformer inference is really <em>two different workloads</em>. Prefill reuses weights across <i>B&middot;T</i>
+            tokens and has attention intensity <i>≈ T/2</i> — <strong>almost always compute-bound</strong>. Generation runs
+            one token at a time (<i>T = 1</i>): weights are streamed fresh every step and attention intensity collapses to
+            <i> ≈ 1</i> — <strong>almost always memory-bound</strong>. The only lever that pushes decode back toward the ridge
+            is <em>batching many requests together</em>.
+          </p>
+        </div>
+        <div className="grid lg:grid-cols-2 gap-5">
+          <PrefillGenerationSection hw={hw} peakFlops={peakFlops} peakBw={peakBw} hardwareIntensity={hardwareIntensity} />
+          <AttentionIntensitySection hardwareIntensity={hardwareIntensity} />
+        </div>
+        <div className="mt-6">
+          <h3 className="font-bold text-slate-800 mb-1">How each K and V is actually used</h3>
+          <p className="text-sm text-slate-500 mb-4">
+            This is <em>why</em> the KV cache matters at all: at every later step, the cached keys select{' '}
+            <em>where</em> to attend and the cached values carry <em>what</em> gets blended forward.
+          </p>
+          <KvUsageExplain />
+        </div>
+      </SectionCard>
+
+      {/* ---- 5. KV Cache (NEW) ---- */}
+      <SectionCard id="kv-cache" icon={MemoryStick} color={C.violet} number="05"
+        title="The KV Cache: Where Inference Memory Goes"
+        tags={['kv-cache', 'memory-bound', 'generation']}>
+        <div className="prose prose-slate max-w-none text-slate-600 mb-6">
+          <p>
+            During generation the dominant cost is not the weights — it is the <strong>KV cache</strong>: every token&rsquo;s cached
+            key/value projections. It grows linearly with <em>context length &times; batch</em>, independent of model capacity once
+            you fix the head count. That is why long contexts &times; large batches quickly balloon into terabytes and why
+            <strong>GQA</strong>, <strong>quantization</strong>, and <strong>paged attention</strong> matter so much.
+          </p>
+          <p className="text-sm text-slate-500">
+            This cache isn&rsquo;t just storage — its values get <em>used</em> on every later forward pass: the cached
+            keys are scored against the new query and the cached values are blended by those weights (see{" "}
+            <em>Prefill vs Generation</em>). Formula:{" "}
+            <code className="bg-slate-100 px-1.5 rounded font-mono">KV = 2 &middot; bytes &middot; H &middot; K &middot; L &middot; T &middot; B</code>
+            &nbsp;(keys and values, head dim, KV heads, layers, context, batch).
+          </p>
+        </div>
+        <KVCacheSection hardwareIntensity={hardwareIntensity} hw={hw} />
+      </SectionCard>
+
+      {/* ---- 6. Latency vs Throughput (NEW) ---- */}
+      <SectionCard id="latency" icon={ArrowDownWideNarrow} color={C.amber} number="06"
+        title="Latency vs Throughput: The Pareto Tradeoff"
+        tags={['latency-throughput', 'generation', 'critical-batch']}>
+        <div className="prose prose-slate max-w-none text-slate-600 mb-6">
+          <p>
+            Bigger batches raise throughput (tokens/s) but each step must load more KV cache, so per-request latency grows too.
+            You are walking a <strong>Pareto frontier</strong>. The theoretical ceiling is
+            <i> max tokens/s = (B&middot;BW) / (B&middot;KV<sub>seq</sub> + params)</i> — throughput flattens once memory traffic
+            saturates bandwidth, right around the critical batch. Adding chips is what moves the frontier out.
+          </p>
+        </div>
+        <LatencyThroughputSection hw={hw} peakFlops={peakFlops} peakBw={peakBw} hardwareIntensity={hardwareIntensity} />
+      </SectionCard>
+
+      {/* ---- 7. Network ---- */}
+      <SectionCard id="network" icon={Network} color={C.violet} number="07"
+        title="Inter-Chip Network Rooflines"
+        tags={['network-roofline', 'model-parallelism']}>
+        <div className="prose prose-slate max-w-none text-slate-600 mb-6">
+          <p>
+            Sharding moves the bottleneck from HBM to the inter-chip fabric. Two chips splitting the contracting
+            <i>D</i> dimension each trade <i>2BF</i> bytes of partial sums for <i>BDF</i> FLOPs, so the inter-chip intensity
+            is <i>I = D/2</i> — it depends on the <strong>model dimension D, not the batch B</strong>. Bigger models are
+            easier to shard; bigger batches don&rsquo;t help the fabric.
+          </p>
+        </div>
+        <NetworkRooflineInteractiveSection hw={hw} />
+      </SectionCard>
+
+      {/* ---- 8. Attention FLOPs crossover (NEW) ---- */}
+      <SectionCard id="attention" icon={Eye} color={C.sky} number="08"
+        title="When Does Attention Dominate Compute?"
+        tags={['attention-flops', 'attention-intensity']}>
+        <div className="prose prose-slate max-w-none text-slate-600 mb-6">
+          <p>
+            Everyone says &ldquo;attention is quadratic&rdquo; — but its constant is tiny. Attention&rsquo;s share of layer FLOPs is
+            ≈ <i>T / 8D</i>, so it only overtakes the MLP once the context exceeds ≈ <i>8&middot;D</i> tokens (~64k for a
+            <i>D</i>&asymp;8k model). For typical contexts you are almost always <strong>matmul-limited</strong> in FLOPs —
+            but attention still dominates <em>memory</em> via the KV cache.
+          </p>
+        </div>
+        <AttentionFlopsSection />
+      </SectionCard>
+
+      {/* ---- 9. Quantization ---- */}
+      <SectionCard id="quant" icon={Zap} color={C.amber} number="09"
+        title="Quantization &amp; Mixed Precision"
+        tags={['quantization', 'critical-batch']}>
+        <div className="prose prose-slate max-w-none text-slate-600 mb-6">
+          <p>
+            Quantizing <em>weights</em> trims the bytes-per-parameter and drops the critical batch; quantizing the
+            <em>math</em> doubles peak FLOPs/s and pushes it back up. Governed by
+            <i> B<sub>crit</sub> = &beta; &middot; I<sub>hw</sub></i> where
+            <i> &beta; = bits/param &divide; bits/activation</i>. The sweet spot is <strong>int8 weights + bf16 compute</strong> —
+            B_crit halves to ~120 with no quality sacrifice.
+          </p>
+        </div>
+        <QuantizationInteractiveSection hardwareIntensity={hardwareIntensity} hw={hw} />
+      </SectionCard>
+
+      {/* ---- 10. Memory hierarchy & tiling (NEW) ---- */}
+      <SectionCard id="memory" icon={Layers} color={C.sky} number="10"
+        title="Memory Hierarchy &amp; Tiling: VMEM Changes Everything"
+        tags={['memory-hierarchy', 'tiling', 'matmul-intensity']}>
+        <div className="prose prose-slate max-w-none text-slate-600 mb-6">
+          <p>
+            HBM is big but slow. On-chip scratchpad (VMEM on TPUs, SMEM on GPUs) is tiny but ~22&times; the bandwidth — so an op
+            fed from VMEM only needs intensity ~10&ndash;20 to hit peak, versus ~240 from HBM. Big matmuls are cut into tiles
+            that fit VMEM and re-loaded, which is why effective intensity drops to
+            ≈ <i> bm&middot;bn/(bm+bn)</i>: <em>tuning the tile size is really tuning arithmetic intensity</em>.
+          </p>
+        </div>
+        <MemoryHierarchySection />
+      </SectionCard>
+
+      {/* ---- 11. MoE (NEW) ---- */}
+      <SectionCard id="moe" icon={Sparkles} color={C.compute} number="11"
+        title="Mixture-of-Experts: A Hidden Batch Requirement"
+        tags={['moe', 'critical-batch']}>
+        <div className="prose prose-slate max-w-none text-slate-600 mb-6">
+          <p>
+            MoE multiplies <em>stored</em> parameters by <i>E</i> but only reads <i>k</i> per token, so you need
+            <i>E/k</i> &times; more concurrent tokens to saturate parameter bandwidth:
+            <strong> compute-bound requires <i>B &gt; 120 &middot; E/k</i></strong>. For DeepSeek&nbsp;v3 (E=256, k=8) that is a
+            startling <i>B &gt; 3,840</i> tokens — an enormous serving batch.
+          </p>
+        </div>
+        <MoeSection />
+      </SectionCard>
+
+      {/* ---- 12. Worked Problems ---- */}
+      <SectionCard id="problems" icon={BookOpen} color={C.rose} number="12"
+        title="Worked Problems"
+        tags={['matmul-intensity', 'quantization', 'arithmetic-intensity']}>
+        <WorkedProblemsSection hw={hw} peakFlops={peakFlops} peakBw={peakBw} hardwareIntensity={hardwareIntensity} />
+        <p className="text-sm text-slate-500 mt-6">
+          Adapted from the scaling-book (Part 1, &ldquo;A Few Problems to Work&rdquo;). Reference copy stored in{" "}
+          <code className="text-xs bg-slate-100 px-1 rounded">reference/scaling-book/roofline.md</code>.
+        </p>
+      </SectionCard>
+
+      <p className="text-center text-xs text-slate-400 mt-12">
+        Every curve is computed live from the formulas in the scaling-book reference material — no static images,
+        so you can always drag, compare, and <em>feel</em> the roofline.
+      </p>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Small layout pieces
+// ---------------------------------------------------------------------------
+function SectionCard({ id, icon: IconCmp, color, number, title, tags, children }: any) {
+  return (
+    <section id={id} className="glass-card p-6 sm:p-8 mb-8 scroll-mt-24">
+      <div className="flex items-start justify-between gap-4 mb-6">
+        <h2 className="text-2xl font-bold flex items-center text-slate-900">
+          <span className="inline-flex items-center justify-center w-9 h-9 rounded-xl mr-3 text-white shrink-0"
+            style={{ background: color }}>
+            <IconCmp className="w-5 h-5" />
+          </span>
+          <span className="text-3xl font-black mr-3 opacity-20" style={{ color }}>{number}</span>
+          {title}
+        </h2>
+      </div>
+      <div className="flex flex-wrap gap-2 mb-5">
+        {tags.map((t: string) => (
+          <span key={t}><ConceptTag id={t} /></span>
+        ))}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function HeroKpi({ icon: I, label, value, sub }: any) {
+  return (
+    <div className="glass rounded-xl p-3 text-left">
+      <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-1">
+        <I className="w-3.5 h-3.5" /> {label}
+      </div>
+      <div className="font-mono text-lg font-bold text-slate-900 leading-none">{value}</div>
+      <div className="text-[11px] text-slate-400 mt-1 truncate">{sub}</div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// 1. Overlap bounds
+// ---------------------------------------------------------------------------
 function OverlapBoundsChart() {
   const data = useMemo(() => {
-    // Score is math/comms ratio from 0.1 (comms-dominated) to 10 (compute-dominated)
-    const rows = [];
+    const rows: any[] = [];
     for (let r = 0.15; r <= 6.5; r += 0.2) {
-      // T_math + T_comms vs 2 * max  -> normalize
-      const lower = 2 * Math.max(r, 1); // 2*max(normalized) ; math=r, comms=1
-      const upper = r + 1;              // no overlap = sum
-      const overlapWin = ((upper - lower * 0.5) > 0 ? (upper - lower * 0.5) : 0);
       rows.push({
         ratio: r,
         noOverlap: r + 1,
         perfectOverlap: Math.max(r, 1),
-        // percentage saved by overlapping
-        saved: Math.round(((r + 1 - Math.max(r, 1)) / (r + 1)) * 100)
+        saved: Math.round(((r + 1 - Math.max(r, 1)) / (r + 1)) * 100),
       });
     }
     return rows;
@@ -234,37 +480,32 @@ function OverlapBoundsChart() {
 
   return (
     <div>
-      <div className="h-56 w-full">
+      <div className="h-52 w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data} margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
+          <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="overlapFill" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4} />
                 <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.05} />
               </linearGradient>
-              <linearGradient id="upperFill" x1="0" y1="0" x2="0" y2="1">
+              <linearGradient id="upperFill2" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.3} />
                 <stop offset="95%" stopColor="#f43f5e" stopOpacity={0.05} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.4} />
-            <XAxis
-              dataKey="ratio"
-              type="number"
-              scale="log"
-              domain={[0.1, 10]}
-              tickFormatter={(v) => `${Number(v).toFixed(1)}`}
-              label={{ value: 'T_math / T_comms ratio', position: 'bottom', fontSize: 11 }}
-            />
-            <YAxis label={{ value: 'Relative time', angle: -90, position: 'insideLeft', fontSize: 11 }} />
-            <Tooltip formatter={(v: any, name: any) => [Number(v).toFixed(2), name]} labelFormatter={(v: any) => `ratio ${Number(v).toFixed(2)}`} />
-            <Area type="monotone" dataKey="noOverlap" name="Upper bound (no overlap)" stroke="#f43f5e" strokeWidth={2} fill="url(#upperFill)" />
-            <Area type="monotone" dataKey="perfectOverlap" name="Lower bound (perfect overlap)" stroke="#2563eb" strokeWidth={2} fill="url(#overlapFill)" />
+            <XAxis dataKey="ratio" type="number" scale="log" domain={[0.1, 10]}
+              tickFormatter={(v: any) => `${Number(v).toFixed(1)}`} />
+            <YAxis />
+            <Tooltip content={<ChartTip label="T_math/T_comms" />} />
+            <Area type="monotone" dataKey="noOverlap" name="Upper (no overlap)" stroke={C.ridge} strokeWidth={2.5} fill="url(#upperFill2)" />
+            <Area type="monotone" dataKey="perfectOverlap" name="Lower (perfect overlap)" stroke="#2563eb" strokeWidth={2.5} fill="url(#overlapFill)" />
+            <ReferenceLine x={1} stroke="#475569" strokeDasharray="4 4" />
           </AreaChart>
         </ResponsiveContainer>
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3 text-xs">
-        {data.filter(d => [0.5, 1, 2, 5].includes(Math.round(d.ratio))).map(d => (
+        {data.filter((d) => [0.5, 1, 2, 5].includes(Math.round(d.ratio))).map((d) => (
           <div key={d.ratio} className="glass rounded-md p-2 text-center">
             <div className="text-slate-400">ratio {d.ratio}</div>
             <div className="font-mono font-bold text-emerald-600">{d.saved}% saved</div>
@@ -275,153 +516,169 @@ function OverlapBoundsChart() {
   );
 }
 
-// -------------------------------------------------------------
-// Section 1 & shared: proper teaching Roofline
-// -------------------------------------------------------------
-function RooflineChart({ peakFlops, peakBw, ridge, showOps = false }: { peakFlops: number, peakBw: number, ridge: number, showOps?: boolean }) {
+// ---------------------------------------------------------------------------
+// The teaching Roofline (bandwidth slope + compute roof + operations)
+// ---------------------------------------------------------------------------
+function RooflineChart({ peakFlops, peakBw, ridge, showOps = false }: { peakFlops: number; peakBw: number; ridge: number; showOps?: boolean }) {
   const data = useMemo(() => {
-    const pts = [];
+    const pts: any[] = [];
     const minI = 0.05;
     const maxI = 200000;
-    for (let i = Math.log10(minI); i <= Math.log10(maxI); i += 0.05) {
+    for (let i = Math.log10(minI); i <= Math.log10(maxI); i += 0.02) {
       const intensity = Math.pow(10, i);
-      const achievable = Math.min(peakBw * intensity, peakFlops);
-      pts.push({ intensity, achievable });
+      pts.push({ intensity, achievable: Math.min(peakBw * intensity, peakFlops) });
     }
     return pts;
   }, [peakFlops, peakBw]);
 
-  // Per-operation markers (intensity on the theoretical achieved line)
   const ops = useMemo(() => {
     if (!showOps) return [];
     const mk = (name: string, intensity: number, color: string) => ({
-      name,
-      intensity,
-      achieved: Math.min(peakBw * intensity, peakFlops),
-      color,
-      bound: intensity >= ridge ? 'Compute-bound' : 'Bandwidth-bound'
+      name, intensity, achieved: Math.min(peakBw * intensity, peakFlops), color,
+      bound: intensity >= ridge ? 'Compute-bound' : 'Bandwidth-bound',
     });
     return [
-      mk('Dot product', 0.5, '#ef4444'),
-      mk('Attention (generate, ~1)', 1, '#f59e0b'),
-      mk('Matmul, B=64', 64, '#3b82f6'),
-      mk('Attention (prefill, T=1024/2)', 512, '#10b981'),
-      mk('Matmul, B=1024', 1024, '#8b5cf6'),
+      mk('Dot product (VPU)', 0.5, C.ridge),
+      mk('Attn – generate (~1)', 1, C.amber),
+      mk('Matmul, B=64', 64, C.accent),
+      mk('Attn – prefill T=512', 256, C.compute),
+      mk('Matmul, B=1024', 1024, C.violet),
     ];
   }, [showOps, peakBw, peakFlops, ridge]);
 
   return (
-    <ComposedChart data={data} margin={{ top: 20, right: 30, left: 10, bottom: 20 }}>
-      <CartesianGrid strokeDasharray="3 3" opacity={0.4} />
-      <XAxis
-        dataKey="intensity"
-        scale="log"
-        domain={['dataMin', 'dataMax']}
-        type="number"
-        tickFormatter={(v) => Number(v) < 1 ? Number(v).toFixed(1) : Number(v).toFixed(0)}
-        label={{ value: 'Arithmetic Intensity (FLOPs / Byte) — log', position: 'bottom', fontSize: 11 }}
-      />
-      <YAxis
-        scale="log"
-        domain={['dataMin', 'dataMax']}
-        type="number"
-        tickFormatter={(v) => (v / 1e12).toFixed(0)}
-        label={{ value: 'Throughput (TFLOPs / s) — log', angle: -90, position: 'insideLeft', fontSize: 11 }}
-      />
+    <ResponsiveContainer width="100%" height="100%">
+      <ComposedChart data={data} margin={{ top: 20, right: 30, left: 10, bottom: 20 }}>
+      <defs>
+        <linearGradient id="bandwidthRoof" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="5%" stopColor="#f25f7d" stopOpacity={0.28} />
+          <stop offset="95%" stopColor="#f25f7d" stopOpacity={0.02} />
+        </linearGradient>
+        <linearGradient id="computeRoof" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="5%" stopColor="#22c48b" stopOpacity={0.28} />
+          <stop offset="95%" stopColor="#22c48b" stopOpacity={0.02} />
+        </linearGradient>
+      </defs>
+      <CartesianGrid strokeDasharray="3 3" opacity={0.35} />
+      <XAxis dataKey="intensity" scale="log" domain={['dataMin', 'dataMax']} type="number"
+        tickFormatter={(v: any) => Number(v) < 1 ? Number(v).toFixed(1) : Number(v).toFixed(0)}
+        label={{ value: 'Arithmetic Intensity (FLOPs / Byte) — log', position: 'insideBottom', offset: -6, fontSize: 11, fill: C.slate }} />
+      <YAxis scale="log" domain={['dataMin', 'dataMax']} type="number" width={58}
+        tickFormatter={(v: any) => (v / 1e12) >= 1 ? `${(v / 1e12).toFixed(0)}T` : `${(v / 1e9).toFixed(0)}G`}
+        label={{ value: 'Throughput', angle: -90, position: 'insideLeft', fontSize: 11, fill: C.slate }} />
       <Tooltip
-        labelFormatter={(v: any) => `Intensity: ${Number(v).toFixed(1)} FLOPs/B`}
-        formatter={(v: any) => [`${(Number(v) / 1e12).toFixed(2)} TFLOP/s`]}
+        content={<ChartTip />}
+        labelFormatter={(v: any) => `Intensity ${Number(v) < 1 ? Number(v).toFixed(2) : fmtNum(v)}`}
       />
-      {showOps && <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />}
-      {/* the roof */}
-      <Line type="monotone" dataKey="achievable" name="Achievable performance (roof)" stroke="#0ea5e9" strokeWidth={3} dot={false} />
-      {/* ridge line */}
-      <ReferenceLine x={ridge} stroke="#f43f5e" strokeDasharray="4 4" label={{ position: 'top', value: `ridge ≈ ${ridge.toFixed(0)}`, fill: '#f43f5e', fontSize: 10 }} />
-      {/* per-op markers */}
+      {showOps && <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '12px' }} />}
+
+      {/* bandwidth-bound region (left of ridge) */}
+      <ReferenceArea {...({ x1: 'dataMin', x2: ridge, fill: '#f25f7d', fillOpacity: 0.06, strokeOpacity: 0 } as any)} />
+      {/* compute-bound region (right of ridge) */}
+      <ReferenceArea {...({ x1: ridge, x2: 'dataMax', fill: '#22c48b', fillOpacity: 0.06, strokeOpacity: 0 } as any)} />
+
+      <ReferenceLine x={ridge} stroke={C.ridge} strokeDasharray="5 5" strokeWidth={1.5}
+        label={{ position: 'top', value: `ridge ≈ ${fmtNum(ridge)}`, fill: C.ridge, fontSize: 11, fontWeight: 700 }} />
+
+      <Line type="monotone" dataKey="achievable" name="Roof (achievable)" stroke={C.sky} strokeWidth={3} dot={false} strokeLinecap="round" />
+
       {showOps && (
-        <Scatter data={ops} dataKey="achieved" name="Operations"
-          fill="#0ea5e9" shape="circle" legendType="none" />
+        <Scatter data={ops} dataKey="achieved" name="Operations" shape={(p: any) => {
+          const d = ops.find((o) => o.name === p.payload.name) || p.payload;
+          return (
+            <g transform={`translate(${p.cx},${p.cy})`}>
+              <circle r={7} fill={d.color} fillOpacity={0.15} stroke={d.color} strokeWidth={2} />
+              <circle r={3} fill={d.color} />
+            </g>
+          );
+        }} />
       )}
+      {showOps && ops.map((o) => (
+        <Scatter key={o.name} data={[o]} dataKey="achieved" fill={o.color} shape={(p: any) =>
+          <g transform={`translate(${p.cx},${p.cy})`}>
+            <circle r={7} fill={o.color} fillOpacity={0.15} stroke={o.color} strokeWidth={2} />
+            <circle r={3} fill={o.color} />
+            <text x={-14} y={-9} textAnchor="start" fontSize={10} fill={C.slate} fontWeight={600}>{o.name}</text>
+            <text x={-14} y={3} textAnchor="start" fontSize={10} fill={o.color} fontWeight={700}>{o.bound}</text>
+          </g>
+        } />
+      ))}
     </ComposedChart>
+    </ResponsiveContainer>
   );
 }
 
-// -------------------------------------------------------------
-// Section 2: Arithmetic intensity interactive
-// -------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// 2. Arithmetic intensity interactive
+// ---------------------------------------------------------------------------
 function ArithmeticIntensitySection({ hardwareIntensity }: { hardwareIntensity: number }) {
-  const [B, setB] = useState(64);
+  const [B, setB] = useState(96);
   const [D, setD] = useState(4096);
-  const [F, setF] = useState(4096);
 
-  // exact intensity of matmul
-  const intensity = (2 * B * D * F) / (2 * B * D + 2 * D * F + 2 * B * F);
-  const approx = B; // B << D, F simplification
+  const intensity = (2 * B * D * D) / (2 * B * D + 2 * D * D + 2 * B * D);
   const isComputeBound = intensity > hardwareIntensity;
-  const criticalB = hardwareIntensity;
 
   const data = useMemo(() => {
-    const pts = [];
-    for (let batch = 1; batch <= 1024; batch *= 1.15) {
+    const pts: any[] = [];
+    for (let batch = 1; batch <= 2048; batch *= 1.1) {
       const b = Math.round(batch);
-      const i = (2 * b * D * F) / (2 * b * D + 2 * D * F + 2 * b * F);
+      const i = (2 * b * D * D) / (2 * b * D + 2 * D * D + 2 * b * D);
       pts.push({ batch: b, intensity: i, approx: b });
     }
     return pts;
-  }, [D, F]);
+  }, [D]);
 
   return (
     <div className="glass rounded-xl p-5">
-      <h3 className="font-bold text-slate-800 mb-4">Interactive: Where Does This Matmul Sit?</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="space-y-4">
-          <div>
-            <div className="flex justify-between text-sm mb-1">
-              <label className="font-medium text-slate-700">Per-replica token batch (B)</label>
-              <span className="font-mono text-slate-900">{B}</span>
-            </div>
-            <input type="range" min={1} max={1024} value={B} onChange={e => setB(Number(e.target.value))} className="glass-slider w-full glass-slider w-full" />
-          </div>
-          <div>
-            <div className="flex justify-between text-sm mb-1">
-              <label className="font-medium text-slate-700">Dimension D / F</label>
-              <span className="font-mono text-slate-900">{D} / {F}</span>
-            </div>
-            <input type="range" min={1024} max={16384} step={256} value={D} onChange={e => { setD(Number(e.target.value)); setF(Number(e.target.value)); }} className="glass-slider w-full glass-slider w-full" />
-          </div>
+      <h3 className="font-bold text-slate-800 mb-1">Interactive: Where Does This Matmul Sit?</h3>
+      <p className="text-sm text-slate-500 mb-4">
+        Push the token batch <i>B</i> past the red ridge line and watch the operation cross from bandwidth- to compute-bound.
+      </p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-5">
+          <Slider label="Per-replica token batch (B)" value={B} min={1} max={2048} onChange={setB} />
+          <Slider label="Hidden dim (D = F)" value={D} min={1024} max={16384} step={256} onChange={setD} />
 
-          <div className="glass rounded-lg p-4 mt-4 space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-slate-500">Exact intensity</span>
-              <span className="font-mono font-bold text-slate-900">{intensity.toFixed(1)}</span>
+          <div className="grid grid-cols-2 gap-2 text-sm mt-2">
+            <div className="glass rounded-lg p-3">
+              <div className="text-slate-400 text-xs">Exact intensity</div>
+              <div className="font-mono font-bold text-slate-900 text-lg">{intensity.toFixed(1)}</div>
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-slate-500">≈ B simplification</span>
-              <span className="font-mono text-slate-600">{approx}</span>
+            <div className="glass rounded-lg p-3">
+              <div className="text-slate-400 text-xs">≈ B simplification</div>
+              <div className="font-mono text-slate-900 text-lg">{B}</div>
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-slate-500">Hardware ridge</span>
-              <span className="font-mono text-slate-600">{hardwareIntensity.toFixed(1)}</span>
+            <div className="glass rounded-lg p-3">
+              <div className="text-slate-400 text-xs">Hardware ridge</div>
+              <div className="font-mono text-slate-900 text-lg">{hardwareIntensity.toFixed(1)}</div>
             </div>
-            <div className={cn("text-xs font-bold mt-2", isComputeBound ? "text-emerald-500" : "text-amber-500")}>
-              {isComputeBound ? "✅ Compute-bound" : "⚠️ Bandwidth-bound"}
+            <div className="glass rounded-lg p-3">
+              <div className="text-slate-400 text-xs">Critical batch B_crit</div>
+              <div className="font-mono text-slate-900 text-lg">≈{Math.round(hardwareIntensity)}</div>
             </div>
-            <div className="text-[10px] text-slate-400">
-              This hardware's critical batch size: <span className="font-mono">{criticalB.toFixed(0)}</span> tokens. Cross it and you stop wasting FLOPs.
-            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <BoundBadge compute={isComputeBound} />
+            <span className="text-xs text-slate-400">
+              {isComputeBound
+                ? 'You are using essentially all the FLOPs/s.'
+                : 'FLOPs are being wasted waiting on memory.'}
+            </span>
           </div>
         </div>
-        <div className="h-64">
+        <div className="h-72">
           <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="batch" type="number" scale="log" domain={['dataMin', 'dataMax']} tickFormatter={(v) => `${v}`} label={{ value: 'Token batch (log)', position: 'bottom', fontSize: 10 }} />
-              <YAxis label={{ value: 'Intensity', angle: -90, position: 'insideLeft', fontSize: 10 }} />
-              <Tooltip />
-              <Line type="monotone" dataKey="approx" name="≈ B" stroke="#94a3b8" strokeWidth={2} strokeDasharray="4 4" dot={false} />
-              <Line type="monotone" dataKey="intensity" name="Exact" stroke="#06b6d4" strokeWidth={3} dot={false} />
-              <ReferenceLine y={hardwareIntensity} stroke="#f43f5e" strokeDasharray="3 3" label={{ position: 'top', value: 'Ridge', fill: '#f43f5e', fontSize: 10 }} />
-              <ReferenceLine x={B} stroke="#475569" />
+            <ComposedChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.35} />
+              <XAxis dataKey="batch" type="number" scale="log" domain={['dataMin', 'dataMax']}
+                tickFormatter={(v: any) => `${v}`} label={{ value: 'Token batch (log)', position: 'insideBottom', offset: -8, fontSize: 10, fill: C.slate }} />
+              <YAxis label={{ value: 'Intensity', angle: -90, position: 'insideLeft', fontSize: 10, fill: C.slate }} />
+              <Tooltip content={<ChartTip />} />
+              <Line type="monotone" dataKey="approx" name="≈ B" stroke={C.slate} strokeWidth={2} strokeDasharray="4 4" dot={false} />
+              <Line type="monotone" dataKey="intensity" name="Exact" stroke={C.sky} strokeWidth={3} dot={false} />
+              <ReferenceLine y={hardwareIntensity} stroke={C.ridge} strokeDasharray="3 3"
+                label={{ position: 'top', value: 'Ridge', fill: C.ridge, fontSize: 10, fontWeight: 700 }} />
+              <ReferenceLine x={B} stroke="#475569" strokeWidth={1.5} />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
@@ -430,145 +687,62 @@ function ArithmeticIntensitySection({ hardwareIntensity }: { hardwareIntensity: 
   );
 }
 
-// -------------------------------------------------------------
-// Section 3: matmul interactive
-// -------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// 3. Matmul interactive (with tiling intensity)
+// ---------------------------------------------------------------------------
 function MatmulInteractiveSection({ hardwareIntensity }: { hardwareIntensity: number }) {
   const [B, setB] = useState(128);
   const [D, setD] = useState(4096);
   const [F, setF] = useState(4096);
+  const [bm, setBm] = useState(128);
+
+  const currentIntensity = (2 * B * D * F) / (2 * B * D + 2 * D * F + 2 * B * F);
+  const tiledIntensity = (bm * bm) / (bm + bm);
+  const bn = bm;
 
   const data = useMemo(() => {
-    const pts = [];
-    for (let batch = 1; batch <= 1024; batch *= 1.2) {
+    const pts: any[] = [];
+    for (let batch = 1; batch <= 1024; batch *= 1.12) {
       const b = Math.round(batch);
-      const intensity = (2 * b * D * F) / (2 * b * D + 2 * D * F + 2 * b * F);
-      pts.push({ batch: b, intensity });
+      pts.push({ batch: b, intensity: (2 * b * D * F) / (2 * b * D + 2 * D * F + 2 * b * F) });
     }
     return pts;
   }, [D, F]);
 
-  const currentIntensity = (2 * B * D * F) / (2 * B * D + 2 * D * F + 2 * B * F);
-
   return (
     <div className="glass rounded-xl p-5">
-      <h3 className="font-bold text-slate-800 mb-4">Interactive Matmul Scaling</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="space-y-4">
-          <div>
-            <div className="flex justify-between text-sm mb-1">
-              <label className="font-medium text-slate-700">Batch Size (B)</label>
-              <span className="font-mono text-slate-900">{B}</span>
-            </div>
-            <input type="range" min={1} max={1024} value={B} onChange={e => setB(Number(e.target.value))} className="glass-slider w-full glass-slider w-full" />
-          </div>
-          <div>
-            <div className="flex justify-between text-sm mb-1">
-              <label className="font-medium text-slate-700">Dimension D</label>
-              <span className="font-mono text-slate-900">{D}</span>
-            </div>
-            <input type="range" min={128} max={16384} step={128} value={D} onChange={e => setD(Number(e.target.value))} className="glass-slider w-full glass-slider w-full" />
-          </div>
-          <div>
-            <div className="flex justify-between text-sm mb-1">
-              <label className="font-medium text-slate-700">Dimension F</label>
-              <span className="font-mono text-slate-900">{F}</span>
-            </div>
-            <input type="range" min={128} max={16384} step={128} value={F} onChange={e => setF(Number(e.target.value))} className="glass-slider w-full glass-slider w-full" />
-          </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-5">
+          <Slider label="Token batch (B)" value={B} min={1} max={1024} onChange={setB} />
+          <Slider label="Dimension D" value={D} min={128} max={16384} step={128} onChange={setD} />
+          <Slider label="Dimension F" value={F} min={128} max={16384} step={128} onChange={setF} />
+          <Slider label="Tile size (bm = bn)" value={bm} min={16} max={512} step={16} onChange={setBm} />
 
-          <div className="glass rounded-lg p-4 mt-4">
-            <div className="text-sm text-slate-500 mb-1">Current Arithmetic Intensity</div>
-            <div className="text-2xl font-mono font-bold text-slate-900">{currentIntensity.toFixed(1)} <span className="text-sm font-normal text-slate-500">FLOPs/B</span></div>
-            <div className={cn("text-xs font-bold mt-2", currentIntensity > hardwareIntensity ? "text-emerald-500" : "text-amber-500")}>
-              {currentIntensity > hardwareIntensity ? "✅ Compute Bound" : "⚠️ Memory Bound"}
-            </div>
-            <div className="text-[10px] text-slate-400 mt-1">
-              (Requires &gt; {hardwareIntensity.toFixed(1)} FLOPs/B — critical batch ≈ {hardwareIntensity.toFixed(0)})
-            </div>
-          </div>
-        </div>
-        <div className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="batch" label={{ value: 'Batch Size (B)', position: 'bottom', fontSize: 10 }} />
-              <YAxis label={{ value: 'Intensity', angle: -90, position: 'insideLeft', fontSize: 10 }} />
-              <Tooltip />
-              <ReferenceLine y={hardwareIntensity} stroke="#f43f5e" strokeDasharray="3 3" label={{ position: 'top', value: 'Hardware Limit', fill: '#f43f5e', fontSize: 10 }} />
-              <Line type="monotone" dataKey="intensity" stroke="#2563eb" strokeWidth={3} dot={false} />
-              <ReferenceLine x={B} stroke="#475569" />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// -------------------------------------------------------------
-// Section 4: Prefill vs Generation
-// -------------------------------------------------------------
-function PrefillGenerationSection() {
-  const [batch, setBatch] = useState(32);
-  const [context, setContext] = useState(4096);
-  const [kvKb, setKvKb] = useState(128);
-
-  const kvBytes = context * kvKb * 1024;
-  // per-replica token batch given batch sequences (for prefill, tokens = batch*context)
-  const prefillTokens = batch * context;
-
-  // intensities
-  const prefillAttention = context / 2;        // T/2
-  const generateAttention = 1;                 // ST/(S+T) ~ 1
-  const matmulPrefill = prefillTokens;
-
-  const data = [
-    { name: `Prefill attention (T=${context})`, intensity: prefillAttention, class: 'compute', desc: `≈ T/2 = ${(prefillAttention).toFixed(0)} FLOPs/B — way above the ridge, compute-bound.` },
-    { name: `Prefill matmul sum`, intensity: matmulPrefill, class: 'compute', desc: `linear ops reuse weights over ~${prefillTokens} tokens — compute-bound.` },
-    { name: `Generate attention (T=1)`, intensity: generateAttention, class: 'memory', desc: `≈ ST/(S+T) ≈ 1 — constant & far below ridge: always memory-bound.` },
-    { name: `Generate with batch ${batch}`, intensity: (batch * context) / (batch * context + context), class: 'middle', desc: `Batching joins many KV reads so weights amortize a little; still usually below the ridge.` },
-  ];
-
-  const kvTotalGb = (kvBytes * batch) / 1e9;
-
-  return (
-    <div className="glass rounded-xl p-5">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
-        <div className="space-y-4">
-          <p className="text-sm text-slate-500">How generation batching + KV-cache size move the attention roofline:</p>
-          <div>
-            <div className="flex justify-between text-sm mb-1"><label className="font-medium text-slate-700">Concurrent requests (batch)</label><span className="font-mono text-slate-900">{batch}</span></div>
-            <input type="range" min={1} max={1024} value={batch} onChange={e => setBatch(Number(e.target.value))} className="glass-slider w-full glass-slider w-full" />
-          </div>
-          <div>
-            <div className="flex justify-between text-sm mb-1"><label className="font-medium text-slate-700">Context length</label><span className="font-mono text-slate-900">{context.toLocaleString()}</span></div>
-            <input type="range" min={256} max={65536} step={256} value={context} onChange={e => setContext(Number(e.target.value))} className="glass-slider w-full glass-slider w-full" />
-          </div>
-          <div>
-            <div className="flex justify-between text-sm mb-1"><label className="font-medium text-slate-700">KV size (kB/token)</label><span className="font-mono text-slate-900">{kvKb}</span></div>
-            <input type="range" min={16} max={1024} step={16} value={kvKb} onChange={e => setKvKb(Number(e.target.value))} className="glass-slider w-full glass-slider w-full" />
-          </div>
           <div className="glass rounded-lg p-4">
-            <div className="text-sm text-slate-500 mb-1">Total KV-cache memory (batch × context)</div>
-            <div className="text-2xl font-mono font-bold text-slate-900">{kvTotalGb.toFixed(1)} <span className="text-sm font-normal text-slate-500">GB</span></div>
-            <div className="text-[11px] text-slate-400 mt-1">
-              This is the dominant memory/bandwidth cost during generation. Per-token step time ≥ (KV + params)/bandwidth.
+            <div className="flex justify-between items-baseline">
+              <div className="text-sm text-slate-500">Arithmetic intensity</div>
+              <div className="text-2xl font-mono font-bold text-slate-900">{currentIntensity.toFixed(1)}</div>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 mt-2">
+              <BoundBadge compute={currentIntensity > hardwareIntensity} />
+            </div>
+            <div className="text-[11px] text-slate-400 mt-2">
+              Tiled (on-chip reuse): I ≈ <span className="font-mono">{tiledIntensity.toFixed(0)}</span> — re-loading tiles from
+              HBM lowers intensity below the naive <i>≈B</i> rule even for the same batch.
             </div>
           </div>
         </div>
         <div className="h-72">
           <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={data} layout="vertical" margin={{ top: 10, right: 30, left: 10, bottom: 10 }}>
-              <CartesianGrid strokeDasharray="3 3" horizontal={false} opacity={0.4} />
-              <XAxis type="number" scale="log" domain={[0.5, 'dataMax']} label={{ value: 'Arithmetic intensity (log)', position: 'bottom', fontSize: 10 }} />
-              <YAxis type="category" dataKey="name" width={190} tick={{ fontSize: 10 }} />
-              <Tooltip formatter={(v: any) => [`${Number(v).toFixed(1)} FLOPs/B`, 'Intensity']} labelFormatter={(l: any, payload: any) => payload[0]?.payload?.desc || ''} />
-              <Bar dataKey="intensity" name="Intensity" radius={[0, 4, 4, 0]}>
-                {data.map((d, i) => (
-                  <Cell key={i} fill={d.class === 'compute' ? '#10b981' : d.class === 'middle' ? '#f59e0b' : '#ef4444'} />
-                ))}
-              </Bar>
+            <ComposedChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.35} />
+              <XAxis dataKey="batch" label={{ value: 'Batch (B)', position: 'insideBottom', offset: -8, fontSize: 10, fill: C.slate }} />
+              <YAxis label={{ value: 'Intensity', angle: -90, position: 'insideLeft', fontSize: 10, fill: C.slate }} />
+              <Tooltip content={<ChartTip />} />
+              <ReferenceLine y={hardwareIntensity} stroke={C.ridge} strokeDasharray="3 3"
+                label={{ position: 'top', value: 'Ridge', fill: C.ridge, fontSize: 10, fontWeight: 700 }} />
+              <Line type="monotone" dataKey="intensity" name="Intensity" stroke={C.accent} strokeWidth={3} dot={false} />
+              <ReferenceLine x={B} stroke="#475569" strokeWidth={1.5} />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
@@ -577,116 +751,614 @@ function PrefillGenerationSection() {
   );
 }
 
-function NetworkRooflineInteractiveSection({ hw }: { hw: any }) {
-  const [D, setD] = useState(4096);
-  const [B, setB] = useState(256);
-  const [networkBwGbps, setNetworkBwGbps] = useState(400);
-  const F = 4096;
+// ---------------------------------------------------------------------------
+// 4. Prefill vs Generation
+// ---------------------------------------------------------------------------
+function PrefillGenerationSection({ peakFlops, peakBw, hardwareIntensity }: any) {
+  const [batch, setBatch] = useState(32);
+  const [context, setContext] = useState(4096);
 
-  const netBwBytes = (networkBwGbps * 1e9) / 8;
-  const chipFlops = hw.tflops * 1e12;
-  const interChipIntensityThreshold = chipFlops / netBwBytes;
+  const prefillTokens = batch * context;
+  const prefillAttention = context / 2;
+  const generateAttention = 1;
 
-  const currentIntensity = (B * D * F) / (B * F * 2);
+  const data = [
+    { name: 'Prefill attention', intensity: prefillAttention, class: 'compute',
+      desc: `≈ T/2 = ${prefillAttention.toFixed(0)} FLOPs/B — way above the ridge (${fmtNum(hardwareIntensity)}), compute-bound.` },
+    { name: 'Prefill matmuls', intensity: prefillTokens, class: 'compute',
+      desc: `weights reused over ~${fmtNum(prefillTokens)} tokens — compute-bound.` },
+    { name: 'Generate attention', intensity: generateAttention, class: 'memory',
+      desc: `≈ ST/(S+T) ≈ 1 — a small constant, always memory-bound.` },
+    { name: `Generate × batch ${batch}`, intensity: (batch * context) / (batch * context + context), class: 'middle',
+      desc: `batching joins KV reads so weights amortize slightly; still usually below the ridge.` },
+  ];
 
   return (
     <div className="glass rounded-xl p-5">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="space-y-4">
-          <div>
-            <div className="flex justify-between text-sm mb-1">
-              <label className="font-medium text-slate-700">Model Dimension (D)</label>
-              <span className="font-mono text-slate-900">{D}</span>
-            </div>
-            <input type="range" min={1024} max={32768} step={1024} value={D} onChange={e => setD(Number(e.target.value))} className="glass-slider w-full glass-slider w-full" />
-          </div>
-          <div>
-            <div className="flex justify-between text-sm mb-1">
-              <label className="font-medium text-slate-700">Network Bandwidth</label>
-              <span className="font-mono text-slate-900">{networkBwGbps} Gbps</span>
-            </div>
-            <input type="range" min={10} max={3200} step={100} value={networkBwGbps} onChange={e => setNetworkBwGbps(Number(e.target.value))} className="glass-slider w-full glass-slider w-full" />
-          </div>
+      <h3 className="font-bold text-slate-800 mb-3">Where Each Phase Sits</h3>
+      <div className="space-y-4">
+        <Slider label="Concurrent requests (batch)" value={batch} min={1} max={1024} onChange={setBatch} />
+        <Slider label="Context length" value={context} min={256} max={65536} step={256} onChange={setContext}
+          format={(v: number) => v.toLocaleString()} />
+      </div>
+      <div className="h-64 mt-4">
+        <ResponsiveContainer width="100%" height="100%">
+          <ComposedChart data={data} layout="vertical" margin={{ top: 10, right: 24, left: 10, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" horizontal={false} opacity={0.3} />
+            <XAxis type="number" scale="log" domain={[0.5, 'dataMax']}
+              label={{ value: 'Arithmetic intensity (log)', position: 'insideBottom', offset: -6, fontSize: 10, fill: C.slate }} />
+            <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 11 }} />
+            <Tooltip content={<ChartTip />} labelFormatter={(l: any, p: any) => p[0]?.payload?.desc || l} />
+            <ReferenceLine x={hardwareIntensity} stroke={C.ridge} strokeDasharray="4 4"
+              label={{ position: 'top', value: 'ridge', fill: C.ridge, fontSize: 10 }} />
+            <Bar dataKey="intensity" name="Intensity" radius={[0, 5, 5, 0]} barSize={26}>
+              {data.map((d, i) => (
+                <Cell key={i} fill={d.class === 'compute' ? C.compute : d.class === 'middle' ? C.amber : C.memory} />
+              ))}
+            </Bar>
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
+      <ul className="text-xs text-slate-500 mt-3 space-y-1.5">
+        {data.map((d) => (
+          <li key={d.name} className="flex gap-2">
+            <span className="w-2 h-2 rounded-full mt-1 shrink-0"
+              style={{ background: d.class === 'compute' ? C.compute : d.class === 'middle' ? C.amber : C.memory }} />
+            <span>{d.desc}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
 
-          <div className="glass rounded-lg p-4 mt-4">
-            <div className="text-sm text-slate-500 mb-1">Inter-Chip Math vs Comm</div>
-            <div className="text-2xl font-mono font-bold text-slate-900">{currentIntensity.toFixed(0)} <span className="text-sm font-normal text-slate-500">FLOPs/B</span></div>
-            <div className={cn("text-xs font-bold mt-2", currentIntensity > interChipIntensityThreshold ? "text-emerald-500" : "text-amber-500")}>
-              {currentIntensity > interChipIntensityThreshold ? "✅ Compute Bound (Network is fast enough)" : "⚠️ Network Bound"}
+// ---------------------------------------------------------------------------
+// NEW: Attention intensity ST/(S+T) — prefill vs generation
+// ---------------------------------------------------------------------------
+function AttentionIntensitySection({ hardwareIntensity }: { hardwareIntensity: number }) {
+  const [context, setContext] = useState(2048);
+  const data = useMemo(() => {
+    const pts: any[] = [];
+    for (let s = 16; s <= 65536; s *= 1.12) {
+      const prefill = s / 2;                       // S = T
+      const genPrefill = (s * 1) / (s + 1);         // generation T = 1, S growing
+      pts.push({ context: s, prefill, generation: genPrefill });
+    }
+    return pts;
+  }, []);
+
+  const crossover = hardwareIntensity * 2; // T/2 = I_hw  => T = 2*I_hw
+
+  return (
+    <div className="glass rounded-xl p-5">
+      <h3 className="font-bold text-slate-800 mb-3">Attention Intensity: ST/(S+T)</h3>
+      <p className="text-sm text-slate-500 mb-3">
+        Prefill (intensity ≈ <i>T/2</i>, rising with context) crosses the ridge; generation is pinned at <strong>≈1</strong>.
+      </p>
+      <Slider label="Prompt context (tokens), for reference" value={context} min={16} max={65536}
+        onChange={setContext} format={(v: number) => v.toLocaleString()} />
+      <div className="h-60 mt-4">
+        <ResponsiveContainer width="100%" height="100%">
+          <ComposedChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+            <defs>
+              <linearGradient id="attnGen" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={C.amber} stopOpacity={0.35} />
+                <stop offset="95%" stopColor={C.amber} stopOpacity={0.03} />
+              </linearGradient>
+              <linearGradient id="attnPrefill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={C.compute} stopOpacity={0.35} />
+                <stop offset="95%" stopColor={C.compute} stopOpacity={0.03} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
+            <XAxis dataKey="context" type="number" scale="log" domain={['dataMin', 'dataMax']}
+              tickFormatter={(v: any) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}
+              label={{ value: 'Context / sequence length (log)', position: 'insideBottom', offset: -6, fontSize: 10, fill: C.slate }} />
+            <YAxis label={{ value: 'Intensity', angle: -90, position: 'insideLeft', fontSize: 10, fill: C.slate }} />
+            <Tooltip content={<ChartTip />} />
+            <ReferenceLine y={hardwareIntensity} stroke={C.ridge} strokeDasharray="4 4"
+              label={{ position: 'top', value: `ridge ${fmtNum(hardwareIntensity)}`, fill: C.ridge, fontSize: 10 }} />
+            <ReferenceLine x={crossover} stroke="#475569" strokeDasharray="4 4"
+              label={{ position: 'top', value: 'crossover ≈ 2·ridge', fill: C.slate, fontSize: 10 }} />
+            <Area type="monotone" dataKey="generation" name="Generation (T=1)" stroke={C.amber} strokeWidth={2.5}
+              fill="url(#attnGen)" dot={false} />
+            <Area type="monotone" dataKey="prefill" name="Prefill (S=T)" stroke={C.compute} strokeWidth={2.5}
+              fill="url(#attnPrefill)" dot={false} />
+            <ReferenceLine x={context} stroke="#475569" strokeWidth={1.5} />
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
+      <p className="text-xs text-slate-400 mt-3">
+        Prefill attention becomes compute-bound once <i>T/2 &gt; I<sub>hw</sub></i>, i.e. <i>T &gt; ~{fmtNum(crossover)}</i> tokens.
+        Generation never does — no amount of batching or head tuning changes that constant ≈1.
+      </p>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// NEW: KV cache growth
+// ---------------------------------------------------------------------------
+function KVCacheSection({ hardwareIntensity, hw }: any) {
+  const [context, setContext] = useState(8192);
+  const [batch, setBatch] = useState(32);
+  const [heads, setHeads] = useState(8);       // KV heads K
+  const [headDim, setHeadDim] = useState(128); // H
+  const [layers, setLayers] = useState(64);    // L
+  const [bpv, setBpv] = useState(2);           // bytes per float
+
+  const kvPerToken = 2 * bpv * headDim * heads * layers;
+  const kvPerSeq = kvPerToken * context;
+  const kvTotal = kvPerSeq * batch;
+
+  // fit against HBM capacity for the selected hardware
+  const data = useMemo(() => {
+    const pts: any[] = [];
+    for (let t = 256; t <= 131072; t *= 1.2) {
+      pts.push({ context: t, perSeq: (kvPerToken * t) / 1e9, total: (kvPerToken * t * batch) / 1e9 });
+    }
+    return pts;
+  }, [kvPerToken, batch]);
+
+  const capacity = (hw.capacity || 80) * 1e9;
+  const maxBatchForCtx = Math.floor(capacity / kvPerSeq);
+  const pctOfCapacity = (kvTotal / capacity) * 100;
+
+  return (
+    <div className="grid lg:grid-cols-2 gap-5">
+      <div className="glass rounded-xl p-5">
+        <h3 className="font-bold text-slate-800 mb-1">KV memory = 2·bytes·H·K·L·T·B</h3>
+        <p className="text-sm text-slate-500 mb-4">Drag context &amp; batch to watch KV memory explode.</p>
+        <div className="space-y-4">
+          <Slider label="Context length (T)" value={context} min={256} max={131072}
+            onChange={setContext} format={(v: number) => v.toLocaleString()} />
+          <Slider label="Concurrent requests (B)" value={batch} min={1} max={512} onChange={setBatch} />
+          <Slider label="KV heads (K) — GQA" value={heads} min={1} max={128} onChange={setHeads} />
+          <Slider label="Head dim (H)" value={headDim} min={32} max={256} step={16} onChange={setHeadDim} />
+          <Slider label="Layers (L)" value={layers} min={8} max={128} step={8} onChange={setLayers} />
+          <div>
+            <div className="flex justify-between text-sm mb-1">
+              <label className="font-medium text-slate-700">Bytes per float</label>
+              <span className="font-mono text-slate-900">{bpv} B</span>
             </div>
-            <div className="text-[10px] text-slate-400 mt-1">
-              (Requires &gt; {interChipIntensityThreshold.toFixed(0)} FLOPs/B. Threshold depends on D, not B.)
+            <div className="grid grid-cols-3 gap-1.5">
+              {[{ b: 2, l: 'bf16/fp16' }, { b: 1, l: 'int8/fp8' }, { b: 0.5, l: 'fp4' }].map((o) => (
+                <button key={o.b} onClick={() => setBpv(o.b)}
+                  className={cn('glass rounded-md py-1.5 text-[11px] font-semibold transition-colors',
+                    bpv === o.b ? 'bg-accent text-white border-accent' : 'text-slate-600 hover:border-accent/40')}>
+                  {o.l}
+                </button>
+              ))}
             </div>
           </div>
         </div>
-        <div className="flex items-center justify-center p-4">
-          <div className="text-center space-y-2">
-            <div className="p-3 bg-purple-100 text-purple-800 rounded-lg font-bold">Chip 1 computes half</div>
-            <div className="animate-pulse font-mono text-purple-400 text-sm">↓ {netBwBytes.toExponential(1)} Bytes/s ↑</div>
-            <div className="p-3 bg-purple-100 text-purple-800 rounded-lg font-bold">Chip 2 computes half</div>
-            <p className="text-xs text-slate-500 mt-4 max-w-xs">
-              With a sharded D dimension, partial sums of size B × F must cross the network. The larger D is, the more math per byte of communication — so the roofline here is set by D, not by B.
+
+        <div className="mt-4 space-y-2">
+          <div className="flex justify-between text-sm">
+            <span className="text-slate-500">Per token</span>
+            <span className="font-mono font-semibold text-slate-800">{fmtBytes(kvPerToken)}</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-slate-500">Per sequence ({fmtNum(context, 0)} ctx)</span>
+            <span className="font-mono font-semibold text-slate-800">{fmtBytes(kvPerSeq)}</span>
+          </div>
+          <div className="flex justify-between text-sm border-t border-slate-200 pt-2">
+            <span className="text-slate-500">Total (×{batch})</span>
+            <span className="font-mono font-bold text-slate-900 text-lg">{fmtBytes(kvTotal)}</span>
+          </div>
+          <div className="mt-2">
+            <div className="flex justify-between text-xs text-slate-400 mb-1">
+              <span>% of {hw.id} HBM ({fmtBytes(capacity)})</span>
+              <span className="font-mono">{pctOfCapacity.toFixed(0)}%</span>
+            </div>
+            <div className="h-2.5 rounded-full bg-slate-200 overflow-hidden">
+              <div className={cn('h-full rounded-full transition-all', pctOfCapacity > 100 ? 'bg-rose-500' : 'bg-violet-500')}
+                style={{ width: `${Math.min(pctOfCapacity, 100)}%` }} />
+            </div>
+            <p className={cn('text-xs mt-2', maxBatchForCtx > 0 ? 'text-slate-500' : 'text-rose-600 font-semibold')}>
+              {maxBatchForCtx > 0
+                ? `Fits ≈ ${fmtNum(maxBatchForCtx)} requests of this context in one ${hw.id}.`
+                : 'KV cache alone already exceeds this accelerator\'s HBM — you need GQA, quantization, or more chips.'}
             </p>
           </div>
+        </div>
+      </div>
+
+      <div className="glass rounded-xl p-5">
+        <h3 className="font-bold text-slate-800 mb-3">Growth vs Context &amp; Batch</h3>
+        <div className="h-72">
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart data={data} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+              <defs>
+                <linearGradient id="kvTotal" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor={C.violet} stopOpacity={0.4} />
+                  <stop offset="95%" stopColor={C.violet} stopOpacity={0.03} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
+              <XAxis dataKey="context" type="number" scale="log" domain={['dataMin', 'dataMax']}
+                tickFormatter={(v: any) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}
+                label={{ value: 'Context (log)', position: 'insideBottom', offset: -6, fontSize: 10, fill: C.slate }} />
+              <YAxis tickFormatter={(v: any) => `${v} GB`}
+                label={{ value: 'Memory (GB)', angle: -90, position: 'insideLeft', fontSize: 10, fill: C.slate }} />
+              <Tooltip content={<ChartTip unit=" GB" />} />
+              <ReferenceLine y={capacity / 1e9} stroke={C.ridge} strokeDasharray="4 4"
+                label={{ position: 'top', value: `${hw.id} HBM`, fill: C.ridge, fontSize: 10 }} />
+              <Line type="monotone" dataKey="perSeq" name="Per sequence" stroke={C.amber} strokeWidth={2.5} dot={false} />
+              <Area type="monotone" dataKey="total" name="Total (×batch)" stroke={C.violet} strokeWidth={2.5}
+                fill="url(#kvTotal)" dot={false} />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+        <p className="text-xs text-slate-400 mt-3">
+          Linear in both direction — but the slope is set by <em>H·K·L</em>. Cutting KV heads (GQA) or dtype slices the whole
+          curve, while batching raises it uniformly. This is why long-context × batch is what OOMs you, not the weights.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// NEW: Latency vs throughput
+// ---------------------------------------------------------------------------
+function LatencyThroughputSection({ peakFlops, peakBw, hardwareIntensity, hw }: any) {
+  const [paramsB, setParamsB] = useState(30);
+  const [kvKb, setKvKb] = useState(100);      // KV bytes per token (kB)
+  const [chips, setChips] = useState(16);
+  const [context, setContext] = useState(8192);
+
+  const bw = peakBw * chips;
+  const flops = peakFlops * chips;
+  const bytesPerParam = hw.bytesPerParam || 2;
+  const paramsBytes = paramsB * 1e9 * bytesPerParam;
+  const kvPerSeq = kvKb * 1024 * context;
+
+  const data = useMemo(() => {
+    const pts: any[] = [];
+    for (let b = 1; b <= 512; b += 4) {
+      const stepMs = ((b * kvPerSeq + paramsBytes) / bw) * 1000;
+      const tps = b / (stepMs / 1000);
+      pts.push({ B: b, stepMs, tps });
+    }
+    return pts;
+  }, [kvPerSeq, paramsBytes, bw]);
+
+  const critical = Math.max(1, Math.round(paramsBytes / kvPerSeq));
+
+  return (
+    <div className="glass rounded-xl p-5">
+      <div className="grid lg:grid-cols-2 gap-6">
+        <div className="space-y-4">
+          <Slider label="Model params (Billions)" value={paramsB} min={1} max={500} onChange={setParamsB} />
+          <Slider label="KV size (kB / token)" value={kvKb} min={10} max={400} step={10} onChange={setKvKb} />
+          <Slider label="Accelerators (chips)" value={chips} min={1} max={64} onChange={setChips} />
+          <Slider label="Context length" value={context} min={1024} max={32768}
+            onChange={setContext} format={(v: number) => v.toLocaleString()} />
+
+          <div className="grid grid-cols-2 gap-2 text-sm">
+            <div className="glass rounded-lg p-3">
+              <div className="text-slate-400 text-xs">Total bandwidth</div>
+              <div className="font-mono font-bold text-slate-900">{fmtBytes(bw) + '/s'}</div>
+            </div>
+            <div className="glass rounded-lg p-3">
+              <div className="text-slate-400 text-xs">Total FLOPs/s</div>
+              <div className="font-mono font-bold text-slate-900">{fmtFlops(flops)}</div>
+            </div>
+            <div className="glass rounded-lg p-3">
+              <div className="text-slate-400 text-xs">Params loaded / step</div>
+              <div className="font-mono font-bold text-slate-900">{fmtBytes(paramsBytes)}</div>
+            </div>
+            <div className="glass rounded-lg p-3">
+              <div className="text-slate-400 text-xs">KV / seq</div>
+              <div className="font-mono font-bold text-slate-900">{fmtBytes(kvPerSeq)}</div>
+            </div>
+          </div>
+          <p className="text-xs text-slate-400">
+            Model: {paramsB}B {bytesPerParam === 2 ? 'bf16' : bytesPerParam === 1 ? 'int8' : 'fp4'} on {chips}×{hw.id}.
+            (The example defaults mirror the scaling-book&rsquo;s 30B-on-16-chip case.)
+          </p>
+        </div>
+
+        <div className="h-72">
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart data={data} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+              <defs>
+                <linearGradient id="tpFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor={C.compute} stopOpacity={0.3} />
+                  <stop offset="95%" stopColor={C.compute} stopOpacity={0.02} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
+              <XAxis dataKey="B" label={{ value: 'Batch size', position: 'insideBottom', offset: -6, fontSize: 10, fill: C.slate }} />
+              <YAxis yAxisId="tps" tickFormatter={(v: any) => `${fmtNum(v)}`}
+                label={{ value: 'tokens/s', angle: -90, position: 'insideLeft', fontSize: 10, fill: C.compute }} />
+              <YAxis yAxisId="ms" orientation="right" tickFormatter={(v: any) => `${v}`}
+                label={{ value: 'step ms', angle: 90, position: 'insideRight', fontSize: 10, fill: C.amber }} />
+              <Tooltip content={<ChartTip />} />
+              <ReferenceLine x={critical} stroke={C.ridge} strokeDasharray="4 4"
+                label={{ position: 'top', value: `KV = weights ≈ ${fmtNum(critical)}`, fill: C.ridge, fontSize: 10 }} />
+              <Area yAxisId="tps" type="monotone" dataKey="tps" name="Throughput (tok/s)" stroke={C.compute}
+                strokeWidth={3} fill="url(#tpFill)" dot={false} />
+              <Line yAxisId="ms" type="monotone" dataKey="stepMs" name="Step time (ms)" stroke={C.amber}
+                strokeWidth={2.5} strokeDasharray="5 3" dot={false} />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+      <p className="text-xs text-slate-400 mt-4">
+        Throughput rises fast at first, then flattens as memory bandwidth saturates near the critical batch — but latency keeps growing.
+        To get more of <em>both</em>, add chips (move the whole frontier right), or shrink the KV cache.
+      </p>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// 7. Network roofline
+// ---------------------------------------------------------------------------
+function NetworkRooflineInteractiveSection({ hw }: any) {
+  const [D, setD] = useState(4096);
+  const [networkBwGbps, setNetworkBwGbps] = useState(400);
+
+  const netBwBytes = (networkBwGbps * 1e9) / 8;
+  const chipFlops = hw.tflops * 1e12;
+  const threshold = chipFlops / netBwBytes; // D/2 > threshold  => D > 2*threshold
+  const currentIntensity = D / 2;
+  const criticalD = 2 * threshold;
+
+  // curve of the 2-chip roofline throughput vs D
+  const data = useMemo(() => {
+    const pts: any[] = [];
+    for (let d = 512; d <= 65536; d *= 1.12) {
+      const flopTime = (d) / chipFlops;      // proxy: math per byte communicated
+      // throughput approximation: FLOPs achieved per unit time along a fixed B,F
+      const B = 256, F = 4096;
+      const tf = 2 * B * d * F;
+      const mathT = tf / chipFlops;
+      const commT = (2 * B * F) / netBwBytes;
+      pts.push({ D: d, achievable: Math.min(tf / mathT, tf / commT) / 1e12 });
+    }
+    return pts;
+  }, [chipFlops, netBwBytes]);
+
+  return (
+    <div className="glass rounded-xl p-5">
+      <div className="grid lg:grid-cols-2 gap-6">
+        <div className="space-y-4">
+          <Slider label="Model dimension (D)" value={D} min={512} max={32768} step={512} onChange={setD} />
+          <Slider label="Network bandwidth" value={networkBwGbps} min={10} max={3200} step={50}
+            onChange={setNetworkBwGbps} format={(v: number) => `${v} Gbps`} />
+
+          <div className="grid grid-cols-2 gap-2 text-sm">
+            <div className="glass rounded-lg p-3">
+              <div className="text-slate-400 text-xs">Inter-chip intensity</div>
+              <div className="font-mono font-bold text-slate-900 text-lg">{currentIntensity.toFixed(0)}</div>
+              <div className="text-[10px] text-slate-400">= D/2</div>
+            </div>
+            <div className="glass rounded-lg p-3">
+              <div className="text-slate-400 text-xs">Compute-bound when</div>
+              <div className="font-mono font-bold text-slate-900 text-lg">D &gt; {fmtNum(criticalD)}</div>
+              <div className="text-[10px] text-slate-400">independent of B</div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <BoundBadge compute={currentIntensity > threshold} />
+            <span className="text-xs text-slate-400">Threshold intensity {threshold.toFixed(0)}</span>
+          </div>
+
+          <div className="glass rounded-lg p-4 flex items-center justify-between">
+            <div className="text-center flex-1 space-y-1">
+              <div className="p-3 bg-violet-100 text-violet-800 rounded-lg font-bold text-sm">Chip 1 · half of D</div>
+              <div className="font-mono text-[11px] text-violet-400 animate-pulse">↻ {fmtBytes(netBwBytes)}/s partial sums</div>
+            </div>
+            <div className="px-2 text-slate-300 font-black">⇄</div>
+            <div className="text-center flex-1 space-y-1">
+              <div className="p-3 bg-violet-100 text-violet-800 rounded-lg font-bold text-sm">Chip 2 · half of D</div>
+              <div className="font-mono text-[11px] text-violet-400 animate-pulse">↻ {fmtBytes(netBwBytes)}/s partial sums</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="h-72">
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart data={data} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
+              <XAxis dataKey="D" type="number" scale="log" domain={['dataMin', 'dataMax']}
+                tickFormatter={(v: any) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}
+                label={{ value: 'Model dimension D (log)', position: 'insideBottom', offset: -6, fontSize: 10, fill: C.slate }} />
+              <YAxis tickFormatter={(v: any) => `${v} T`}
+                label={{ value: 'Achievable TFLOP/s', angle: -90, position: 'insideLeft', fontSize: 10, fill: C.slate }} />
+              <Tooltip content={<ChartTip unit=" TFLOP/s" />} />
+              <ReferenceLine x={criticalD} stroke={C.ridge} strokeDasharray="4 4"
+                label={{ position: 'top', value: `D>${fmtNum(criticalD)}`, fill: C.ridge, fontSize: 10 }} />
+              <Line type="monotone" dataKey="achievable" name="2-chip throughput" stroke={C.violet} strokeWidth={3} dot={false} />
+              <ReferenceLine x={D} stroke="#475569" strokeWidth={1.5} />
+            </ComposedChart>
+          </ResponsiveContainer>
         </div>
       </div>
     </div>
   );
 }
 
-function QuantizationInteractiveSection({ hardwareIntensity }: { hardwareIntensity: number }) {
+// ---------------------------------------------------------------------------
+// NEW: Attention vs matmul FLOPs crossover (T/8D)
+// ---------------------------------------------------------------------------
+function AttentionFlopsSection() {
+  const [dim, setDim] = useState(4096);
+  const models = [
+    { label: 'LLaMA-ish (D=4096)', d: 4096 },
+    { label: 'Gemma-27B (D=4608)', d: 4608 },
+    { label: 'Large (D=8192)', d: 8192 },
+    { label: 'Huge (D=12288)', d: 12288 },
+  ];
+
+  const data = useMemo(() => {
+    const pts: any[] = [];
+    for (let t = 128; t <= 131072; t *= 1.1) {
+      pts.push({ context: t, fraction: t / (8 * dim) });
+    }
+    return pts;
+  }, [dim]);
+
+  const crossover = 8 * dim;
+
+  return (
+    <div className="glass rounded-xl p-5">
+      <div className="grid lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-1">
+          <h3 className="font-bold text-slate-800 mb-3">Attention share ≈ T/8D</h3>
+          <p className="text-sm text-slate-500 mb-4">
+            Attention&rsquo;s fraction of layer FLOPs is tiny at short context and only overtakes the MLP beyond <i>8&middot;D</i>.
+          </p>
+          <div className="space-y-2">
+            {models.map((m) => (
+              <button key={m.label} onClick={() => setDim(m.d)}
+                className={cn('w-full glass rounded-lg p-2.5 text-left text-sm transition-colors',
+                  dim === m.d ? 'bg-accent text-white border-accent' : 'text-slate-600 hover:border-accent/40')}>
+                <span className="font-semibold">{m.label}</span>
+                <span className={cn('block font-mono text-xs', dim === m.d ? 'text-white/70' : 'text-slate-400')}>
+                  crossover ≈ {fmtNum(8 * m.d, 0)} tokens ({fmtNum((8 * m.d) / 1000, 0)}k)
+                </span>
+              </button>
+            ))}
+          </div>
+          <div className="glass rounded-lg p-3 mt-4">
+            <div className="flex justify-between text-sm">
+              <span className="text-slate-500">At your context</span>
+            </div>
+            <div className="text-xl font-mono font-bold text-slate-900 mt-1">
+              {crossover <= 131072 ? (crossover / 1000).toFixed(0) : '>131'}k
+            </div>
+            <div className="text-xs text-slate-400">tokens before attention dominates</div>
+          </div>
+        </div>
+
+        <div className="lg:col-span-2 h-72">
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart data={data} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+              <defs>
+                <linearGradient id="attnFrac" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor={C.sky} stopOpacity={0.35} />
+                  <stop offset="95%" stopColor={C.sky} stopOpacity={0.03} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
+              <XAxis dataKey="context" type="number" scale="log" domain={['dataMin', 'dataMax']}
+                tickFormatter={(v: any) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}
+                label={{ value: 'Context length (log)', position: 'insideBottom', offset: -6, fontSize: 10, fill: C.slate }} />
+              <YAxis tickFormatter={(v: any) => `${Math.round(v * 100)}%`} domain={[0, 1]}
+                label={{ value: '% of layer FLOPs', angle: -90, position: 'insideLeft', fontSize: 10, fill: C.slate }} />
+              <Tooltip content={<ChartTip />} />
+              <ReferenceLine y={0.5} stroke="#475569" strokeDasharray="4 4"
+                label={{ position: 'top', value: 'attention = 50%', fill: C.slate, fontSize: 10 }} />
+              <ReferenceLine x={crossover} stroke={C.ridge} strokeDasharray="4 4"
+                label={{ position: 'top', value: 'T = 8D', fill: C.ridge, fontSize: 10 }} />
+              <Area type="monotone" dataKey="fraction" name="Attention share" stroke={C.sky} strokeWidth={3}
+                fill="url(#attnFrac)" dot={false} />
+            </ComposedChart>
+          </ResponsiveContainer>
+          <p className="text-xs text-slate-400 mt-2">
+            Below <i>8&middot;D</i> tokens you are matmul-limited in FLOPs; attention only wins at enormous contexts. But remember:
+            during generation attention still dominates <em>memory</em> via KV, regardless of these FLOPs.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// 9. Quantization
+// ---------------------------------------------------------------------------
+function QuantizationInteractiveSection({ hardwareIntensity, hw }: any) {
   const B = 256;
   const D = 4096;
   const F = 4096;
 
-  const denom = (wb: number, wa: number) => (wb * B * D + wb * D * F + wa * B * F);
   const int1 = (2 * B * D * F) / (2 * B * D + 2 * D * F + 2 * B * F);
   const int2 = (2 * B * D * F) / (1 * B * D + 1 * D * F + 1 * B * F);
   const int3 = (2 * B * D * F) / (2 * B * D + 1 * D * F + 2 * B * F);
   const int4 = (2 * B * D * F) / (2 * B * D + 2 * B * D * F + 2 * B * F);
 
-  const data = [
-    { name: 'BF16', intensity: int1, bCrit: hardwareIntensity, note: 'weights & compute bf16' },
-    { name: 'Mixed int8 w', intensity: int3, bCrit: hardwareIntensity / 2, note: 'int8 weights, bf16 compute → B_crit halved' },
-    { name: 'Pure int8', intensity: int2, bCrit: hardwareIntensity, note: 'int8 both; compute 2× → B_crit back to ~base' },
-    { name: 'Batch-Specific', intensity: int4, bCrit: 2, note: 'unique weights per token → always bound' },
+  const rows = [
+    { name: 'BF16', intensity: int1, bCrit: hardwareIntensity, note: 'weights & compute bf16', peak: '1×' },
+    { name: 'Mixed int8 w', intensity: int3, bCrit: hardwareIntensity / 2, note: 'int8 weights, bf16 compute → B_crit halves', peak: '1×' },
+    { name: 'Pure int8', intensity: int2, bCrit: hardwareIntensity, note: 'int8 both; 2× compute → B_crit back to base', peak: '2×' },
+    { name: 'Batch-specific', intensity: int4, bCrit: 2, note: 'unique weights per token → always bound', peak: '1×' },
+  ];
+
+  const critData = [
+    { name: 'bf16', tpu: hardwareIntensity, h100: hardwareIntensity },
+    { name: 'int8 w', tpu: hardwareIntensity / 2, h100: hardwareIntensity / 2 },
+    { name: 'pure int8', tpu: hardwareIntensity, h100: hardwareIntensity },
   ];
 
   return (
     <div className="glass rounded-xl p-5">
-      <div className="h-64 mb-6">
-        <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} />
-            <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-            <YAxis label={{ value: 'Intensity', angle: -90, position: 'insideLeft', fontSize: 10 }} />
-            <Tooltip />
-            <Bar dataKey="intensity" name="Intensity" fill="#d97706" radius={[4, 4, 0, 0]}>
-              {data.map((d, i) => (
-                <Cell key={i} fill={d.intensity > hardwareIntensity ? '#10b981' : '#ef4444'} />
-              ))}
-            </Bar>
-            <ReferenceLine y={hardwareIntensity} stroke="#0ea5e9" strokeDasharray="3 3" label={{ position: 'top', value: 'Ridge', fill: '#0ea5e9', fontSize: 10 }} />
-          </ComposedChart>
-        </ResponsiveContainer>
+      <div className="grid lg:grid-cols-2 gap-6">
+        <div>
+          <h3 className="font-bold text-slate-800 mb-3">Intensity by scheme (B = {B})</h3>
+          <div className="h-56">
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={rows} margin={{ top: 10, right: 16, left: -10, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
+                <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                <YAxis label={{ value: 'Intensity', angle: -90, position: 'insideLeft', fontSize: 10, fill: C.slate }} />
+                <Tooltip content={<ChartTip />} />
+                <ReferenceLine y={hardwareIntensity} stroke={C.ridge} strokeDasharray="4 4"
+                  label={{ position: 'top', value: 'ridge', fill: C.ridge, fontSize: 10 }} />
+                <Bar dataKey="intensity" name="Intensity" radius={[6, 6, 0, 0]} barSize={40}>
+                  {rows.map((d, i) => (
+                    <Cell key={i} fill={d.intensity > hardwareIntensity ? C.compute : C.memory} />
+                  ))}
+                </Bar>
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+          <p className="text-xs text-slate-400 mt-2">
+            Mixed int8-weights pushes below the ridge at a high batch; batch-specific weights collapse to a constant ≈2.
+          </p>
+        </div>
+
+        <div>
+          <h3 className="font-bold text-slate-800 mb-3">Critical batch by scheme &amp; chip</h3>
+          <div className="h-56">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={critData} margin={{ top: 10, right: 16, left: -10, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
+                <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                <YAxis label={{ value: 'B_crit', angle: -90, position: 'insideLeft', fontSize: 10, fill: C.slate }} />
+                <Tooltip content={<ChartTip />} />
+                <Bar dataKey="tpu" name="TPU class" fill={C.sky} radius={[6, 6, 0, 0]} />
+                <Bar dataKey="h100" name="H100 class" fill={C.violet} radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
       </div>
-      <div className="overflow-x-auto">
-        <table className="glass-slider w-full text-sm text-slate-600">
+
+      <div className="overflow-x-auto mt-4">
+        <table className="w-full text-sm text-slate-600">
           <thead>
             <tr className="text-left text-slate-400 text-xs uppercase tracking-wider border-b border-slate-200">
               <th className="py-2 pr-3">Scheme</th>
+              <th className="py-2 pr-3">Peak math</th>
               <th className="py-2 pr-3">Intensity (B=256)</th>
               <th className="py-2 pr-3">Critical batch B_crit</th>
               <th className="py-2">Effect</th>
             </tr>
           </thead>
           <tbody>
-            {data.map(d => (
-              <tr key={d.name} className="border-b border-slate-100">
-                <td className="py-2 pr-3 font-medium">{d.name}</td>
-                <td className="py-2 pr-3 font-mono">{d.intensity.toFixed(1)}</td>
-                <td className="py-2 pr-3 font-mono">≈{d.bCrit.toFixed(0)}</td>
-                <td className="py-2 text-slate-500">{d.note}</td>
+            {rows.map((r) => (
+              <tr key={r.name} className="border-b border-slate-100">
+                <td className="py-2 pr-3 font-medium">{r.name}</td>
+                <td className="py-2 pr-3 font-mono">{r.peak}</td>
+                <td className="py-2 pr-3 font-mono">{r.intensity.toFixed(1)}</td>
+                <td className="py-2 pr-3 font-mono">≈{r.bCrit.toFixed(0)}</td>
+                <td className="py-2 text-slate-500">{r.note}</td>
               </tr>
             ))}
           </tbody>
@@ -696,40 +1368,192 @@ function QuantizationInteractiveSection({ hardwareIntensity }: { hardwareIntensi
   );
 }
 
-// -------------------------------------------------------------
-// Section 8: Worked problems
-// -------------------------------------------------------------
-function WorkedProblemsSection({ hw, peakFlops, peakBw, hardwareIntensity }: any) {
-  const hbmBw = 8.2e11;          // textbook TPU value
-  const bf16Flops = 1.97e14;     // textbook TPU v5e value
-  const int8Flops = 3.94e14;
-  const netBw = 4.5e10;
+// ---------------------------------------------------------------------------
+// NEW: Memory hierarchy & tiling intensity
+// ---------------------------------------------------------------------------
+function MemoryHierarchySection() {
+  const [tile, setTile] = useState(128);
 
+  const tileData = useMemo(() => {
+    const pts: any[] = [];
+    const N = 512;
+    for (let bm = 8; bm <= N; bm *= 1.1) {
+      pts.push({ bm, intensity: (bm * bm) / (bm + bm) });
+    }
+    return pts;
+  }, []);
+
+  return (
+    <div className="glass rounded-xl p-5">
+      <div className="grid lg:grid-cols-2 gap-6">
+        <div>
+          <h3 className="font-bold text-slate-800 mb-3">Ridge point depends on the memory tier</h3>
+          <div className="h-48">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={[
+                { name: 'Fed from HBM', intensity: 240 },
+                { name: 'Fed from VMEM', intensity: 15 },
+              ]} margin={{ top: 10, right: 16, left: -10, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
+                <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                <YAxis label={{ value: 'Intensity to hit peak', angle: -90, position: 'insideLeft', fontSize: 10, fill: C.slate }} />
+                <Tooltip content={<ChartTip />} />
+                <Bar dataKey="intensity" name="intensity" radius={[6, 6, 0, 0]} barSize={60}>
+                  <Cell fill={C.memory} />
+                  <Cell fill={C.compute} />
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          <p className="text-xs text-slate-400 mt-2">
+            VMEM (on-chip scratchpad) is ~<strong>22&times;</strong> the bandwidth of HBM, so an op fed from VMEM needs only
+            ~10&ndash;20 intensity to saturate the MXU — versus ~240 from HBM.
+          </p>
+        </div>
+
+        <div>
+          <h3 className="font-bold text-slate-800 mb-3">Tiling sets your effective intensity</h3>
+          <Slider label="Tile size (bm = bn)" value={tile} min={8} max={512} step={8} onChange={setTile} />
+          <div className="h-48 mt-2">
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={tileData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
+                <XAxis dataKey="bm" type="number" scale="log" domain={['dataMin', 'dataMax']}
+                  tickFormatter={(v: any) => v}
+                  label={{ value: 'Tile dim (log)', position: 'insideBottom', offset: -6, fontSize: 10, fill: C.slate }} />
+                <YAxis label={{ value: 'I ≈ bm·bn/(bm+bn)', angle: -90, position: 'insideLeft', fontSize: 9, fill: C.slate }} />
+                <Tooltip content={<ChartTip />} />
+                <ReferenceLine y={240} stroke={C.ridge} strokeDasharray="4 4"
+                  label={{ position: 'top', value: 'HBM ridge', fill: C.ridge, fontSize: 10 }} />
+                <Line type="monotone" dataKey="intensity" name="Tiled intensity" stroke={C.sky} strokeWidth={3} dot={false} />
+                <ReferenceLine x={tile} stroke="#475569" strokeWidth={1.5} />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+          <p className="text-xs text-slate-400 mt-2">
+            I ≈ <span className="font-mono">{((tile * tile) / (tile + tile)).toFixed(0)}</span> at bm = bn = {tile}.
+            Equal squares maximize the harmonic mean — which is why square tiles are standard.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// NEW: MoE critical batch
+// ---------------------------------------------------------------------------
+function MoeSection() {
+  const [expertPercent, setExpertPercent] = useState(64); // E/k sparsity (log-ish)
+  const presets = [
+    { label: 'Dense (E/k = 1)', ratio: 1 },
+    { label: 'Small MoE (E/k = 8)', ratio: 8 },
+    { label: 'Typical (E/k = 32)', ratio: 32 },
+    { label: 'DeepSeek v3 (E/k = 32)', ratio: 32, deepseek: true },
+  ];
+  const ratio = Math.round(2 ** (expertPercent / 10));
+  const crit = 120 * ratio;
+
+  const data = useMemo(() => {
+    const pts: any[] = [];
+    for (let b = 1; b <= 8192; b *= 1.1) {
+      const bv = Math.round(b);
+      pts.push({ B: bv, dense: Math.min(1, bv / 240), moe: Math.min(1, bv / crit) });
+    }
+    return pts;
+  }, [crit]);
+
+  return (
+    <div className="glass rounded-xl p-5">
+      <div className="grid lg:grid-cols-2 gap-6">
+        <div className="space-y-4">
+          <h3 className="font-bold text-slate-800">Compute-bound requires B &gt; 120·(E/k)</h3>
+          <div>
+            <div className="flex justify-between text-sm mb-1">
+              <label className="font-medium text-slate-700">Sparsity factor (E/k)</label>
+              <span className="font-mono text-slate-900">{ratio}</span>
+            </div>
+            <input type="range" min={0} max={70} value={expertPercent} onChange={(e) => setExpertPercent(Number(e.target.value))}
+              className="glass-slider w-full" />
+            <div className="flex flex-wrap gap-1.5 mt-2">
+              {presets.map((p) => (
+                <button key={p.label} onClick={() => setExpertPercent(Math.round(Math.log2(p.ratio) * 10))}
+                  className="glass rounded-md px-2 py-1 text-[11px] font-semibold text-slate-600 hover:border-accent/40 transition-colors">
+                  {p.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="glass rounded-lg p-4">
+            <div className="flex justify-between text-sm">
+              <span className="text-slate-500">Critical batch (int8 w, bf16 math)</span>
+              <span className="font-mono font-bold text-lg text-slate-900">{fmtNum(crit, 0)}</span>
+            </div>
+            <p className="text-xs text-slate-400 mt-1">
+              Stored params scale ×E but only <i>k</i> are read per token — so you need <i>E/k</i> &times; more concurrent tokens
+              to saturate parameter bandwidth. DeepSeek&nbsp;v3 (E=256, k=8) needs B &gt; 3,840.
+            </p>
+          </div>
+        </div>
+
+        <div className="h-72">
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart data={data} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+              <defs>
+                <linearGradient id="moeFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor={C.compute} stopOpacity={0.3} />
+                  <stop offset="95%" stopColor={C.compute} stopOpacity={0.02} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
+              <XAxis dataKey="B" type="number" scale="log" domain={['dataMin', 'dataMax']}
+                tickFormatter={(v: any) => fmtNum(v)}
+                label={{ value: 'Serving batch (log)', position: 'insideBottom', offset: -6, fontSize: 10, fill: C.slate }} />
+              <YAxis tickFormatter={(v: any) => `${Math.round(v * 100)}%`} domain={[0, 1]}
+                label={{ value: 'Utilization', angle: -90, position: 'insideLeft', fontSize: 10, fill: C.slate }} />
+              <Tooltip content={<ChartTip />} />
+              <ReferenceLine x={240} stroke={C.sky} strokeDasharray="4 4"
+                label={{ position: 'top', value: 'dense B_crit', fill: C.sky, fontSize: 10 }} />
+              <ReferenceLine x={crit} stroke={C.ridge} strokeDasharray="4 4"
+                label={{ position: 'top', value: `MoE B_crit ${fmtNum(crit, 0)}`, fill: C.ridge, fontSize: 10 }} />
+              <Area type="monotone" dataKey="dense" name="Dense utilization" stroke={C.sky} strokeWidth={2.5}
+                fill="url(#moeFill)" dot={false} />
+              <Line type="monotone" dataKey="moe" name="MoE utilization" stroke={C.compute} strokeWidth={3} dot={false} />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// 12. Worked problems
+// ---------------------------------------------------------------------------
+function WorkedProblemsSection({ peakFlops, peakBw, hardwareIntensity }: any) {
+  const hbmBw = 8.2e11;
+  const bf16Flops = 1.97e14;
   const [revealed, setRevealed] = useState<Record<string, boolean>>({});
-
-  const toggle = (key: string) => setRevealed(r => ({ ...r, [key]: !r[key] }));
+  const toggle = (key: string) => setRevealed((r) => ({ ...r, [key]: !r[key] }));
 
   const Answer = ({ id, children }: any) => revealed[id] ? (
     <div className="text-xs bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-lg p-3 mt-2 space-y-1">{children}</div>
   ) : (
-    <button onClick={() => toggle(id)} className="text-xs text-blue-600 hover:underline mt-2">Show answer</button>
+    <button onClick={() => toggle(id)} className="text-xs text-accent hover:underline mt-2">Show answer</button>
   );
-
   const Q = ({ children }: any) => (
     <div className="glass rounded-lg p-4">
       <div className="text-sm text-slate-700 leading-relaxed">{children}</div>
     </div>
   );
 
-  // Q3 roofline-vs-B curve
   const q3Data = useMemo(() => {
-    const rows = [];
+    const rows: any[] = [];
     const roofline = (B: number, DD: number, FF: number) => {
       const tf = 2 * B * DD * FF;
       const ft = tf / bf16Flops;
       const ct = (2 * B * DD + DD * FF + 2 * B * FF) / hbmBw;
-      const tt = Math.max(ft, ct);
-      return tf / tt;
+      return tf / Math.max(ft, ct);
     };
     for (let b = 1; b <= 512; b += 8) {
       rows.push({ B: b, big: roofline(b, 4096, 4096) / 1e12, small: roofline(b, 1024, 1024) / 1e12 });
@@ -750,63 +1574,54 @@ function WorkedProblemsSection({ hw, peakFlops, peakBw, hardwareIntensity }: any
         <Answer id="q1">
           <p><strong>1.</strong> Load <i>BD + DF</i> bytes (1 byte/param), write <i>BF</i>.</p>
           <p><strong>2.</strong> Still <i>2BDF</i> OPs (int8 just runs faster).</p>
-          <p><strong>3.</strong> <i>I = 2BDF/(BD+DF+BF) ≈ 2B</i>. int8 ridge = <i>3.94e14/8.2e11 = 480</i>, so rule <i>B &gt; 240</i> — basically unchanged from bf16.</p>
-          <p><strong>4.</strong> <i>T_math = 2BDF/3.94e14</i>, <i>T_comms = (BD+DF+BF)/8.2e11</i>. Lower bound = max, upper = sum.</p>
+          <p><strong>3.</strong> <i>I = 2BDF/(BD+DF+BF) ≈ 2B</i>. int8 ridge = <i>3.94e14/8.2e11 = 480</i>, so rule <i>B &gt; 240</i> — basically unchanged.</p>
+          <p><strong>4.</strong> <i>T_math = 2BDF/3.94e14</i>, <i>T_comms = (BD+DF+BF)/8.2e11</i>. Lower = max, upper = sum.</p>
         </Answer>
       </Q>
 
       <Q>
-        <strong>Q2 — int8 weights + bf16 math:</strong> weights int8, activations/compute bf16,
-        <i>1.97e14</i> bf16 FLOPs/s. At what batch size do we become compute-bound?
+        <strong>Q2 — int8 weights + bf16 math:</strong> weights int8, activations/compute bf16, <i>1.97e14</i> bf16 FLOPs/s.
+        At what batch size do we become compute-bound?
         <Answer id="q2">
-          <p><i>2BDF</i> bf16 FLOPs but only <i>DF</i> weight bytes. Compute-bound when
-          <i>2B &gt; 240 → B<sub>crit</sub> &gt; 120</i> — half of bf16. Easy quantization win.</p>
+          <p><i>2BDF</i> bf16 FLOPs but only <i>DF</i> weight bytes. Compute-bound when <i>2B &gt; 240 → B<sub>crit</sub> &gt; 120</i> — half of bf16. Easy quantization win.</p>
         </Answer>
       </Q>
 
       <Q>
-        <strong>Q3 — roofline vs B:</strong> peak FLOPs/s vs B for <i>D=F=4096</i> and <i>D=F=1024</i>
-        (exact bytes). Larger D/F reaches peak sooner; D=F=1024 roughly doubles the critical batch size.
+        <strong>Q3 — roofline vs B:</strong> peak FLOPs/s vs B for <i>D=F=4096</i> and <i>D=F=1024</i> (exact bytes).
+        Larger D/F reaches peak sooner; D=F=1024 roughly doubles the critical batch.
         <div className="h-56 mt-2">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={q3Data} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="B" label={{ value: 'Batch', position: 'bottom', fontSize: 10 }} />
-              <YAxis tickFormatter={(v: any) => `${Number(v).toFixed(0)}`} label={{ value: 'TFLOP/s', angle: -90, position: 'insideLeft', fontSize: 10 }} />
-              <Tooltip formatter={(v: any) => [`${Number(v).toFixed(1)} TFLOP/s`]} />
-              <Line type="monotone" dataKey="big" name="D=F=4096" stroke="#2563eb" strokeWidth={3} dot={false} />
-              <Line type="monotone" dataKey="small" name="D=F=1024" stroke="#f59e0b" strokeWidth={3} dot={false} />
-            </LineChart>
+            <ComposedChart data={q3Data} margin={{ top: 10, right: 16, left: -10, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
+              <XAxis dataKey="B" label={{ value: 'Batch', position: 'insideBottom', offset: -6, fontSize: 10, fill: C.slate }} />
+              <YAxis tickFormatter={(v: any) => `${Number(v).toFixed(0)}`}
+                label={{ value: 'TFLOP/s', angle: -90, position: 'insideLeft', fontSize: 10, fill: C.slate }} />
+              <Tooltip content={<ChartTip unit=" TFLOP/s" />} />
+              <Line type="monotone" dataKey="big" name="D=F=4096" stroke={C.accent} strokeWidth={3} dot={false} />
+              <Line type="monotone" dataKey="small" name="D=F=1024" stroke={C.amber} strokeWidth={3} dot={false} />
+            </ComposedChart>
           </ResponsiveContainer>
         </div>
         <Answer id="q3">
-          <p>Both curves saturate at the hardware peak (~{ (bf16Flops/1e12).toFixed(0) } TFLOP/s on the textbook TPU),
-          but the bigger model crosses the ridge at a smaller batch. Small matmuls need ~2× the batch to become compute-bound.</p>
-          <p className="text-[10px] text-slate-400">This mirrors your Interactive Lab: small batches are memory-bound, and the crossover batch is set by the hardware ridge.</p>
+          <p>Both curves saturate at the hardware peak (~{(bf16Flops / 1e12).toFixed(0)} TFLOP/s on the textbook TPU), but the bigger model crosses the ridge at a smaller batch. Small matmuls need ~2&times; the batch to become compute-bound.</p>
+          <p className="text-[10px] text-slate-400">This mirrors the Interactive Lab: small batches are memory-bound, and the crossover is set by the hardware ridge (≈{fmtNum(hardwareIntensity)} here).</p>
         </Answer>
       </Q>
 
       <Q>
         <strong>Q4 — batch-specific weights:</strong> <i>int8[B,D] ·<sub>D</sub> int8[B,D,F] → int8[B,F]</i>, a different matrix per batch element. Arithmetic intensity?
         <Answer id="q4">
-          <p>FLOPs = <i>2BDF</i>. Comms = <i>BD + BDF + BF</i>. Since <i>BDF</i> dominates the denominator,
-          <i>I ≈ 2</i>, constant. The operation is essentially <strong>always communication-bound</strong> regardless of B.</p>
+          <p>FLOPs = <i>2BDF</i>. Comms = <i>BD + BDF + BF</i>. Since <i>BDF</i> dominates, <i>I ≈ 2</i>, constant — <strong>always communication-bound</strong> regardless of B.</p>
         </Answer>
       </Q>
 
       <Q>
-        <strong>Q5 — H100 memory roofline:</strong> using the H100 spec sheet, find the batch at which a bf16
-        matmul becomes compute-bound. (Tensor-core bf16 figure is ~2× the true value due to sparsity.)
+        <strong>Q5 — H100 memory roofline:</strong> using the H100 spec sheet, find the batch at which a bf16 matmul becomes compute-bound (tensor-core bf16 ≈2&times; true value due to sparsity).
         <Answer id="q5">
-          <p>Reported bf16 = <i>1.979e15</i> "with sparsity"; true value = <i>9.89e14</i>. With
-          <i>3.35e12</i> bytes/s bandwidth: <i>B<sub>crit</sub> = 9.89e14 / 3.35e12 ≈ 295</i> tokens — similar to TPUs.</p>
+          <p>Reported bf16 = <i>1.979e15</i> "with sparsity"; true = <i>9.89e14</i>. With <i>3.35e12</i> bytes/s: <i>B<sub>crit</sub> ≈ 295</i> tokens — similar to TPUs.</p>
         </Answer>
       </Q>
-
-      <p className="text-sm text-slate-500">
-        Adapted from the scaling-book (Part 1, "A Few Problems to Work"). Reference copy stored in{" "}
-        <code className="text-xs bg-slate-100 px-1 rounded">reference/scaling-book/roofline.md</code>.
-      </p>
     </div>
   );
 }

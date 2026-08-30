@@ -1,0 +1,13 @@
+{
+  "id": "mistral-small-3.2-24b",
+  "name": "Mistral Small 3.2 24B",
+  "family": "Mistral",
+  "vendor": "Mistral",
+  "type": "dense",
+  "totalParamsB": 24,
+  "activeParamsB": 24,
+  "contextLen": 131072,
+  "kvPerTokenKb": 192,
+  "bytesPerParam": 2,
+  "description": "Dense 24B instruct model with strong function-calling and long context."
+}

@@ -1,0 +1,12 @@
+{
+  "vendor": "SambaNova",
+  "id": "SN40L (RDU)",
+  "tflops": 638,
+  "memBw": 2.0,
+  "capacity": 64,
+  "arch": "RDU (3-tier)",
+  "bytesPerParam": 2,
+  "tdp": 400,
+  "price": 25000,
+  "color": "#652d90"
+}

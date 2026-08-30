@@ -1,0 +1,12 @@
+{
+  "vendor": "AWS",
+  "id": "Inferentia2 (Inf2)",
+  "tflops": 190,
+  "memBw": 0.82,
+  "capacity": 32,
+  "arch": "NeuronCore-v2",
+  "bytesPerParam": 2,
+  "tdp": 185,
+  "price": 5000,
+  "color": "#232f3e"
+}

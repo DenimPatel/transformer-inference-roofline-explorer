@@ -1,0 +1,13 @@
+{
+  "id": "internlm3-8b",
+  "name": "InternLM3 8B",
+  "family": "InternLM",
+  "vendor": "Shanghai AI Lab",
+  "type": "dense",
+  "totalParamsB": 8,
+  "activeParamsB": 8,
+  "contextLen": 32768,
+  "kvPerTokenKb": 128,
+  "bytesPerParam": 2,
+  "description": "Open 8B dense chat model with stateful-alignment features."
+}

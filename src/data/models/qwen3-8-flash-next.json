@@ -1,0 +1,13 @@
+{
+  "id": "qwen3-8-flash-next",
+  "name": "Qwen3.8 Flash-Next (125B-A6B)",
+  "family": "Qwen4 exp",
+  "vendor": "Alibaba",
+  "type": "moe",
+  "totalParamsB": 180,
+  "activeParamsB": 6,
+  "contextLen": 131072,
+  "kvPerTokenKb": 24,
+  "bytesPerParam": 2,
+  "description": "Qwen4-preview hybrid MoE: 125B LM params with only 6B active/token, plus 51B n-gram embedding + 4B MTP (~180B resident). Gated DeltaNet (linear attention) + Qwen Sparse Attention (2048-token budget) collapse KV-cache growth at long context."
+}

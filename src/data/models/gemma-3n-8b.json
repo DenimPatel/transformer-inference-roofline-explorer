@@ -1,0 +1,13 @@
+{
+  "id": "gemma-3n-8b",
+  "name": "Gemma 3n 8B (MoE)",
+  "family": "Gemma",
+  "vendor": "Google",
+  "type": "moe",
+  "totalParamsB": 8,
+  "activeParamsB": 1,
+  "contextLen": 131072,
+  "kvPerTokenKb": 32,
+  "bytesPerParam": 2,
+  "description": "Tiny-footprint MoE: 8B total / ~1B active. Great for on-device-grade throughput."
+}

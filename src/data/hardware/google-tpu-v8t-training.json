@@ -1,0 +1,12 @@
+{
+  "vendor": "Google",
+  "id": "TPU v8t (Training)",
+  "tflops": 12600,
+  "memBw": 6.50,
+  "capacity": 216,
+  "arch": "TPU (Training)",
+  "bytesPerParam": 0.5,
+  "tdp": 900,
+  "price": 35000,
+  "color": "#34a853"
+}

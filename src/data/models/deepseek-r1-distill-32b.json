@@ -1,0 +1,13 @@
+{
+  "id": "deepseek-r1-distill-32b",
+  "name": "DeepSeek-R1-Distill 32B",
+  "family": "DeepSeek",
+  "vendor": "DeepSeek",
+  "type": "dense",
+  "totalParamsB": 32,
+  "activeParamsB": 32,
+  "contextLen": 131072,
+  "kvPerTokenKb": 256,
+  "bytesPerParam": 2,
+  "description": "Dense 32B distilled reasoning model, a good single-GPU reasoning workhorse."
+}

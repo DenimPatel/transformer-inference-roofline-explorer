@@ -1,0 +1,13 @@
+{
+  "id": "qwen3-30b-a3b",
+  "name": "Qwen3 30B-A3B",
+  "family": "Qwen3",
+  "vendor": "Alibaba",
+  "type": "moe",
+  "totalParamsB": 30,
+  "activeParamsB": 3,
+  "contextLen": 131072,
+  "kvPerTokenKb": 48,
+  "bytesPerParam": 2,
+  "description": "Very efficient MoE: 30B total / 3B active. Weights still must be streamed for decode, but the small active set helps prefill."
+}

@@ -1,0 +1,12 @@
+{
+  "vendor": "NVIDIA",
+  "id": "Vera CPU",
+  "tflops": 400,
+  "memBw": 1.20,
+  "capacity": 1500,
+  "arch": "Vera (CPU)",
+  "bytesPerParam": 2,
+  "tdp": 2300,
+  "price": 20000,
+  "color": "#a0f000"
+}

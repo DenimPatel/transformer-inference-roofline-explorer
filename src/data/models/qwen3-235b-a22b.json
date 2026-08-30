@@ -1,0 +1,13 @@
+{
+  "id": "qwen3-235b-a22b",
+  "name": "Qwen3 235B-A22B",
+  "family": "Qwen3",
+  "vendor": "Alibaba",
+  "type": "moe",
+  "totalParamsB": 235,
+  "activeParamsB": 22,
+  "contextLen": 131072,
+  "kvPerTokenKb": 96,
+  "bytesPerParam": 2,
+  "description": "Giant MoE flagship: 235B total but only 22B active per token, giving near-8B-latency with far better quality."
+}

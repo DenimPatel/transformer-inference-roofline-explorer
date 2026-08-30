@@ -1,0 +1,12 @@
+{
+  "vendor": "Google",
+  "id": "TPU v7 (Ironwood)",
+  "tflops": 4614,
+  "memBw": 7.37,
+  "capacity": 192,
+  "arch": "TPU (Ironwood)",
+  "bytesPerParam": 1,
+  "tdp": 600,
+  "price": 25000,
+  "color": "#4285f4"
+}
