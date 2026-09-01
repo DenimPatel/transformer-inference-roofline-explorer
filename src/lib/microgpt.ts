@@ -461,7 +461,13 @@ export class MicroGPT {
   async train(
     corpus: string[],
     steps: number,
-    opts?: { learningRate?: number; beta1?: number; beta2?: number; onStep?: (step: number, loss: number) => void },
+    opts?: {
+      learningRate?: number;
+      beta1?: number;
+      beta2?: number;
+      onStep?: (step: number, loss: number) => void;
+      signal?: AbortSignal;
+    },
   ): Promise<void> {
     if (corpus.length === 0) return;
     const { learningRate = 0.01, beta1 = 0.85, beta2 = 0.99 } = opts ?? {};
@@ -475,6 +481,14 @@ export class MicroGPT {
     const eps = 1e-8;
 
     const localDoc = (i: number) => corpus[i % corpus.length];
+
+    // Yield to the browser on a wall-clock budget (not a fixed step count) so the loss
+    // chart, the progress label, and any click (e.g. a future "stop") actually get painted
+    // and handled instead of the whole run executing as one uninterrupted microtask chain.
+    // A microtask-only yield (`await Promise.resolve()`) never lets the browser repaint —
+    // it just chains more microtasks, starving rendering until the loop finishes.
+    const frameBudgetMs = 20;
+    let lastYield = performance.now();
 
     for (let step = 0; step < steps; step++) {
       const doc = localDoc(step);
@@ -510,11 +524,19 @@ export class MicroGPT {
       }
 
       opts?.onStep?.(step + 1, loss.data);
-      // yield so the UI can repaint the loss chart
-      if (step % 10 === 9) await Promise.resolve();
+
+      // Hand control back to the browser (a real macrotask yield) once we've spent a
+      // frame's worth of time crunching, so the page stays interactive while training.
+      const now = performance.now();
+      if (now - lastYield >= frameBudgetMs) {
+        await new Promise<void>((resolve) => setTimeout(resolve, 0));
+        lastYield = performance.now();
+      }
+      if (opts?.signal?.aborted) break;
     }
 
-    // Copy trained numbers back into the plain-number weights used by inference.
+    // Copy trained numbers back into the plain-number weights used by inference, even on
+    // an early stop, so a cancelled run keeps whatever progress it made.
     this.copyTrainingBack(P);
   }
 
