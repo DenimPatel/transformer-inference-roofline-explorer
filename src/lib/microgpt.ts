@@ -482,13 +482,20 @@ export class MicroGPT {
 
     const localDoc = (i: number) => corpus[i % corpus.length];
 
-    // Yield to the browser on a wall-clock budget (not a fixed step count) so the loss
-    // chart, the progress label, and any click (e.g. a future "stop") actually get painted
-    // and handled instead of the whole run executing as one uninterrupted microtask chain.
+    // Yield to the browser so the loss chart, the progress label, and Stop actually get
+    // painted/handled instead of the whole run executing as one uninterrupted chain.
     // A microtask-only yield (`await Promise.resolve()`) never lets the browser repaint —
-    // it just chains more microtasks, starving rendering until the loop finishes.
-    const frameBudgetMs = 20;
+    // it just chains more microtasks, starving rendering until the loop finishes. And a
+    // *pure* wall-clock budget can also miss every checkpoint: this model is tiny enough
+    // that a full 1000-step run can complete in well under one frame budget, so the elapsed
+    // time never crosses the threshold and no yield ever happens mid-run. So yield on
+    // *either* signal — a step-count cap guarantees regular checkpoints even when compute
+    // is too fast for the clock to notice, while the time budget still protects against
+    // hammering a slow/large run with pointless yields.
+    const frameBudgetMs = 16;
+    const maxStepsPerChunk = 5;
     let lastYield = performance.now();
+    let stepsSinceYield = 0;
 
     for (let step = 0; step < steps; step++) {
       const doc = localDoc(step);
@@ -524,13 +531,17 @@ export class MicroGPT {
       }
 
       opts?.onStep?.(step + 1, loss.data);
+      stepsSinceYield++;
 
       // Hand control back to the browser (a real macrotask yield) once we've spent a
-      // frame's worth of time crunching, so the page stays interactive while training.
+      // frame's worth of time crunching *or* run a handful of steps, whichever comes
+      // first, so the page stays interactive and the chart visibly updates while
+      // training runs instead of jumping from empty to fully-drawn at the very end.
       const now = performance.now();
-      if (now - lastYield >= frameBudgetMs) {
+      if (now - lastYield >= frameBudgetMs || stepsSinceYield >= maxStepsPerChunk) {
         await new Promise<void>((resolve) => setTimeout(resolve, 0));
         lastYield = performance.now();
+        stepsSinceYield = 0;
       }
       if (opts?.signal?.aborted) break;
     }
