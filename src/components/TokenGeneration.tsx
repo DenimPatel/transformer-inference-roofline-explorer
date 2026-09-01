@@ -893,6 +893,8 @@ function TrainPanel({ model, trained, onTrained, onUntrained }: {
   const [lossHistory, setLossHistory] = useState<{ step: number; loss: number }[]>([]);
   const [samples, setSamples] = useState<string[]>([]);
   const [error, setError] = useState('');
+  const [loadingFull, setLoadingFull] = useState(false);
+  const abortRef = useRef<AbortController | null>(null);
 
   const docs = useMemo(() => corpus.split('\n').map((s) => s.trim()).filter((s) => s.length > 0), [corpus]);
 
@@ -900,8 +902,27 @@ function TrainPanel({ model, trained, onTrained, onUntrained }: {
     setSamples([]);
     setLossHistory([]);
     setTraining(false);
-    if (which === 'names') setCorpus(sampleNames(60, rawNames).join('\n'));
+    if (which === 'names') setCorpus(sampleNames(300, rawNames).join('\n'));
     else setCorpus(SAMPLE_CORPUS.join('\n'));
+  };
+
+  const handleLoadFull = async () => {
+    setSamples([]);
+    setLossHistory([]);
+    setTraining(false);
+    setError('');
+    setLoadingFull(true);
+    try {
+      const res = await fetch(`${import.meta.env.BASE_URL}names.txt`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const text = await res.text();
+      const lines = text.split('\n').map((s) => s.trim()).filter(Boolean);
+      setCorpus(lines.join('\n'));
+    } catch {
+      setError('Could not load the full names.txt file.');
+    } finally {
+      setLoadingFull(false);
+    }
   };
 
   const handleTrain = async () => {
@@ -911,7 +932,10 @@ function TrainPanel({ model, trained, onTrained, onUntrained }: {
     setProgress(0);
     setLossHistory([]);
     setSamples([]);
+    const controller = new AbortController();
+    abortRef.current = controller;
     await model.train(docs, steps, {
+      signal: controller.signal,
       onStep: (step, loss) => {
         setProgress(step);
         if (step % 10 === 0 || step === steps) {
@@ -919,9 +943,14 @@ function TrainPanel({ model, trained, onTrained, onUntrained }: {
         }
       },
     });
+    abortRef.current = null;
     setTraining(false);
-    setProgress(steps);
+    setProgress((p) => (controller.signal.aborted ? p : steps));
     onTrained();
+  };
+
+  const handleStop = () => {
+    abortRef.current?.abort();
   };
 
   const handleRandomize = () => {
@@ -965,15 +994,24 @@ function TrainPanel({ model, trained, onTrained, onUntrained }: {
                 onChange={(e) => setSteps(Math.max(1, Math.min(10000, Number(e.target.value) || 1)))}
                 className="glass-input w-24 py-1.5 px-2 text-sm font-mono" />
             </div>
-            <button type="button" onClick={() => handleTrain()}
-              disabled={training || docs.length === 0}
-              className="rounded-xl px-4 py-2 text-sm font-semibold text-white disabled:opacity-40"
-              style={{ background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)' }}>
-              <span className="inline-flex items-center gap-1.5">
-                {training ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <GraduationCap className="w-3.5 h-3.5" />}
-                {training ? `Training… ${progress}/${steps}` : 'Train'}
-              </span>
-            </button>
+            {training ? (
+              <button type="button" onClick={() => handleStop()}
+                className="rounded-xl px-4 py-2 text-sm font-semibold text-white disabled:opacity-40"
+                style={{ background: 'linear-gradient(135deg, #f43f5e, #be123c)' }}>
+                <span className="inline-flex items-center gap-1.5">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" /> Stop ({progress}/{steps})
+                </span>
+              </button>
+            ) : (
+              <button type="button" onClick={() => handleTrain()}
+                disabled={docs.length === 0}
+                className="rounded-xl px-4 py-2 text-sm font-semibold text-white disabled:opacity-40"
+                style={{ background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)' }}>
+                <span className="inline-flex items-center gap-1.5">
+                  <GraduationCap className="w-3.5 h-3.5" /> Train
+                </span>
+              </button>
+            )}
             <button type="button" onClick={() => handleSampleNames()}
               disabled={training || !trained}
               className="rounded-xl px-4 py-2 text-sm font-semibold text-white bg-white/70 hover:bg-white">
@@ -993,7 +1031,14 @@ function TrainPanel({ model, trained, onTrained, onUntrained }: {
             className="rounded-lg px-3 py-1.5 text-xs font-semibold bg-white/70 hover:bg-white">30 inline names</button>
           <button type="button" onClick={() => handleLoadSample('names')} disabled={training}
             className="rounded-lg px-3 py-1.5 text-xs font-semibold bg-white/70 hover:bg-white">
-            Load names.txt subset
+            Load names.txt subset (300)
+          </button>
+          <button type="button" onClick={() => handleLoadFull()} disabled={training || loadingFull}
+            className="rounded-lg px-3 py-1.5 text-xs font-semibold bg-white/70 hover:bg-white">
+            <span className="inline-flex items-center gap-1.5">
+              {loadingFull && <Loader2 className="w-3 h-3 animate-spin" />}
+              Load full names.txt (32k)
+            </span>
           </button>
           <span className="text-[11px] text-slate-400">{docs.length} documents ready</span>
         </div>
