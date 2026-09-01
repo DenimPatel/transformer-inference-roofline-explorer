@@ -1014,7 +1014,7 @@ function TrainPanel({ model, trained, onTrained, onUntrained }: {
             )}
             <button type="button" onClick={() => handleSampleNames()}
               disabled={training || !trained}
-              className="rounded-xl px-4 py-2 text-sm font-semibold text-white bg-white/70 hover:bg-white">
+              className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-600 bg-white/70 hover:bg-white disabled:opacity-40">
               <span className="inline-flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5" /> Sample names</span>
             </button>
             <button type="button" onClick={() => handleRandomize()}
