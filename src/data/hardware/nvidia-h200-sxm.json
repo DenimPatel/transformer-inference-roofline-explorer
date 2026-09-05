@@ -2,11 +2,21 @@
   "vendor": "NVIDIA",
   "id": "H200 SXM",
   "tflops": 989,
-  "memBw": 4.80,
+  "memBw": 4.8,
   "capacity": 141,
   "arch": "Hopper (HBM3e)",
   "bytesPerParam": 2,
   "tdp": 700,
   "price": 40000,
-  "color": "#3f8c00"
+  "color": "#3f8c00",
+  "vectorTflops": 67,
+  "onChipMemMB": 82,
+  "onChipBwTBs": 33,
+  "linkBwGBs": 450,
+  "scaleOutBwGBs": 50,
+  "hostBwGBs": 64,
+  "topology": "NVLink 8-GPU node + InfiniBand",
+  "domainSize": 8,
+  "mfu": 0.82,
+  "computeUnits": "132 SMs x 4 tensor cores (528)"
 }

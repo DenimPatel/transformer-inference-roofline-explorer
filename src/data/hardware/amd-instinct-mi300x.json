@@ -2,11 +2,21 @@
   "vendor": "AMD",
   "id": "Instinct MI300X",
   "tflops": 1307,
-  "memBw": 5.30,
+  "memBw": 5.3,
   "capacity": 192,
   "arch": "CDNA 3 (GPU)",
   "bytesPerParam": 2,
   "tdp": 750,
   "price": 15000,
-  "color": "#ed1c24"
+  "color": "#ed1c24",
+  "vectorTflops": 163,
+  "onChipMemMB": 260,
+  "onChipBwTBs": 17,
+  "linkBwGBs": 448,
+  "scaleOutBwGBs": 50,
+  "hostBwGBs": 64,
+  "topology": "Infinity Fabric 8-GPU node",
+  "domainSize": 8,
+  "mfu": 0.75,
+  "computeUnits": "304 CUs x matrix cores"
 }

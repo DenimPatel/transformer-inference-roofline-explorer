@@ -45,6 +45,7 @@ export default function LessonMemory({ onComplete }: { onComplete: () => void })
           <ConceptTag id="tiling" />
           <ConceptTag id="bandwidth" />
           <ConceptTag id="arithmetic-intensity" />
+          <ConceptTag id="two-bandwidth-roofline" />
         </div>
 
         <p className="text-sm leading-relaxed text-slate-600">
@@ -55,9 +56,30 @@ export default function LessonMemory({ onComplete }: { onComplete: () => void })
         </p>
 
         <p className="text-sm leading-relaxed text-slate-600">
-          That is why <strong>tiling</strong> matters: a big matmul is cut into chunks that fit on-chip memory and re-loaded,
-          so the effective intensity becomes <code className="text-xs">bm·bn/(bm+bn)</code> — usually far below the HBM ridge.
+          That is why <strong>tiling</strong> matters. A real matmul is far too big to load each operand exactly once, so
+          it is cut into tiles that fit on-chip — and each tile is re-loaded for every tile of the other operand it has
+          to meet. Those extra loads are real bytes, and they change the intensity.
         </p>
+
+        <div className="glass rounded-xl p-4 space-y-2">
+          <div className="font-bold text-slate-800 text-sm">Deriving bm·bn/(bm+bn)</div>
+          <p className="text-sm leading-relaxed text-slate-600">
+            For an <i>(m,k)·(k,n)</i> matmul with tiles <i>bm × bk</i> and <i>bk × bn</i>, write{' '}
+            <i>tm = m/bm</i>, <i>tn = n/bn</i>, <i>tk = k/bk</i>:
+          </p>
+          <div className="glass rounded-lg p-3 font-mono text-[11px] text-slate-700 space-y-1 overflow-x-auto">
+            <div>FLOPs = 2 · tm · tn · tk · bm · bn · bk</div>
+            <div>Bytes = 2 · tm · tn · ( tk · (bm·bk + bk·bn) + bm·bn )</div>
+            <div className="text-slate-400">drop the output term, cancel tm·tn·tk and bk:</div>
+            <div className="font-bold text-slate-900">I = bm·bn / (bm + bn)</div>
+          </div>
+          <p className="text-sm leading-relaxed text-slate-600">
+            Notice that <strong>k disappears entirely</strong> — contracting over a longer dimension adds math and
+            traffic in equal measure. Only the tile&rsquo;s <em>output</em> shape sets the intensity, which is why a
+            bigger on-chip memory directly buys performance, and why square tiles (<i>bm = bn</i>) are optimal for a
+            fixed tile area: the expression is a harmonic mean, maximized when the two terms are equal.
+          </p>
+        </div>
 
         <SliderControl
           label="On-chip tile size (bm = bn)"
@@ -161,6 +183,17 @@ export default function LessonMemory({ onComplete }: { onComplete: () => void })
             ],
             answer: 1,
             explain: 'Re-loading tiles from HBM adds bytes beyond the naive O(N²) estimate, dropping effective intensity to ≈ bm·bn/(bm+bn).',
+          },
+          {
+            q: 'The tiled intensity bm·bn/(bm+bn) contains no k. What does that mean in practice?',
+            options: [
+              'Contracting over a longer dimension adds FLOPs and bytes equally, so it does not change efficiency',
+              'A deeper contraction always improves intensity',
+              'k was dropped by mistake in the derivation',
+              'Only square matrices can be tiled',
+            ],
+            answer: 0,
+            explain: 'Both FLOPs and bytes carry a factor of tk·bk, so it cancels. A skinny-but-deep matmul is no more efficient than a shallow one — only the tile’s output shape (and therefore your on-chip memory budget) sets the intensity.',
           },
         ]}
       />

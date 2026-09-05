@@ -2,11 +2,21 @@
   "vendor": "AWS",
   "id": "Trainium2 (Trn2)",
   "tflops": 1300,
-  "memBw": 2.90,
+  "memBw": 2.9,
   "capacity": 96,
   "arch": "NeuronCore-v2",
   "bytesPerParam": 1,
   "tdp": 600,
   "price": 15000,
-  "color": "#ff9900"
+  "color": "#ff9900",
+  "vectorTflops": 20,
+  "onChipMemMB": 48,
+  "onChipBwTBs": 20,
+  "linkBwGBs": 384,
+  "scaleOutBwGBs": 100,
+  "hostBwGBs": 64,
+  "topology": "NeuronLink 64-chip UltraServer",
+  "domainSize": 64,
+  "mfu": 0.75,
+  "computeUnits": "8 NeuronCore-v3"
 }

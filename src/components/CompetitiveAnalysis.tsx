@@ -8,7 +8,7 @@ import {
   ArrowRight, BookOpen, BarChart3,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
-import { HARDWARE_PROFILES, type HardwareProfile } from '../lib/hardware';
+import { HARDWARE_PROFILES, effectiveMfu, type HardwareProfile } from '../lib/hardware';
 import { computeRow, maxThroughput, type PhysicalUnits, type RowInputs } from '../lib/roofline';
 import KpiCard from './ui/KpiCard';
 import SliderControl from './ui/SliderControl';
@@ -18,17 +18,6 @@ import { ConceptTag } from './ui/ConceptTag';
 /* ------------------------------------------------------------------ *
  *  Data helpers
  * ------------------------------------------------------------------ */
-
-const VENDOR_MFU: Record<string, number> = {
-  Google: 0.95,     // TPUs reach ~95% of peak
-  Groq: 0.9,
-  SambaNova: 0.9,
-  // everything else (GPUs) ~80-85%
-};
-
-function mfuFactor(vendor: string): number {
-  return VENDOR_MFU[vendor] ?? 0.85;
-}
 
 interface ProfileRun {
   profile: HardwareProfile;
@@ -60,7 +49,7 @@ function buildRun(profile: HardwareProfile, units: PhysicalUnits, rowInputs: Row
     hardwarePrice: profile.price,
     isLiquid: /rubin|groq|liquid/i.test(profile.id),
   };
-  const mfu = mfuFactor(profile.vendor);
+  const mfu = effectiveMfu(profile);
   return {
     profile,
     u,

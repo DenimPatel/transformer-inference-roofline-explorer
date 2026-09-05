@@ -2,11 +2,21 @@
   "vendor": "Google",
   "id": "TPU v8t (Training)",
   "tflops": 12600,
-  "memBw": 6.50,
+  "memBw": 6.5,
   "capacity": 216,
   "arch": "TPU (Training)",
   "bytesPerParam": 0.5,
   "tdp": 900,
   "price": 35000,
-  "color": "#34a853"
+  "color": "#34a853",
+  "vectorTflops": 40,
+  "onChipMemMB": 256,
+  "onChipBwTBs": 150,
+  "linkBwGBs": 450,
+  "scaleOutBwGBs": 12.5,
+  "hostBwGBs": 32,
+  "topology": "3D torus (ICI, training pod)",
+  "domainSize": 9216,
+  "mfu": 0.95,
+  "computeUnits": "TensorCore + MXU array"
 }
