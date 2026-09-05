@@ -3,7 +3,7 @@ import type { ComponentType, CSSProperties } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   GraduationCap, Gauge, Percent, Layers, Timer, Database, DollarSign, SlidersHorizontal, ArrowLeft, ArrowRight, Play, CheckCircle2, FlaskConical,
-  MemoryStick, Network, BrainCircuit, Workflow,
+  MemoryStick, Network, BrainCircuit, Workflow, Cpu, Grid3x3,
 } from 'lucide-react';
 import GlassCard from '../ui/GlassCard';
 import LessonRoofline from './LessonRoofline';
@@ -17,6 +17,8 @@ import LessonMemory from './LessonMemory';
 import LessonSharding from './LessonSharding';
 import LessonAttention from './LessonAttention';
 import LessonServing from './LessonServing';
+import LessonInsideChip from './LessonInsideChip';
+import LessonNetworkRoofline from './LessonNetworkRoofline';
 import { cn } from '../../lib/utils';
 
 const STORAGE_KEY = 'roofline-learn-progress';
@@ -42,6 +44,8 @@ const LESSONS: LessonMeta[] = [
   { id: 'sharding', number: 9, title: 'Distributing the Model', summary: 'Data, tensor, pipeline and expert parallelism — and when each becomes comms-bound.', icon: Network, minutes: 7 },
   { id: 'attention', number: 10, title: 'Attention Deep Dive', summary: 'Why attention flips from compute-bound prefill to always memory-bound generation.', icon: BrainCircuit, minutes: 6 },
   { id: 'serving', number: 11, title: 'Serving Systems', summary: 'TTFT, continuous batching, disaggregation, prefix caching and speculative decoding.', icon: Workflow, minutes: 7 },
+  { id: 'insidechip', number: 12, title: 'Inside the Chip', summary: 'The MXU, the systolic array, and why the vector unit has a ridge of its own.', icon: Grid3x3, minutes: 7 },
+  { id: 'networkroofline', number: 13, title: 'The Network Roofline', summary: 'When the fabric becomes the roof — and why batching cannot fix it.', icon: Cpu, minutes: 7 },
 ];
 
 function loadProgress(): string[] {
@@ -81,6 +85,8 @@ export default function LearnJourney({ onLab }: { onLab: () => void }) {
       case 'sharding': return <LessonSharding onComplete={() => markComplete('sharding')} />;
       case 'attention': return <LessonAttention onComplete={() => markComplete('attention')} />;
       case 'serving': return <LessonServing onComplete={() => markComplete('serving')} />;
+      case 'insidechip': return <LessonInsideChip onComplete={() => markComplete('insidechip')} />;
+      case 'networkroofline': return <LessonNetworkRoofline onComplete={() => markComplete('networkroofline')} />;
       default: return null;
     }
   };

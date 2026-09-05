@@ -8,5 +8,15 @@
   "bytesPerParam": 2,
   "tdp": 700,
   "price": 30000,
-  "color": "#76b900"
+  "color": "#76b900",
+  "vectorTflops": 67,
+  "onChipMemMB": 82,
+  "onChipBwTBs": 33,
+  "linkBwGBs": 450,
+  "scaleOutBwGBs": 50,
+  "hostBwGBs": 64,
+  "topology": "NVLink 8-GPU node + InfiniBand",
+  "domainSize": 8,
+  "mfu": 0.82,
+  "computeUnits": "132 SMs x 4 tensor cores (528)"
 }

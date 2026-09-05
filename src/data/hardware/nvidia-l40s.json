@@ -8,5 +8,15 @@
   "bytesPerParam": 2,
   "tdp": 350,
   "price": 10000,
-  "color": "#00af50"
+  "color": "#00af50",
+  "vectorTflops": 91,
+  "onChipMemMB": 114,
+  "onChipBwTBs": 15,
+  "linkBwGBs": 64,
+  "scaleOutBwGBs": 25,
+  "hostBwGBs": 64,
+  "topology": "PCIe only (no NVLink)",
+  "domainSize": 1,
+  "mfu": 0.7,
+  "computeUnits": "142 SMs x 4 tensor cores"
 }

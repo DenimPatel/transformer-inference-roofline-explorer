@@ -2,11 +2,21 @@
   "vendor": "NVIDIA",
   "id": "Vera CPU",
   "tflops": 400,
-  "memBw": 1.20,
+  "memBw": 1.2,
   "capacity": 1500,
   "arch": "Vera (CPU)",
   "bytesPerParam": 2,
   "tdp": 2300,
   "price": 20000,
-  "color": "#a0f000"
+  "color": "#a0f000",
+  "vectorTflops": 400,
+  "onChipMemMB": 240,
+  "onChipBwTBs": 5,
+  "linkBwGBs": 900,
+  "scaleOutBwGBs": 100,
+  "hostBwGBs": 128,
+  "topology": "NVLink-C2C to GPU",
+  "domainSize": 1,
+  "mfu": 0.6,
+  "computeUnits": "88 Arm cores"
 }

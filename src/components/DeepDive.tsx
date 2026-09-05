@@ -8,7 +8,7 @@ import {
   Layers, Sigma, Eye, ShieldCheck, Sparkles,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
-import { HARDWARE_PROFILES } from '../lib/hardware';
+import { HARDWARE_PROFILES, effectiveMfu, onChipBwRatio } from '../lib/hardware';
 import ConceptTag from './ui/ConceptTag';
 import KvUsageExplain from './ui/KvUsageExplain';
 
@@ -110,9 +110,23 @@ export default function DeepDiveTab({ hardwareProfileId }: { hardwareProfileId: 
   const hardwareIntensity = peakFlops / peakBw;
   const criticalBatch = hardwareIntensity; // bf16 matmul becomes compute-bound when B > ridge
 
+  // On-chip scratchpad (VMEM on TPUs, SMEM/L2 on GPUs) is the second bandwidth
+  // tier. Profiles that do not publish it fall back to the book's ~22x figure.
+  const onChipRatio = onChipBwRatio(hw);
+  const onChipBw = peakBw * onChipRatio;
+  const onChipRidge = peakFlops / onChipBw;
+
+  // Vector unit (VPU / CUDA cores). Its much lower peak gives a second, far
+  // smaller ridge — which is the right yardstick for elementwise ops.
+  const vectorFlops = (hw.vectorTflops ?? hw.tflops / 60) * 1e12;
+  const vectorRidge = vectorFlops / peakBw;
+
+  const mfu = effectiveMfu(hw);
+
   const sections = [
     { id: 'framework', label: 'Roofline', icon: Activity },
     { id: 'intensity', label: 'Intensity', icon: Sigma },
+    { id: 'low-intensity', label: 'Second Ridge', icon: ShieldCheck },
     { id: 'matmul', label: 'Matmul', icon: Cpu },
     { id: 'prefill-gen', label: 'Prefill vs Gen', icon: Gauge },
     { id: 'kv-cache', label: 'KV Cache', icon: MemoryStick },
@@ -167,7 +181,7 @@ export default function DeepDiveTab({ hardwareProfileId }: { hardwareProfileId: 
       {/* ---- 1. Framework ---- */}
       <SectionCard id="framework" icon={Calculator} color={C.accent} number="01"
         title="Formalized Mathematical Framework"
-        tags={['overlap', 'roofline', 'arithmetic-intensity']}>
+        tags={['overlap', 'roofline', 'arithmetic-intensity', 'two-bandwidth-roofline', 'mfu']}>
         <div className="prose prose-slate max-w-none text-slate-600 mb-6 space-y-4">
           <p>
             The runtime of an algorithm on hardware is governed by exactly two clocks: how long the <strong>math</strong> takes
@@ -182,6 +196,49 @@ export default function DeepDiveTab({ hardwareProfileId }: { hardwareProfileId: 
             <li><strong>Arithmetic intensity:</strong> <i>I = FLOPs &divide; Bytes</i>. Compare it to the hardware ridge
               <i> I<sub>hw</sub> = peak FLOPs/s &divide; bandwidth</i> to know which bound wins.</li>
           </ul>
+          <p>
+            One warning before you trust any of these numbers: <strong>&ldquo;bandwidth&rdquo; is not one number.</strong>
+            A tensor may move within a chip, between chips in the same tightly-coupled domain, or across the datacenter
+            network — three very different byte/s figures, so three different ridges. The right roofline is the one for
+            the link the operation actually uses.
+          </p>
+        </div>
+
+        <div className="grid sm:grid-cols-3 gap-3 mb-6">
+          {[
+            { tier: 'Within a chip', link: 'HBM ↔ compute cores', bw: `${hw.memBw.toFixed(2)} TB/s`,
+              ridge: fmtNum(hardwareIntensity), note: 'The default roofline. Sets the critical batch.' },
+            { tier: 'Within a domain', link: hw.linkBwGBs ? 'ICI / NVLink' : 'ICI / NVLink (not published)',
+              bw: hw.linkBwGBs ? `${fmtNum(hw.linkBwGBs)} GB/s` : '—',
+              ridge: hw.linkBwGBs ? fmtNum(peakFlops / (hw.linkBwGBs * 1e9)) : '—',
+              note: 'Sharded matmuls. Threshold depends on D, not B.' },
+            { tier: 'Beyond the domain', link: hw.scaleOutBwGBs ? 'DCN / InfiniBand' : 'DCN / InfiniBand (not published)',
+              bw: hw.scaleOutBwGBs ? `${fmtNum(hw.scaleOutBwGBs, 2)} GB/s` : '—',
+              ridge: hw.scaleOutBwGBs ? fmtNum(peakFlops / (hw.scaleOutBwGBs * 1e9)) : '—',
+              note: 'Data parallelism across pods. Two orders of magnitude slower.' },
+          ].map((t) => (
+            <div key={t.tier} className="glass rounded-xl p-4">
+              <div className="text-[11px] uppercase tracking-wide text-slate-400">{t.tier}</div>
+              <div className="font-semibold text-slate-800 text-sm mt-0.5">{t.link}</div>
+              <div className="font-mono text-lg font-bold text-slate-900 mt-2">{t.bw}</div>
+              <div className="text-xs text-slate-500">ridge ≈ {t.ridge} FLOPs/byte</div>
+              <div className="text-[11px] text-slate-400 mt-2 leading-snug">{t.note}</div>
+            </div>
+          ))}
+        </div>
+
+        <div className="glass rounded-xl p-4 mb-6 border-l-4" style={{ borderLeftColor: C.amber }}>
+          <div className="font-bold text-slate-800 text-sm mb-1">Peak FLOPs is a marketing number</div>
+          <p className="text-sm text-slate-600">
+            No real kernel hits the datasheet figure. TPUs typically reach ~<strong>95%</strong> of peak in normal use;
+            H100- and B200-class GPUs land around <strong>80&ndash;85%</strong>, because so much of a GPU&rsquo;s runtime
+            behaviour (cache thrashing, uncoalesced loads, kernel launch overhead) sits outside the compiler&rsquo;s
+            control. This site models <code className="bg-slate-100 px-1 rounded">{hw.id}</code> at{' '}
+            <strong>{Math.round(mfu * 100)}% MFU</strong>, so its realistic ceiling is{' '}
+            <strong>{fmtFlops(peakFlops * mfu)}</strong>, not {fmtFlops(peakFlops)}. Watch out for GPU spec sheets that
+            quote tensor-core FLOPs <em>&ldquo;with sparsity&rdquo;</em> — that number is 2&times; the value you can
+            actually reach on dense weights.
+          </p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-5 mb-6">
@@ -232,6 +289,36 @@ export default function DeepDiveTab({ hardwareProfileId }: { hardwareProfileId: 
           <div className="h-[380px] w-full">
             <RooflineChart peakFlops={peakFlops} peakBw={peakBw} ridge={hardwareIntensity} showOps />
           </div>
+
+          <h3 className="font-bold text-slate-800 mt-8 mb-2 flex items-center">
+            <Layers className="w-4 h-4 mr-2 text-accent" /> Two Bandwidths, Three Regions
+          </h3>
+          <p className="text-sm text-slate-500 mb-4">
+            There are two ways to move an op onto the compute roof: raise its intensity (push right) or feed it from a
+            faster memory (raise the slope). Comparing HBM against the on-chip scratchpad —{' '}
+            <strong>{onChipRatio.toFixed(0)}&times;</strong> the bandwidth on this chip — splits the plane into three:
+          </p>
+          <div className="h-[360px] w-full">
+            <RooflineChart peakFlops={peakFlops} peakBw={peakBw} ridge={hardwareIntensity}
+              peakBw2={onChipBw} bwLabel="HBM" bw2Label="on-chip" />
+          </div>
+          <div className="grid sm:grid-cols-3 gap-3 mt-4 text-xs">
+            <div className="glass rounded-lg p-3 border-l-4" style={{ borderLeftColor: C.rose }}>
+              <div className="font-semibold text-slate-700">Red — I &lt; {fmtNum(onChipRidge, 1)}</div>
+              <div className="text-slate-500 mt-1">Bandwidth-bound at <em>both</em> bandwidths. Faster memory does not
+                save you; the op itself has to change.</div>
+            </div>
+            <div className="glass rounded-lg p-3 border-l-4" style={{ borderLeftColor: C.amber }}>
+              <div className="font-semibold text-slate-700">Amber — {fmtNum(onChipRidge, 1)} &lt; I &lt; {fmtNum(hardwareIntensity)}</div>
+              <div className="text-slate-500 mt-1">Bandwidth-bound from HBM, compute-bound from on-chip memory. This is
+                exactly the band where tiling and prefetching pay off.</div>
+            </div>
+            <div className="glass rounded-lg p-3 border-l-4" style={{ borderLeftColor: C.compute }}>
+              <div className="font-semibold text-slate-700">Green — I &gt; {fmtNum(hardwareIntensity)}</div>
+              <div className="text-slate-500 mt-1">Compute-bound whatever you do. More bandwidth buys nothing; only more
+                FLOP/s helps.</div>
+            </div>
+          </div>
         </div>
       </SectionCard>
 
@@ -250,8 +337,95 @@ export default function DeepDiveTab({ hardwareProfileId }: { hardwareProfileId: 
         <ArithmeticIntensitySection hardwareIntensity={hardwareIntensity} />
       </SectionCard>
 
+      {/* ---- 3. Low-intensity ops and the second ridge ---- */}
+      <SectionCard id="low-intensity" icon={ShieldCheck} color={C.rose} number="03"
+        title="Low-Intensity Ops &amp; the Second Ridge"
+        tags={['dot-product-intensity', 'vector-unit-ridge', 'ridge-point', 'memory-hierarchy']}>
+        <div className="prose prose-slate max-w-none text-slate-600 mb-6 space-y-4">
+          <p>
+            Not every operation has a batch size to grow. Some are stuck at a low intensity <em>no matter what you
+            do</em>, and the roofline tells you so before you write a line of code. The canonical case is the
+            <strong> dot product</strong>.
+          </p>
+          <p>
+            To compute <code>x · y</code> for <i>bf16[N]</i> vectors we load <i>2N</i> bytes for each input, perform
+            <i> N</i> multiplies and <i>N&minus;1</i> adds, and write <i>2</i> bytes back:
+          </p>
+          <div className="glass rounded-xl p-4 font-mono text-sm text-slate-700 text-center">
+            I(dot) = (N + N &minus; 1) / (2N + 2N + 2) = (2N &minus; 1) / (4N + 2) &nbsp;&rarr;&nbsp; <strong className="text-rose-600">1/2</strong>
+          </div>
+          <p>
+            The <i>N</i>s cancel. Doubling the vector doubles both the math and the traffic, so the intensity is pinned
+            at half a FLOP per byte forever. There is no batch knob, no tiling trick, no fusion that changes the
+            asymptote — the dot product is bandwidth-bound on every accelerator ever built.
+          </p>
+        </div>
+
+        <div className="glass rounded-xl p-5 mb-6">
+          <h3 className="font-bold text-slate-800 mb-2 flex items-center">
+            <Sigma className="w-4 h-4 mr-2 text-accent" /> Which Ridge Should You Compare Against?
+          </h3>
+          <p className="text-sm text-slate-500 mb-4">
+            Here is the subtlety that trips people up. The famous ridge of ≈240 belongs to the <strong>matrix
+            unit</strong> — the MXU on a TPU, the tensor cores on a GPU. A dot product never touches it. Elementwise and
+            reduction work runs on the <strong>vector unit</strong> (VPU on TPUs, CUDA cores on GPUs), which has far
+            fewer FLOP/s against the <em>same</em> HBM bandwidth — and therefore a far smaller ridge.
+          </p>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div className="glass rounded-lg p-4">
+              <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Matrix unit (MXU / tensor cores)</div>
+              <div className="font-mono text-lg font-bold text-slate-900">{fmtFlops(peakFlops)}</div>
+              <div className="text-xs text-slate-500 mt-1">ridge ≈ <strong className="text-rose-600">{fmtNum(hardwareIntensity)}</strong> FLOPs/byte</div>
+            </div>
+            <div className="glass rounded-lg p-4">
+              <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Vector unit (VPU / CUDA cores)</div>
+              <div className="font-mono text-lg font-bold text-slate-900">{fmtFlops(vectorFlops)}</div>
+              <div className="text-xs text-slate-500 mt-1">ridge ≈ <strong className="text-amber-600">{fmtNum(vectorRidge, 1)}</strong> FLOPs/byte</div>
+            </div>
+          </div>
+          <p className="text-sm text-slate-500 mt-4">
+            On a TPU v5p the VPU manages roughly <code>7e12</code> FLOP/s per core, so its critical intensity is about
+            <strong> 3</strong>, not 240. That is a <em>much</em> gentler bar — and the dot product still fails it, since
+            &frac12; &lt; 3. The conclusion survives either yardstick, but picking the wrong ridge will make you
+            mis-diagnose every softmax, layernorm and residual add in your model.
+          </p>
+        </div>
+
+        <div className="glass rounded-xl p-5">
+          <h3 className="font-bold text-slate-800 mb-2 flex items-center">
+            <Activity className="w-4 h-4 mr-2 text-accent" /> Two Ridges, One Chip
+          </h3>
+          <p className="text-sm text-slate-500 mb-4">
+            The dashed green roof is the vector unit&rsquo;s. Ops between the two ridges saturate the VPU but would be
+            bandwidth-bound if you tried to run them on the MXU.
+          </p>
+          <div className="h-[340px] w-full">
+            <RooflineChart peakFlops={peakFlops} peakBw={peakBw} ridge={hardwareIntensity}
+              peakBw2={peakBw * (vectorFlops / peakFlops)} bwLabel="Matrix unit" bw2Label="Vector unit" />
+          </div>
+          <div className="grid sm:grid-cols-3 gap-3 mt-4 text-xs">
+            {[
+              { op: 'Dot product / axpy', i: '0.5', verdict: 'Bandwidth-bound everywhere' },
+              { op: 'Softmax, layernorm, GELU', i: '~1–2', verdict: 'Bandwidth-bound; fuse them' },
+              { op: 'Matmul, B = 1024', i: '~1024', verdict: 'Compute-bound on the MXU' },
+            ].map((r) => (
+              <div key={r.op} className="glass rounded-lg p-3">
+                <div className="font-semibold text-slate-700">{r.op}</div>
+                <div className="font-mono text-slate-500">I ≈ {r.i}</div>
+                <div className="text-[11px] text-slate-400 mt-1">{r.verdict}</div>
+              </div>
+            ))}
+          </div>
+          <p className="text-sm text-slate-500 mt-4">
+            <strong>Why this matters in practice:</strong> because low-intensity ops can never be compute-bound, the only
+            way to speed them up is to <em>stop moving the bytes</em> — fuse them into the neighbouring matmul so the
+            intermediate never round-trips to HBM. That is the entire argument for kernel fusion, and for FlashAttention.
+          </p>
+        </div>
+      </SectionCard>
+
       {/* ---- 3. Matmul Math ---- */}
-      <SectionCard id="matmul" icon={Cpu} color={C.compute} number="03"
+      <SectionCard id="matmul" icon={Cpu} color={C.compute} number="04"
         title="Matrix Multiplication Math"
         tags={['matmul-intensity', 'critical-batch']}>
         <div className="prose prose-slate max-w-none text-slate-600 mb-6">
@@ -261,11 +435,29 @@ export default function DeepDiveTab({ hardwareProfileId }: { hardwareProfileId: 
             is <i>I = 2BDF&divide;(2BD + 2DF + 2BF) ≈ B</i> when <i>B</i> is small relative to <i>D, F</i>.
           </p>
         </div>
+
+        <div className="glass rounded-xl p-4 mb-6 border-l-4" style={{ borderLeftColor: C.violet }}>
+          <div className="font-bold text-slate-800 text-sm mb-1">B is tokens, not sequences — and it is per-replica</div>
+          <p className="text-sm text-slate-600">
+            Almost every roofline here depends purely on the <em>number of tokens</em> in the matmul, whether or not they
+            belong to the same sequence. Say you train with 512 sequences of 4096 tokens on 2048 GPUs. Your global batch
+            is <code>512 &times; 4096 = 2M</code> tokens, but each chip sees <code>2M / 2048 ≈ 1024</code> tokens —
+            comfortably past the ≈{fmtNum(criticalBatch)} ridge, so you are compute-bound. Quote that same batch in
+            sequences (512/2048 &lt; 1) and you would have concluded the exact opposite.
+          </p>
+          <p className="text-sm text-slate-600 mt-2">
+            The reason the relevant figure is <strong>per-replica</strong> rather than global is that sharding a matmul
+            across more chips scales the available FLOP/s <em>and</em> the available HBM bandwidth by the same factor.
+            The ratio between them — the ridge — does not move. So <i>B<sub>crit</sub></i> applies once per
+            independent copy of the weights, however many chips that copy is spread over.
+          </p>
+        </div>
+
         <MatmulInteractiveSection hardwareIntensity={hardwareIntensity} />
       </SectionCard>
 
       {/* ---- 4. Prefill vs Generation ---- */}
-      <SectionCard id="prefill-gen" icon={Activity} color={C.accentSoft} number="04"
+      <SectionCard id="prefill-gen" icon={Activity} color={C.accentSoft} number="05"
         title="Prefill vs Generation: Why Inference Flips the Roofline"
         tags={['prefill', 'generation', 'attention-intensity']}>
         <div className="prose prose-slate max-w-none text-slate-600 mb-6">
@@ -292,7 +484,7 @@ export default function DeepDiveTab({ hardwareProfileId }: { hardwareProfileId: 
       </SectionCard>
 
       {/* ---- 5. KV Cache (NEW) ---- */}
-      <SectionCard id="kv-cache" icon={MemoryStick} color={C.violet} number="05"
+      <SectionCard id="kv-cache" icon={MemoryStick} color={C.violet} number="06"
         title="The KV Cache: Where Inference Memory Goes"
         tags={['kv-cache', 'memory-bound', 'generation']}>
         <div className="prose prose-slate max-w-none text-slate-600 mb-6">
@@ -314,7 +506,7 @@ export default function DeepDiveTab({ hardwareProfileId }: { hardwareProfileId: 
       </SectionCard>
 
       {/* ---- 6. Latency vs Throughput (NEW) ---- */}
-      <SectionCard id="latency" icon={ArrowDownWideNarrow} color={C.amber} number="06"
+      <SectionCard id="latency" icon={ArrowDownWideNarrow} color={C.amber} number="07"
         title="Latency vs Throughput: The Pareto Tradeoff"
         tags={['latency-throughput', 'generation', 'critical-batch']}>
         <div className="prose prose-slate max-w-none text-slate-600 mb-6">
@@ -329,9 +521,9 @@ export default function DeepDiveTab({ hardwareProfileId }: { hardwareProfileId: 
       </SectionCard>
 
       {/* ---- 7. Network ---- */}
-      <SectionCard id="network" icon={Network} color={C.violet} number="07"
+      <SectionCard id="network" icon={Network} color={C.violet} number="08"
         title="Inter-Chip Network Rooflines"
-        tags={['network-roofline', 'model-parallelism']}>
+        tags={['network-roofline', 'model-parallelism', 'ici-topology', 'nvlink-domain']}>
         <div className="prose prose-slate max-w-none text-slate-600 mb-6">
           <p>
             Sharding moves the bottleneck from HBM to the inter-chip fabric. Two chips splitting the contracting
@@ -344,7 +536,7 @@ export default function DeepDiveTab({ hardwareProfileId }: { hardwareProfileId: 
       </SectionCard>
 
       {/* ---- 8. Attention FLOPs crossover (NEW) ---- */}
-      <SectionCard id="attention" icon={Eye} color={C.sky} number="08"
+      <SectionCard id="attention" icon={Eye} color={C.sky} number="09"
         title="When Does Attention Dominate Compute?"
         tags={['attention-flops', 'attention-intensity']}>
         <div className="prose prose-slate max-w-none text-slate-600 mb-6">
@@ -359,7 +551,7 @@ export default function DeepDiveTab({ hardwareProfileId }: { hardwareProfileId: 
       </SectionCard>
 
       {/* ---- 9. Quantization ---- */}
-      <SectionCard id="quant" icon={Zap} color={C.amber} number="09"
+      <SectionCard id="quant" icon={Zap} color={C.amber} number="10"
         title="Quantization &amp; Mixed Precision"
         tags={['quantization', 'critical-batch']}>
         <div className="prose prose-slate max-w-none text-slate-600 mb-6">
@@ -375,7 +567,7 @@ export default function DeepDiveTab({ hardwareProfileId }: { hardwareProfileId: 
       </SectionCard>
 
       {/* ---- 10. Memory hierarchy & tiling (NEW) ---- */}
-      <SectionCard id="memory" icon={Layers} color={C.sky} number="10"
+      <SectionCard id="memory" icon={Layers} color={C.sky} number="11"
         title="Memory Hierarchy &amp; Tiling: VMEM Changes Everything"
         tags={['memory-hierarchy', 'tiling', 'matmul-intensity']}>
         <div className="prose prose-slate max-w-none text-slate-600 mb-6">
@@ -386,11 +578,11 @@ export default function DeepDiveTab({ hardwareProfileId }: { hardwareProfileId: 
             ≈ <i> bm&middot;bn/(bm+bn)</i>: <em>tuning the tile size is really tuning arithmetic intensity</em>.
           </p>
         </div>
-        <MemoryHierarchySection />
+        <MemoryHierarchySection hw={hw} hardwareIntensity={hardwareIntensity} onChipRatio={onChipRatio} onChipRidge={onChipRidge} />
       </SectionCard>
 
       {/* ---- 11. MoE (NEW) ---- */}
-      <SectionCard id="moe" icon={Sparkles} color={C.compute} number="11"
+      <SectionCard id="moe" icon={Sparkles} color={C.compute} number="12"
         title="Mixture-of-Experts: A Hidden Batch Requirement"
         tags={['moe', 'critical-batch']}>
         <div className="prose prose-slate max-w-none text-slate-600 mb-6">
@@ -405,7 +597,7 @@ export default function DeepDiveTab({ hardwareProfileId }: { hardwareProfileId: 
       </SectionCard>
 
       {/* ---- 12. Worked Problems ---- */}
-      <SectionCard id="problems" icon={BookOpen} color={C.rose} number="12"
+      <SectionCard id="problems" icon={BookOpen} color={C.rose} number="13"
         title="Worked Problems"
         tags={['matmul-intensity', 'quantization', 'arithmetic-intensity']}>
         <WorkedProblemsSection hw={hw} peakFlops={peakFlops} peakBw={peakBw} hardwareIntensity={hardwareIntensity} />
@@ -519,17 +711,37 @@ function OverlapBoundsChart() {
 // ---------------------------------------------------------------------------
 // The teaching Roofline (bandwidth slope + compute roof + operations)
 // ---------------------------------------------------------------------------
-function RooflineChart({ peakFlops, peakBw, ridge, showOps = false }: { peakFlops: number; peakBw: number; ridge: number; showOps?: boolean }) {
+function RooflineChart({
+  peakFlops, peakBw, ridge, showOps = false, peakBw2, bwLabel = 'BW1 (HBM)', bw2Label = 'BW2 (on-chip)',
+}: {
+  peakFlops: number; peakBw: number; ridge: number; showOps?: boolean;
+  /** Optional faster second bandwidth. When present the plot shows the scaling
+   *  book's three regions: bandwidth-bound at both, bandwidth-bound only at the
+   *  slower one, and compute-bound at both. */
+  peakBw2?: number;
+  bwLabel?: string;
+  bw2Label?: string;
+}) {
+  // With two bandwidths the *faster* link reaches the compute roof at a smaller
+  // intensity, so it owns the left (green) edge of the ambiguous band.
+  const ridge2 = peakBw2 ? peakFlops / peakBw2 : undefined;
+  const loRidge = ridge2 !== undefined ? Math.min(ridge, ridge2) : ridge;
+  const hiRidge = ridge2 !== undefined ? Math.max(ridge, ridge2) : ridge;
+
+  const decadeTicks = [0.1, 1, 10, 100, 1000, 10000, 100000];
+  const minI = 0.05;
+  const maxI = 200000;
+
   const data = useMemo(() => {
     const pts: any[] = [];
-    const minI = 0.05;
-    const maxI = 200000;
     for (let i = Math.log10(minI); i <= Math.log10(maxI); i += 0.02) {
       const intensity = Math.pow(10, i);
-      pts.push({ intensity, achievable: Math.min(peakBw * intensity, peakFlops) });
+      const row: any = { intensity, achievable: Math.min(peakBw * intensity, peakFlops) };
+      if (peakBw2) row.achievable2 = Math.min(peakBw2 * intensity, peakFlops);
+      pts.push(row);
     }
     return pts;
-  }, [peakFlops, peakBw]);
+  }, [peakFlops, peakBw, peakBw2]);
 
   const ops = useMemo(() => {
     if (!showOps) return [];
@@ -560,8 +772,9 @@ function RooflineChart({ peakFlops, peakBw, ridge, showOps = false }: { peakFlop
         </linearGradient>
       </defs>
       <CartesianGrid strokeDasharray="3 3" opacity={0.35} />
-      <XAxis dataKey="intensity" scale="log" domain={['dataMin', 'dataMax']} type="number"
-        tickFormatter={(v: any) => Number(v) < 1 ? Number(v).toFixed(1) : Number(v).toFixed(0)}
+      <XAxis dataKey="intensity" scale="log" domain={[minI, maxI]} type="number" allowDataOverflow
+        ticks={decadeTicks}
+        tickFormatter={(v: any) => (Number(v) < 1 ? Number(v).toFixed(1) : fmtNum(Number(v)))}
         label={{ value: 'Arithmetic Intensity (FLOPs / Byte) — log', position: 'insideBottom', offset: -6, fontSize: 11, fill: C.slate }} />
       <YAxis scale="log" domain={['dataMin', 'dataMax']} type="number" width={58}
         tickFormatter={(v: any) => (v / 1e12) >= 1 ? `${(v / 1e12).toFixed(0)}T` : `${(v / 1e9).toFixed(0)}G`}
@@ -570,17 +783,30 @@ function RooflineChart({ peakFlops, peakBw, ridge, showOps = false }: { peakFlop
         content={<ChartTip />}
         labelFormatter={(v: any) => `Intensity ${Number(v) < 1 ? Number(v).toFixed(2) : fmtNum(v)}`}
       />
-      {showOps && <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '12px' }} />}
+      {(showOps || peakBw2) && <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '12px' }} />}
 
-      {/* bandwidth-bound region (left of ridge) */}
-      <ReferenceArea {...({ x1: 'dataMin', x2: ridge, fill: '#f25f7d', fillOpacity: 0.06, strokeOpacity: 0 } as any)} />
-      {/* compute-bound region (right of ridge) */}
-      <ReferenceArea {...({ x1: ridge, x2: 'dataMax', fill: '#22c48b', fillOpacity: 0.06, strokeOpacity: 0 } as any)} />
+      {/* Bandwidth-bound at every bandwidth on offer (red). */}
+      <ReferenceArea {...({ x1: minI, x2: loRidge, fill: '#f25f7d', fillOpacity: peakBw2 ? 0.16 : 0.07, strokeOpacity: 0 } as any)} />
+      {/* Bandwidth-bound only at the slower bandwidth (amber) — buying bandwidth helps here. */}
+      {ridge2 !== undefined && (
+        <ReferenceArea {...({ x1: loRidge, x2: hiRidge, fill: '#f59e0b', fillOpacity: 0.18, strokeOpacity: 0 } as any)} />
+      )}
+      {/* Compute-bound at every bandwidth (green). */}
+      <ReferenceArea {...({ x1: hiRidge, x2: maxI, fill: '#22c48b', fillOpacity: peakBw2 ? 0.16 : 0.07, strokeOpacity: 0 } as any)} />
 
       <ReferenceLine x={ridge} stroke={C.ridge} strokeDasharray="5 5" strokeWidth={1.5}
         label={{ position: 'top', value: `ridge ≈ ${fmtNum(ridge)}`, fill: C.ridge, fontSize: 11, fontWeight: 700 }} />
+      {ridge2 !== undefined && (
+        <ReferenceLine x={ridge2} stroke={C.compute} strokeDasharray="3 6" strokeWidth={1.5}
+          label={{ position: 'top', value: `ridge₂ ≈ ${fmtNum(ridge2)}`, fill: C.compute, fontSize: 11, fontWeight: 700 }} />
+      )}
 
-      <Line type="monotone" dataKey="achievable" name="Roof (achievable)" stroke={C.sky} strokeWidth={3} dot={false} strokeLinecap="round" />
+      <Line type="monotone" dataKey="achievable" name={peakBw2 ? `Roof at ${bwLabel}` : 'Roof (achievable)'}
+        stroke={C.sky} strokeWidth={3} dot={false} strokeLinecap="round" />
+      {peakBw2 && (
+        <Line type="monotone" dataKey="achievable2" name={`Roof at ${bw2Label}`}
+          stroke={C.compute} strokeWidth={2.5} strokeDasharray="6 4" dot={false} strokeLinecap="round" />
+      )}
 
       {showOps && (
         <Scatter data={ops} dataKey="achieved" name="Operations" shape={(p: any) => {
@@ -670,7 +896,8 @@ function ArithmeticIntensitySection({ hardwareIntensity }: { hardwareIntensity: 
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.35} />
-              <XAxis dataKey="batch" type="number" scale="log" domain={['dataMin', 'dataMax']}
+              <XAxis dataKey="batch" type="number" scale="log" domain={[1, 2048]} allowDataOverflow
+                ticks={[1, 4, 16, 64, 256, 1024]}
                 tickFormatter={(v: any) => `${v}`} label={{ value: 'Token batch (log)', position: 'insideBottom', offset: -8, fontSize: 10, fill: C.slate }} />
               <YAxis label={{ value: 'Intensity', angle: -90, position: 'insideLeft', fontSize: 10, fill: C.slate }} />
               <Tooltip content={<ChartTip />} />
@@ -1097,9 +1324,22 @@ function LatencyThroughputSection({ peakFlops, peakBw, hardwareIntensity, hw }: 
 // ---------------------------------------------------------------------------
 // 7. Network roofline
 // ---------------------------------------------------------------------------
+type LinkTier = 'domain' | 'scaleout' | 'host';
+
 function NetworkRooflineInteractiveSection({ hw }: any) {
   const [D, setD] = useState(4096);
-  const [networkBwGbps, setNetworkBwGbps] = useState(400);
+  const [tier, setTier] = useState<LinkTier>('domain');
+
+  // Real per-chip link bandwidths where the vendor publishes them; the book's
+  // TPU v5e figures stand in for chips that do not.
+  const tiers: { id: LinkTier; label: string; gbps: number; sub: string }[] = [
+    { id: 'domain', label: hw.vendor === 'Google' ? 'ICI (in-pod)' : 'NVLink (in-node)',
+      gbps: (hw.linkBwGBs ?? 45) * 8, sub: hw.topology ?? 'tightly-coupled domain' },
+    { id: 'scaleout', label: 'DCN / InfiniBand', gbps: (hw.scaleOutBwGBs ?? 6.25) * 8, sub: 'across pods' },
+    { id: 'host', label: 'PCIe to host', gbps: (hw.hostBwGBs ?? 16) * 8, sub: 'offload / staging' },
+  ];
+  const active = tiers.find((t) => t.id === tier) ?? tiers[0];
+  const networkBwGbps = active.gbps;
 
   const netBwBytes = (networkBwGbps * 1e9) / 8;
   const chipFlops = hw.tflops * 1e12;
@@ -1127,8 +1367,23 @@ function NetworkRooflineInteractiveSection({ hw }: any) {
       <div className="grid lg:grid-cols-2 gap-6">
         <div className="space-y-4">
           <Slider label="Model dimension (D)" value={D} min={512} max={32768} step={512} onChange={setD} />
-          <Slider label="Network bandwidth" value={networkBwGbps} min={10} max={3200} step={50}
-            onChange={setNetworkBwGbps} format={(v: number) => `${v} Gbps`} />
+
+          <div>
+            <div className="text-xs font-medium text-slate-500 mb-2">Which link are the partial sums crossing?</div>
+            <div className="grid grid-cols-3 gap-1.5">
+              {tiers.map((t) => (
+                <button key={t.id} onClick={() => setTier(t.id)}
+                  className={cn('glass rounded-md py-1.5 px-1 text-[11px] font-semibold transition-colors',
+                    tier === t.id ? 'bg-accent text-white border-accent' : 'text-slate-600 hover:border-accent/40')}>
+                  {t.label}
+                </button>
+              ))}
+            </div>
+            <p className="text-[11px] text-slate-400 mt-2">
+              {active.sub} · <span className="font-mono">{fmtNum(networkBwGbps)} Gbps</span> per chip
+              {hw.linkBwGBs ? '' : ' (book default — this chip does not publish link bandwidth)'}
+            </p>
+          </div>
 
           <div className="grid grid-cols-2 gap-2 text-sm">
             <div className="glass rounded-lg p-3">
@@ -1147,6 +1402,12 @@ function NetworkRooflineInteractiveSection({ hw }: any) {
             <BoundBadge compute={currentIntensity > threshold} />
             <span className="text-xs text-slate-400">Threshold intensity {threshold.toFixed(0)}</span>
           </div>
+
+          <p className="text-xs text-slate-500 leading-relaxed">
+            Step down a tier and the critical <i>D</i> jumps by the same factor the bandwidth fell. The in-domain link is
+            usually fast enough to shard a real model across; the scale-out fabric almost never is, which is why tensor
+            parallelism stops at the edge of an NVLink node or ICI slice and data parallelism takes over beyond it.
+          </p>
 
           <div className="glass rounded-lg p-4 flex items-center justify-between">
             <div className="text-center flex-1 space-y-1">
@@ -1371,7 +1632,9 @@ function QuantizationInteractiveSection({ hardwareIntensity, hw }: any) {
 // ---------------------------------------------------------------------------
 // NEW: Memory hierarchy & tiling intensity
 // ---------------------------------------------------------------------------
-function MemoryHierarchySection() {
+function MemoryHierarchySection({ hw, hardwareIntensity, onChipRatio, onChipRidge }: {
+  hw: any; hardwareIntensity: number; onChipRatio: number; onChipRidge: number;
+}) {
   const [tile, setTile] = useState(128);
 
   const tileData = useMemo(() => {
@@ -1391,8 +1654,8 @@ function MemoryHierarchySection() {
           <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={[
-                { name: 'Fed from HBM', intensity: 240 },
-                { name: 'Fed from VMEM', intensity: 15 },
+                { name: 'Fed from HBM', intensity: Math.round(hardwareIntensity) },
+                { name: 'Fed from on-chip', intensity: Math.max(1, Math.round(onChipRidge)) },
               ]} margin={{ top: 10, right: 16, left: -10, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
                 <XAxis dataKey="name" tick={{ fontSize: 11 }} />
@@ -1406,8 +1669,11 @@ function MemoryHierarchySection() {
             </ResponsiveContainer>
           </div>
           <p className="text-xs text-slate-400 mt-2">
-            VMEM (on-chip scratchpad) is ~<strong>22&times;</strong> the bandwidth of HBM, so an op fed from VMEM needs only
-            ~10&ndash;20 intensity to saturate the MXU — versus ~240 from HBM.
+            On <code>{hw.id}</code> the on-chip scratchpad ({hw.onChipMemMB ? `${hw.onChipMemMB} MB` : 'VMEM / SMEM'})
+            runs at ~<strong>{onChipRatio.toFixed(0)}&times;</strong> HBM bandwidth
+            {hw.onChipBwTBs ? ` (${hw.onChipBwTBs} TB/s vs ${hw.memBw} TB/s)` : ' (book estimate — this chip does not publish the figure)'},
+            so an op fed from it needs only ~<strong>{fmtNum(onChipRidge, 1)}</strong> intensity to saturate the matrix
+            unit, versus ~{fmtNum(hardwareIntensity)} from HBM.
           </p>
         </div>
 
@@ -1423,7 +1689,7 @@ function MemoryHierarchySection() {
                   label={{ value: 'Tile dim (log)', position: 'insideBottom', offset: -6, fontSize: 10, fill: C.slate }} />
                 <YAxis label={{ value: 'I ≈ bm·bn/(bm+bn)', angle: -90, position: 'insideLeft', fontSize: 9, fill: C.slate }} />
                 <Tooltip content={<ChartTip />} />
-                <ReferenceLine y={240} stroke={C.ridge} strokeDasharray="4 4"
+                <ReferenceLine y={hardwareIntensity} stroke={C.ridge} strokeDasharray="4 4"
                   label={{ position: 'top', value: 'HBM ridge', fill: C.ridge, fontSize: 10 }} />
                 <Line type="monotone" dataKey="intensity" name="Tiled intensity" stroke={C.sky} strokeWidth={3} dot={false} />
                 <ReferenceLine x={tile} stroke="#475569" strokeWidth={1.5} />
@@ -1433,6 +1699,39 @@ function MemoryHierarchySection() {
           <p className="text-xs text-slate-400 mt-2">
             I ≈ <span className="font-mono">{((tile * tile) / (tile + tile)).toFixed(0)}</span> at bm = bn = {tile}.
             Equal squares maximize the harmonic mean — which is why square tiles are standard.
+          </p>
+        </div>
+      </div>
+
+      <div className="glass rounded-xl p-5 mt-6">
+        <h3 className="font-bold text-slate-800 mb-3">Where bm·bn/(bm+bn) comes from</h3>
+        <div className="text-sm text-slate-600 space-y-3">
+          <p>
+            The clean <i>I &asymp; B</i> result assumes each operand is loaded from HBM exactly once. Real matmuls are
+            too big for that: an <i>(m,k) &middot; (k,n)</i> product is cut into tiles of <i>bm &times; bk</i> and{' '}
+            <i>bk &times; bn</i> that fit in on-chip memory, and each tile gets re-loaded for every tile of the other
+            operand it has to meet. With <i>tm = m/bm</i>, <i>tn = n/bn</i>, <i>tk = k/bk</i>:
+          </p>
+          <div className="glass rounded-lg p-4 font-mono text-xs text-slate-700 space-y-1 overflow-x-auto">
+            <div>FLOPs = 2 · tm · tn · tk · bm · bn · bk</div>
+            <div>Bytes = 2 · tm · tn · ( tk · (bm·bk + bk·bn) + bm·bn )</div>
+            <div className="pt-1 text-slate-500">drop the output term (bm·bn), cancel tm·tn·tk and bk:</div>
+            <div className="text-slate-900 font-bold">I = bm·bn / (bm + bn)</div>
+          </div>
+          <p>
+            Note what disappeared: <strong>k vanishes entirely</strong>. Contracting over a longer dimension adds math
+            and traffic in equal measure, so a skinny-but-deep matmul is no more efficient than a shallow one. Only the
+            tile&rsquo;s <em>output</em> shape sets the intensity — which is the real reason a fatter on-chip memory
+            makes a chip faster, and why <code>bm = bn</code> is the optimum for a fixed tile area.
+          </p>
+          <p className="text-slate-500">
+            At <span className="font-mono">bm = bn = {tile}</span> the effective intensity is{' '}
+            <span className="font-mono font-bold">{((tile * tile) / (tile + tile)).toFixed(0)}</span>, which on this chip is{' '}
+            <strong className={(tile / 2) >= hardwareIntensity ? 'text-emerald-600' : 'text-rose-600'}>
+              {(tile / 2) >= hardwareIntensity ? 'above' : 'below'}
+            </strong>{' '}
+            the HBM ridge of {fmtNum(hardwareIntensity)}. That is the whole reason tile size is a performance knob and
+            not an implementation detail.
           </p>
         </div>
       </div>
@@ -1620,6 +1919,49 @@ function WorkedProblemsSection({ peakFlops, peakBw, hardwareIntensity }: any) {
         <strong>Q5 — H100 memory roofline:</strong> using the H100 spec sheet, find the batch at which a bf16 matmul becomes compute-bound (tensor-core bf16 ≈2&times; true value due to sparsity).
         <Answer id="q5">
           <p>Reported bf16 = <i>1.979e15</i> "with sparsity"; true = <i>9.89e14</i>. With <i>3.35e12</i> bytes/s: <i>B<sub>crit</sub> ≈ 295</i> tokens — similar to TPUs.</p>
+        </Answer>
+      </Q>
+
+      <div className="pt-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+        Network rooflines — from the TPU &amp; GPU chapters
+      </div>
+
+      <Q>
+        <strong>Q6 — data parallelism:</strong> In the backward pass of pure DP / FSDP over an axis of size <i>X</i>, each
+        layer does <i>8BDF</i> FLOPs spread over the axis and must move <i>8DF</i> bytes of gradients over the collective
+        network. At what per-chip batch does DP stop being comms-bound?
+        <Answer id="q6">
+          <p><i>T<sub>math</sub> = 8BDF/(X·C)</i> and <i>T<sub>comms</sub> = 8DF/W</i>. Setting <i>T<sub>math</sub> &gt; T<sub>comms</sub></i>,
+          the <i>DF</i> cancels and you get the clean rule <i><strong>B/X &gt; C/W</strong></i> — per-chip batch above the
+          chip&rsquo;s FLOPs-to-collective-bandwidth ratio.</p>
+          <p>On an H100 node that ratio works out to roughly <strong>2500 tokens per GPU</strong>. Note the shape of the
+          answer: like the HBM roofline it depends on <em>batch</em>, unlike the tensor-parallel roofline below.</p>
+        </Answer>
+      </Q>
+
+      <Q>
+        <strong>Q7 — tensor parallelism:</strong> TP over an axis of size <i>Y</i> needs an AllGather and a ReduceScatter of
+        the <em>activations</em>: <i>T<sub>math</sub> = 4BDF/(Y·C)</i>, <i>T<sub>comms</sub> = 4BD/W</i>. How far can you
+        shard before going comms-bound, and why does that number match the size of a physical node?
+        <Answer id="q7">
+          <p>Both sides carry <i>4BD</i>, so it cancels: compute-bound requires <i><strong>Y &lt; F·W/C</strong></i>.
+          <strong> B disappears entirely</strong> — you cannot batch your way out of a TP bottleneck, exactly as with the
+          2-chip <i>D/2</i> roofline.</p>
+          <p>Within an NVLink node <i>W/C</i> gives about <i>F/2200</i>. For LLaMA-3&rsquo;s <i>F = 28,672</i> that is
+          ~11-way, i.e. about 8-way once you round to a real topology — which is precisely why an NVLink domain is 8 GPUs.
+          Cross a node boundary and <i>W</i> collapses, so TP effectively stops at the domain edge.</p>
+        </Answer>
+      </Q>
+
+      <Q>
+        <strong>Q8 — which knob moves which roofline?</strong> You are comms-bound. For each of HBM, tensor parallelism and
+        data parallelism, does raising the batch size help?
+        <Answer id="q8">
+          <p><strong>HBM:</strong> yes — <i>I ≈ B</i>, so more tokens per weight load is the entire fix.</p>
+          <p><strong>Data parallelism:</strong> yes — the rule is <i>B/X &gt; C/W</i>, so a bigger per-chip batch buys headroom.</p>
+          <p><strong>Tensor parallelism:</strong> <em>no</em> — the rule <i>Y &lt; F·W/C</i> has no <i>B</i> in it. Only a wider
+          model, a faster link, or less sharding helps. This is the single most useful asymmetry to remember: batch fixes
+          memory rooflines, model width fixes network rooflines.</p>
         </Answer>
       </Q>
     </div>

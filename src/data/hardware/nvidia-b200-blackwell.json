@@ -2,11 +2,21 @@
   "vendor": "NVIDIA",
   "id": "B200 (Blackwell)",
   "tflops": 9000,
-  "memBw": 8.00,
+  "memBw": 8.0,
   "capacity": 192,
   "arch": "Blackwell (GPU)",
   "bytesPerParam": 1,
   "tdp": 1000,
   "price": 45000,
-  "color": "#b9ff42"
+  "color": "#b9ff42",
+  "vectorTflops": 80,
+  "onChipMemMB": 160,
+  "onChipBwTBs": 60,
+  "linkBwGBs": 900,
+  "scaleOutBwGBs": 100,
+  "hostBwGBs": 128,
+  "topology": "NVLink 72-GPU domain (GB200 NVL72)",
+  "domainSize": 72,
+  "mfu": 0.82,
+  "computeUnits": "148 SMs x 4 tensor cores"
 }

@@ -40,6 +40,7 @@ export default function LessonIntensity({ onComplete }: { onComplete: () => void
           <ConceptTag id="arithmetic-intensity" />
           <ConceptTag id="matmul-intensity" />
           <ConceptTag id="critical-batch" />
+          <ConceptTag id="dot-product-intensity" />
         </div>
 
         <p className="text-sm leading-relaxed text-slate-600">
@@ -48,6 +49,38 @@ export default function LessonIntensity({ onComplete }: { onComplete: () => void
           <strong className="text-slate-800">I ≈ B</strong> — the matmul's intensity *is* its token batch size. So on an
           H100, a bf16 matmul is compute-bound roughly when <strong className="text-slate-800">B &gt; ~295</strong>.
         </p>
+
+        <div className="glass rounded-xl p-4 border-l-4 border-l-rose-400 space-y-2">
+          <div className="font-bold text-slate-800 text-sm">The counter-example: not every op has a B</div>
+          <p className="text-sm leading-relaxed text-slate-600">
+            The matmul is unusual in having a knob at all. Take a <strong>dot product</strong> of two bf16 vectors: load{' '}
+            <i>2N</i> bytes each, do <i>N</i> multiplies and <i>N&minus;1</i> adds, write 2 bytes back.
+          </p>
+          <div className="glass rounded-lg p-3 font-mono text-xs text-center text-slate-700">
+            I = (2N &minus; 1) / (4N + 2) &nbsp;→&nbsp; <strong className="text-rose-600">1/2</strong>
+          </div>
+          <p className="text-sm leading-relaxed text-slate-600">
+            The <i>N</i>s cancel. A longer vector adds math and traffic in equal measure, so the intensity is pinned at
+            half a FLOP per byte no matter what you do — bandwidth-bound on every accelerator ever built. The only fix
+            for an op like this is to stop moving the bytes: <strong>fuse it</strong> into the neighbouring matmul so the
+            intermediate never round-trips to HBM. (That is the whole idea behind FlashAttention.)
+          </p>
+        </div>
+
+        <div className="glass rounded-xl p-4 border-l-4 border-l-violet-400 space-y-2">
+          <div className="font-bold text-slate-800 text-sm">B is tokens, not sequences — and it is per-chip</div>
+          <p className="text-sm leading-relaxed text-slate-600">
+            Nearly every roofline here depends on the raw <em>token</em> count, whether or not those tokens share a
+            sequence. 512 sequences of 4096 tokens on 2048 chips is <code className="text-xs">2M</code> tokens globally
+            but <code className="text-xs">≈1024</code> per chip — past the ridge, so compute-bound. Count it in
+            sequences instead and you would have concluded the opposite.
+          </p>
+          <p className="text-sm leading-relaxed text-slate-600">
+            It is <strong>per-replica</strong> because sharding scales FLOPs/s and bandwidth by the <em>same</em> factor.
+            The ratio between them — the ridge — never moves, so B<sub>crit</sub> applies once per independent copy of
+            the weights, however many chips hold it.
+          </p>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-5">
@@ -107,6 +140,28 @@ export default function LessonIntensity({ onComplete }: { onComplete: () => void
             options: ['Compute-bound', 'Memory-bound', 'Bandwidth-irrelevant', 'Overlapping'],
             answer: 1,
             explain: 'B=10 < 295, so intensity is far below the ridge — you are memory-bound and waste FLOPs.',
+          },
+          {
+            q: 'A dot product has intensity 1/2 regardless of vector length. What follows?',
+            options: [
+              'Use a longer vector to become compute-bound',
+              'No batching or resizing helps — the only fix is to fuse it so the bytes never move',
+              'Run it on the matrix unit instead',
+              'It becomes compute-bound above N = 295',
+            ],
+            answer: 1,
+            explain: 'The N terms cancel: (2N−1)/(4N+2) → 1/2 for every N. There is no knob to turn, so the win has to come from eliminating the memory traffic entirely — fusing the op into a neighbouring matmul.',
+          },
+          {
+            q: 'You run 512 sequences of 4096 tokens across 2048 chips. Is each matmul compute-bound on an H100?',
+            options: [
+              'No — 512 sequences ÷ 2048 chips is less than one sequence per chip',
+              'Yes — each chip sees ≈1024 tokens, which is above the ~295 ridge',
+              'It depends on the optimizer',
+              'Yes — the global batch of 2M is far above the ridge',
+            ],
+            answer: 1,
+            explain: 'Rooflines count tokens, not sequences, and the figure that matters is per-replica: 512 × 4096 ÷ 2048 ≈ 1024 tokens per chip, comfortably compute-bound. Counting sequences (or counting globally) both give the wrong answer.',
           },
           {
             q: 'Why does intensity ≈ B for a big matmul?',

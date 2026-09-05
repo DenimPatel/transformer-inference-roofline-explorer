@@ -2,11 +2,21 @@
   "vendor": "Google",
   "id": "TPU v8i (Inference)",
   "tflops": 10100,
-  "memBw": 8.60,
+  "memBw": 8.6,
   "capacity": 288,
   "arch": "TPU (Inference)",
   "bytesPerParam": 0.5,
   "tdp": 750,
   "price": 30000,
-  "color": "#fbbc04"
+  "color": "#fbbc04",
+  "vectorTflops": 32,
+  "onChipMemMB": 256,
+  "onChipBwTBs": 180,
+  "linkBwGBs": 400,
+  "scaleOutBwGBs": 12.5,
+  "hostBwGBs": 32,
+  "topology": "2D torus (ICI, inference pod)",
+  "domainSize": 256,
+  "mfu": 0.95,
+  "computeUnits": "TensorCore + MXU array"
 }

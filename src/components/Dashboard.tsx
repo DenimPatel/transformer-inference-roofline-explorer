@@ -20,8 +20,9 @@ import LearnJourney from './learn/LearnJourney';
 import ConceptGlossary from './learn/ConceptGlossary';
 import CompetitiveAnalysis from './CompetitiveAnalysis';
 import ServingTab from './Serving';
+import HardwareTab from './Hardware';
 
-type Tab = 'learn' | 'simulator' | 'comparison' | 'deep_dive' | 'token_generation' | 'serving';
+type Tab = 'learn' | 'simulator' | 'comparison' | 'deep_dive' | 'hardware' | 'token_generation' | 'serving';
 
 const ECONOMICS_REGIONS = [
   { id: 'US Hyperscale', priceKwh: 0.07, pue: 1.10, desc: 'Texas/Iowa' },
@@ -36,6 +37,7 @@ const TABS: { key: Tab; label: string; icon: React.ComponentType<{ style?: React
   { key: 'simulator', label: 'Interactive Lab', icon: Server },
   { key: 'comparison', label: 'Competitive Analysis', icon: BarChart3 },
   { key: 'deep_dive', label: 'Deep Dive', icon: Info },
+  { key: 'hardware', label: 'Hardware', icon: Cpu },
   { key: 'token_generation', label: 'Token Generation', icon: Braces },
   { key: 'serving', label: 'Serving', icon: Rocket },
 ];
@@ -221,11 +223,11 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <main className={cn("w-full max-w-[1600px] mx-auto p-4 sm:p-6 flex-1", (activeTab === 'learn' || activeTab === 'deep_dive' || activeTab === 'token_generation' || activeTab === 'serving') ? "block" : "grid grid-cols-1 xl:grid-cols-12 gap-6")}>
+      <main className={cn("w-full max-w-[1600px] mx-auto p-4 sm:p-6 flex-1", (activeTab === 'learn' || activeTab === 'deep_dive' || activeTab === 'hardware' || activeTab === 'token_generation' || activeTab === 'serving') ? "block" : "grid grid-cols-1 xl:grid-cols-12 gap-6")}>
 
         {activeTab === 'learn' && <LearnJourney onLab={() => setActiveTab('simulator')} />}
 
-        {activeTab !== 'learn' && activeTab !== 'deep_dive' && activeTab !== 'token_generation' && activeTab !== 'serving' && (
+        {activeTab !== 'learn' && activeTab !== 'deep_dive' && activeTab !== 'hardware' && activeTab !== 'token_generation' && activeTab !== 'serving' && (
           <section className="xl:col-span-3 space-y-5">
             {activeTab === 'simulator' && (
               <ControlPanel title="Hardware Environment" icon={<Server className="w-4 h-4 text-[var(--color-accent)]" />} conceptId="roofline">
@@ -342,7 +344,7 @@ export default function Dashboard() {
           </section>
         )}
 
-        {activeTab !== 'learn' && activeTab !== 'deep_dive' && activeTab !== 'token_generation' && activeTab !== 'serving' && (
+        {activeTab !== 'learn' && activeTab !== 'deep_dive' && activeTab !== 'hardware' && activeTab !== 'token_generation' && activeTab !== 'serving' && (
           <section className="xl:col-span-9 space-y-5 flex flex-col min-h-0">
             {activeTab === 'simulator' && (
               <>
@@ -445,6 +447,7 @@ export default function Dashboard() {
         )}
 
         {activeTab === 'deep_dive' && <DeepDiveTab hardwareProfileId={activeProfileId} />}
+        {activeTab === 'hardware' && <HardwareTab />}
         {activeTab === 'token_generation' && <TokenGenerationTab />}
         {activeTab === 'serving' && <ServingTab />}
       </main>

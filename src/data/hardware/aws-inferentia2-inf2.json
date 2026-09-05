@@ -8,5 +8,15 @@
   "bytesPerParam": 2,
   "tdp": 185,
   "price": 5000,
-  "color": "#232f3e"
+  "color": "#232f3e",
+  "vectorTflops": 6,
+  "onChipMemMB": 32,
+  "onChipBwTBs": 10,
+  "linkBwGBs": 192,
+  "scaleOutBwGBs": 25,
+  "hostBwGBs": 32,
+  "topology": "NeuronLink ring (16 chips)",
+  "domainSize": 16,
+  "mfu": 0.75,
+  "computeUnits": "2 NeuronCore-v2"
 }

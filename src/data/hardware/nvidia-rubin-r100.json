@@ -2,11 +2,21 @@
   "vendor": "NVIDIA",
   "id": "Rubin GPU (R100)",
   "tflops": 50000,
-  "memBw": 22.00,
+  "memBw": 22.0,
   "capacity": 288,
   "arch": "Rubin (GPU)",
   "bytesPerParam": 0.5,
   "tdp": 2000,
   "price": 60000,
-  "color": "#00af50"
+  "color": "#00af50",
+  "vectorTflops": 160,
+  "onChipMemMB": 256,
+  "onChipBwTBs": 100,
+  "linkBwGBs": 1800,
+  "scaleOutBwGBs": 200,
+  "hostBwGBs": 256,
+  "topology": "NVLink 144-GPU domain",
+  "domainSize": 144,
+  "mfu": 0.82,
+  "computeUnits": "Rubin SM array + tensor cores"
 }

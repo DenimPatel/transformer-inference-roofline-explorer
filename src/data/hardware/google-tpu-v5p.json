@@ -8,5 +8,15 @@
   "bytesPerParam": 2,
   "tdp": 450,
   "price": 15000,
-  "color": "#ea4335"
+  "color": "#ea4335",
+  "vectorTflops": 7,
+  "onChipMemMB": 128,
+  "onChipBwTBs": 56,
+  "linkBwGBs": 540,
+  "scaleOutBwGBs": 6.25,
+  "hostBwGBs": 16,
+  "topology": "3D torus 16x20x28 (ICI)",
+  "domainSize": 8960,
+  "mfu": 0.95,
+  "computeUnits": "2 TensorCores x 4 MXUs (128x128)"
 }
