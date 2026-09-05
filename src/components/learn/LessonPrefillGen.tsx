@@ -59,7 +59,7 @@ export default function LessonPrefillGen({ onComplete }: { onComplete: () => voi
             </div>
             <p className="text-xs text-slate-500 mb-3">Processes all prompt tokens at once. Weight re-use → high intensity.</p>
             <span className="inline-block px-2 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-700 mb-3">✔ Compute-bound</span>
-            <FlowBlocks color="#5b7cfa" count={BLOCKS} />
+            <FlowBlocks color="#0088b0" count={BLOCKS} />
             <p className="text-[11px] text-slate-400 mt-3">Attention intensity ∝ T/2 — way above the ridge.</p>
           </div>
 
@@ -70,7 +70,7 @@ export default function LessonPrefillGen({ onComplete }: { onComplete: () => voi
             </div>
             <p className="text-xs text-slate-500 mb-3">One token per step; streams all weights + KV cache each time.</p>
             <span className="inline-block px-2 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-700 mb-3">⚠️ Memory-bound</span>
-            <FlowBlocks color="#f5a623" count={BLOCKS} />
+            <FlowBlocks color="#c8963a" count={BLOCKS} />
             <p className="text-[11px] text-slate-400 mt-3">Attention intensity ≈ ST/(S+T) ≈ 1 — constant & below the ridge.</p>
           </div>
         </div>
@@ -80,7 +80,7 @@ export default function LessonPrefillGen({ onComplete }: { onComplete: () => voi
             type="button"
             onClick={() => setGo((g) => !g)}
             className="rounded-xl px-4 py-2 text-sm font-semibold text-white"
-            style={{ background: 'linear-gradient(135deg, #5b7cfa, #7f6bf0)' }}
+            style={{ background: 'var(--color-accent)' }}
           >
             {go ? 'Pause animation' : 'Play animation'}
           </button>

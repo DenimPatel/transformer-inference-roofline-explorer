@@ -11,22 +11,11 @@ import { HARDWARE_PROFILES } from '../lib/hardware';
 import { findModel, type ModelProfile } from '../lib/models';
 import ConceptTag from './ui/ConceptTag';
 import InfoPopover from './ui/InfoPopover';
+import { CHART as C } from '../lib/theme';
 
 // ---------------------------------------------------------------------------
 // Palette + formatters (mirror DeepDive / TokenGeneration)
 // ---------------------------------------------------------------------------
-const C = {
-  compute: '#22c48b',
-  memory: '#f25f7d',
-  ridge: '#f43f5e',
-  accent: '#5b7cfa',
-  accentSoft: '#8aa0ff',
-  sky: '#0ea5e9',
-  amber: '#f59e0b',
-  violet: '#8b5cf6',
-  slate: '#94a3b8',
-  ink: '#0b1220',
-};
 
 function fmtNum(v: number, digits = 0) {
   return Number(v).toLocaleString('en-US', { maximumFractionDigits: digits });
@@ -197,7 +186,7 @@ export default function ServingTab() {
       </section>
 
       {/* ---- Section nav ---- */}
-      <nav className="sticky top-0 z-30 -mx-2 px-2 py-3 mb-8 blur-[1px] backdrop-blur-md bg-[#eef1fb]/70 rounded-2xl">
+      <nav className="sticky top-0 z-30 -mx-2 px-2 py-3 mb-8 bg-[#f3f2f2] border-b border-slate-200 rounded-2xl">
         <div className="flex gap-1.5 overflow-x-auto custom-scrollbar py-1">
           {sections.map((s) => (
             <a key={s.id} href={`#${s.id}`}
@@ -247,7 +236,7 @@ export default function ServingTab() {
           {HARDWARE_PROFILES.filter((h) => GPU_IDS.includes(h.id)).map((h) => (
             <button key={h.id} type="button" onClick={() => setHwId(h.id)}
               className={cn('rounded-xl px-4 py-2 text-sm font-semibold transition-colors border',
-                hwId === h.id ? 'bg-accent text-white border-accent' : 'bg-white/70 text-slate-600 border-slate-200 hover:border-accent/50')}>
+                hwId === h.id ? 'bg-accent text-white border-accent' : 'bg-white text-slate-600 border-slate-200 hover:border-accent/50')}>
               {h.id} <span className="text-[10px] opacity-80">({h.arch})</span>
             </button>
           ))}

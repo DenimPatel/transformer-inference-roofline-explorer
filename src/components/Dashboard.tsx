@@ -172,21 +172,17 @@ export default function Dashboard() {
       <div className="aurora" aria-hidden="true" />
       <ConceptGlossary open={glossaryOpen} onClose={() => setGlossaryOpen(false)} />
 
-      {/* Header */}
-      <header className="sticky top-0 z-40 glass-strong px-4 sm:px-6 h-16 flex items-center justify-between shrink-0 border-b border-white/50">
-        <div className="flex items-center space-x-3 min-w-0">
-          <div className="flex items-center justify-center w-9 h-9 rounded-xl text-white shrink-0"
-            style={{ background: 'linear-gradient(135deg, #5b7cfa, #7f6bf0)', boxShadow: '0 6px 20px -6px rgba(91,124,250,0.7)' }}>
-            <BarChart3 className="w-5 h-5" />
-          </div>
-          <div className="min-w-0">
-            <h1 className="text-lg sm:text-xl font-bold tracking-tight text-slate-800 truncate">Roofline Explorer</h1>
-            <p className="text-[11px] text-slate-400 font-normal hidden sm:block">Interactive visualizer for Transformer Inference Economics</p>
-          </div>
+      {/* Masthead */}
+      <header className="sticky top-0 z-40 glass-strong px-4 sm:px-6 py-2.5 flex items-center gap-4 sm:gap-6 justify-between shrink-0 border-b border-[var(--color-divider)]">
+        <div className="flex items-baseline gap-3 min-w-0">
+          <h1 className="nav-brand text-lg sm:text-xl truncate">Roofline&nbsp;/</h1>
+          <p className="text-[11px] uppercase tracking-[0.08em] text-slate-500 hidden lg:block truncate">
+            Transformer inference economics
+          </p>
         </div>
 
-        {/* Tabs */}
-        <nav className="flex glass rounded-2xl p-1 gap-0.5">
+        {/* Section rail */}
+        <nav className="flex items-center gap-3 sm:gap-5 overflow-x-auto">
           {TABS.map((t) => {
             const Icon = t.icon;
             const active = activeTab === t.key;
@@ -195,12 +191,10 @@ export default function Dashboard() {
                 key={t.key}
                 type="button"
                 onClick={() => setActiveTab(t.key)}
-                className={cn('relative px-2.5 sm:px-3.5 py-1.5 text-xs sm:text-sm font-medium rounded-xl transition-colors', active ? 'text-slate-800' : 'text-slate-500 hover:text-slate-700')}
+                aria-current={active ? 'page' : undefined}
+                className="nav-link whitespace-nowrap py-1 cursor-pointer bg-transparent"
               >
-                {active && (
-                  <span className="absolute inset-0 rounded-xl bg-white shadow border border-slate-200/60" />
-                )}
-                <span className="relative z-10 flex items-center gap-1.5">
+                <span className="flex items-center gap-1.5">
                   <Icon style={{ width: 15, height: 15 }} className="sm:hidden" />
                   <span className="hidden sm:inline">{t.label}</span>
                 </span>
@@ -209,16 +203,16 @@ export default function Dashboard() {
           })}
         </nav>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4 shrink-0">
           <button
             type="button"
             onClick={() => setGlossaryOpen(true)}
-            className="hidden lg:inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 glass-chip px-3 py-1.5 hover:text-[var(--color-accent)] hover:bg-white/80"
+            className="btn-ghost hidden lg:inline-flex text-xs"
           >
             <HelpCircle style={{ width: 14, height: 14 }} /> Concepts
           </button>
-          <span className="hidden md:flex items-center gap-1.5 text-[11px] font-mono text-slate-500">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> LIVE
+          <span className="hidden md:inline text-[11px] uppercase tracking-[0.08em] text-slate-500">
+            Est. 2025
           </span>
         </div>
       </header>
@@ -278,7 +272,7 @@ export default function Dashboard() {
                 <p className="text-xs text-slate-500 mb-3">Select profiles to compare latency and cost curves:</p>
                 <div className="space-y-1 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                   {HARDWARE_PROFILES.map((profile) => (
-                    <label key={profile.id} className="flex items-center space-x-2 py-1.5 px-2 hover:bg-white/60 cursor-pointer rounded-lg">
+                    <label key={profile.id} className="flex items-center space-x-2 py-1.5 px-2 hover:bg-slate-100 cursor-pointer rounded-lg">
                       <input type="checkbox" className="rounded border-slate-300 text-[var(--color-accent)] focus:ring-[var(--color-accent)]" checked={selectedProfiles.includes(profile.id)} onChange={() => toggleProfile(profile.id)} />
                       <div className="flex items-center gap-2">
                         <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: profile.color }} />
@@ -387,18 +381,18 @@ export default function Dashboard() {
                     conceptId="latency-throughput">
                     <ResponsiveContainer width="100%" height="100%">
                       <ComposedChart data={chartData} margin={{ top: 10, right: 24, left: 0, bottom: 16 }}>
-                        <CartesianGrid strokeDasharray="4 4" stroke="#e2e8f0" vertical={false} />
+                        <CartesianGrid strokeDasharray="4 4" stroke="#eae7e7" vertical={false} />
                         <XAxis dataKey="batchSize" scale="log" domain={['dataMin', 'dataMax']} type="number"
-                          tickFormatter={(v) => (v >= 1000 ? `${v / 1000}k` : v)} stroke="#cbd5e1" tick={{ fill: '#64748b', fontSize: 11 }}
-                          label={{ value: 'Batch Size (log)', position: 'insideBottom', offset: -12, fill: '#64748b', fontSize: 11 }} />
-                        <YAxis stroke="#cbd5e1" tick={{ fill: '#64748b', fontSize: 11 }}
-                          label={{ value: 'Latency (ms)', angle: -90, position: 'insideLeft', fill: '#64748b', fontSize: 11 }} scale="log" domain={['dataMin', 'dataMax']} tickFormatter={(val) => val.toFixed(1)} />
+                          tickFormatter={(v) => (v >= 1000 ? `${v / 1000}k` : v)} stroke="#d7d3d3" tick={{ fill: '#7d7979', fontSize: 11 }}
+                          label={{ value: 'Batch Size (log)', position: 'insideBottom', offset: -12, fill: '#7d7979', fontSize: 11 }} />
+                        <YAxis stroke="#d7d3d3" tick={{ fill: '#7d7979', fontSize: 11 }}
+                          label={{ value: 'Latency (ms)', angle: -90, position: 'insideLeft', fill: '#7d7979', fontSize: 11 }} scale="log" domain={['dataMin', 'dataMax']} tickFormatter={(val) => val.toFixed(1)} />
                         <Tooltip content={<CustomTooltip />} />
                         <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }} />
-                        <Line type="monotone" dataKey="tCompute" name="Compute Time" stroke="#10b981" strokeWidth={2} strokeDasharray="5 5" dot={false} />
-                        <Line type="monotone" dataKey="tMemory" name="Memory Time" stroke="#f59e0b" strokeWidth={2} strokeDasharray="5 5" dot={false} />
-                        <Line type="monotone" dataKey="latency" name="Total Latency" stroke="#1e293b" strokeWidth={3} dot={false} />
-                        <ReferenceLine x={currentStat.batchSize} stroke="#94a3b8" strokeWidth={2} label={{ position: 'top', value: 'Current', fill: '#64748b', fontSize: 10 }} />
+                        <Line type="monotone" dataKey="tCompute" name="Compute Time" stroke="#2f8365" strokeWidth={2} strokeDasharray="5 5" dot={false} />
+                        <Line type="monotone" dataKey="tMemory" name="Memory Time" stroke="#c8963a" strokeWidth={2} strokeDasharray="5 5" dot={false} />
+                        <Line type="monotone" dataKey="latency" name="Total Latency" stroke="#2d2b2b" strokeWidth={3} dot={false} />
+                        <ReferenceLine x={currentStat.batchSize} stroke="#928e8e" strokeWidth={2} label={{ position: 'top', value: 'Current', fill: '#7d7979', fontSize: 10 }} />
                       </ComposedChart>
                     </ResponsiveContainer>
                   </GlassChart>
@@ -407,18 +401,18 @@ export default function Dashboard() {
                     conceptId="tco">
                     <ResponsiveContainer width="100%" height="100%">
                       <ComposedChart data={chartData} margin={{ top: 10, right: 24, left: 0, bottom: 16 }}>
-                        <CartesianGrid strokeDasharray="4 4" stroke="#e2e8f0" vertical={false} />
+                        <CartesianGrid strokeDasharray="4 4" stroke="#eae7e7" vertical={false} />
                         <XAxis dataKey="batchSize" scale="log" domain={['dataMin', 'dataMax']} type="number"
-                          tickFormatter={(v) => (v >= 1000 ? `${v / 1000}k` : v)} stroke="#cbd5e1" tick={{ fill: '#64748b', fontSize: 11 }}
-                          label={{ value: 'Batch Size (log)', position: 'insideBottom', offset: -12, fill: '#64748b', fontSize: 11 }} />
-                        <YAxis stroke="#cbd5e1" tick={{ fill: '#64748b', fontSize: 11 }}
-                          label={{ value: 'Cost (USD/1M tkns)', angle: -90, position: 'insideLeft', fill: '#64748b', fontSize: 11 }} tickFormatter={(v) => '$' + Number(v).toFixed(2)} />
+                          tickFormatter={(v) => (v >= 1000 ? `${v / 1000}k` : v)} stroke="#d7d3d3" tick={{ fill: '#7d7979', fontSize: 11 }}
+                          label={{ value: 'Batch Size (log)', position: 'insideBottom', offset: -12, fill: '#7d7979', fontSize: 11 }} />
+                        <YAxis stroke="#d7d3d3" tick={{ fill: '#7d7979', fontSize: 11 }}
+                          label={{ value: 'Cost (USD/1M tkns)', angle: -90, position: 'insideLeft', fill: '#7d7979', fontSize: 11 }} tickFormatter={(v) => '$' + Number(v).toFixed(2)} />
                         <Tooltip content={<CustomCostTooltip />} />
                         <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }} />
-                        <Line type="monotone" dataKey="costElec1M" name="Power Cost" stroke="#f59e0b" strokeWidth={2} strokeDasharray="5 5" dot={false} />
-                        <Line type="monotone" dataKey="costHardware1M" name="Hardware CapEx" stroke="#64748b" strokeWidth={2} strokeDasharray="5 5" dot={false} />
-                        <Line type="monotone" dataKey="totalCost1M" name="Total TCO" stroke="#10b981" strokeWidth={3} dot={false} />
-                        <ReferenceLine x={currentStat.batchSize} stroke="#94a3b8" strokeWidth={2} />
+                        <Line type="monotone" dataKey="costElec1M" name="Power Cost" stroke="#c8963a" strokeWidth={2} strokeDasharray="5 5" dot={false} />
+                        <Line type="monotone" dataKey="costHardware1M" name="Hardware CapEx" stroke="#7d7979" strokeWidth={2} strokeDasharray="5 5" dot={false} />
+                        <Line type="monotone" dataKey="totalCost1M" name="Total TCO" stroke="#2f8365" strokeWidth={3} dot={false} />
+                        <ReferenceLine x={currentStat.batchSize} stroke="#928e8e" strokeWidth={2} />
                       </ComposedChart>
                     </ResponsiveContainer>
                   </GlassChart>
@@ -461,7 +455,7 @@ function ControlPanel({ title, icon, children, conceptId }: { title: string; ico
   return (
     <div className="glass-card p-5">
       <h2 className="flex items-center text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-4">
-        <span className="mr-2 p-1.5 rounded-lg bg-white/70">{icon}</span> {title}
+        <span className="mr-2 p-1.5 rounded-lg bg-white">{icon}</span> {title}
         {conceptId && <span className="ml-auto normal-case"><InfoPopover conceptId={conceptId} iconSize={14} /></span>}
       </h2>
       <div className="space-y-4">{children}</div>
@@ -513,9 +507,9 @@ function RooflineGrounding({ peakFlops, peakBw, ridge, opIntensity, opName }: an
             <XAxis dataKey="intensity" scale="log" domain={['dataMin', 'dataMax']} type="number" tickFormatter={(v) => (Number(v) < 1 ? Number(v).toFixed(1) : Number(v).toFixed(0))} label={{ value: 'Arithmetic Intensity (FLOPs/B) — log', position: 'bottom', offset: -10, fontSize: 11 }} />
             <YAxis scale="log" domain={['dataMin', 'dataMax']} type="number" tickFormatter={(v) => (v / 1e12).toFixed(1)} label={{ value: 'Throughput (TFLOPs/s) — log', angle: -90, position: 'insideLeft', fontSize: 11 }} />
             <Tooltip labelFormatter={(v: any) => `Intensity: ${Number(v).toFixed(2)} FLOPs/B`} formatter={(v: any) => [`${(Number(v) / 1e12).toFixed(2)} TFLOP/s`]} />
-            <Line type="monotone" dataKey="achievable" name="Roofline" stroke="#5b7cfa" strokeWidth={3} dot={false} />
-            <ReferenceLine x={ridge} stroke="#f43f5e" strokeDasharray="4 4" label={{ position: 'top', value: `ridge ≈ ${ridge.toFixed(0)}`, fill: '#f43f5e', fontSize: 10 }} />
-            <Scatter data={opData} dataKey="achieved" fill={isMemBound ? '#f59e0b' : '#10b981'} name={`${opName}: ${isMemBound ? 'memory-bound' : 'compute-bound'}`} shape="circle" isAnimationActive={false} />
+            <Line type="monotone" dataKey="achievable" name="Roofline" stroke="#0088b0" strokeWidth={3} dot={false} />
+            <ReferenceLine x={ridge} stroke="#d6006c" strokeDasharray="4 4" label={{ position: 'top', value: `ridge ≈ ${ridge.toFixed(0)}`, fill: '#d6006c', fontSize: 10 }} />
+            <Scatter data={opData} dataKey="achieved" fill={isMemBound ? '#c8963a' : '#2f8365'} name={`${opName}: ${isMemBound ? 'memory-bound' : 'compute-bound'}`} shape="circle" isAnimationActive={false} />
           </ComposedChart>
         </ResponsiveContainer>
       </div>

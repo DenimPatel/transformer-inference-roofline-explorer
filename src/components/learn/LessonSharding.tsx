@@ -81,8 +81,8 @@ export default function LessonSharding({ onComplete }: { onComplete: () => void 
               key={s}
               type="button"
               onClick={() => setStrategy(s)}
-              className={cn('rounded-xl px-3 py-1.5 text-xs font-semibold transition-colors', strategy === s ? 'text-white' : 'glass-chip text-slate-600 hover:bg-white/80')}
-              style={strategy === s ? { background: 'linear-gradient(135deg, #5b7cfa, #7f6bf0)' } : undefined}
+              className={cn('rounded-xl px-3 py-1.5 text-xs font-semibold transition-colors', strategy === s ? 'text-white' : 'glass-chip text-slate-600 hover:bg-slate-100')}
+              style={strategy === s ? { background: 'var(--color-accent)' } : undefined}
             >
               {STRATS[s].name}
             </button>
@@ -134,10 +134,10 @@ export default function LessonSharding({ onComplete }: { onComplete: () => void 
               <XAxis dataKey="name" tick={{ fontSize: 10 }} />
               <YAxis scale="log" domain={[10, 80000]} type="number" tickFormatter={(v) => v.toLocaleString()} label={{ value: 'Boundary (log)', angle: -90, position: 'insideLeft', fontSize: 10 }} />
               <Tooltip formatter={(v: any) => [Number(v).toLocaleString(), 'Boundary']} />
-              <Bar dataKey="threshold" fill="#c7d2fe" radius={[6, 6, 0, 0]}>
-                <Cell fill="#5b7cfa" />
-                <Cell fill="#7f6bf0" />
-                <Cell fill="#f59e0b" />
+              <Bar dataKey="threshold" fill="#cbeeff" radius={[6, 6, 0, 0]}>
+                <Cell fill="#0088b0" />
+                <Cell fill="#006786" />
+                <Cell fill="#c8963a" />
               </Bar>
             </ComposedChart>
           </ResponsiveContainer>

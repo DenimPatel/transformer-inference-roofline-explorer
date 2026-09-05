@@ -22,7 +22,7 @@ export default function LessonShell({ number, title, subtitle, sourceRef, childr
       <div className="flex items-start gap-3">
         {number && (
           <span className="flex items-center justify-center w-10 h-10 rounded-2xl text-lg font-bold text-white shrink-0"
-            style={{ background: 'linear-gradient(135deg, #5b7cfa, #7f6bf0)' }}>
+            style={{ background: 'var(--color-accent)' }}>
             {number}
           </span>
         )}

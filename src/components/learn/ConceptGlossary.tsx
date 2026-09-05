@@ -34,7 +34,7 @@ export default function ConceptGlossary({ open, onClose }: ConceptGlossaryProps)
       aria-modal="true"
       aria-label="Concept glossary"
     >
-      <div className="absolute inset-0 bg-slate-900/30 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-slate-900/30" onClick={onClose} />
       <motion.div
         initial={{ opacity: 0, scale: 0.96, y: 12 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -51,7 +51,7 @@ export default function ConceptGlossary({ open, onClose }: ConceptGlossaryProps)
               <p className="text-xs text-slate-400">Click any entry to expand. Anchored to the scaling-book reference.</p>
             </div>
           </div>
-          <button type="button" onClick={onClose} aria-label="Close glossary" className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-white/70">
+          <button type="button" onClick={onClose} aria-label="Close glossary" className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100">
             <X style={{ width: 18, height: 18 }} />
           </button>
         </div>
@@ -78,7 +78,7 @@ export default function ConceptGlossary({ open, onClose }: ConceptGlossaryProps)
                 <button
                   type="button"
                   onClick={() => setExpandedId(openCard ? null : c.id)}
-                  className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left hover:bg-white/60 transition-colors"
+                  className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left hover:bg-slate-100 transition-colors"
                 >
                   <span className="text-sm font-semibold text-slate-700 capitalize">{c.title}</span>
                   <span className="flex items-center gap-1.5">
@@ -103,7 +103,7 @@ export default function ConceptGlossary({ open, onClose }: ConceptGlossaryProps)
                           <p key={i} className="text-[11.5px] leading-relaxed text-slate-500">{b}</p>
                         ))}
                         {c.formula && (
-                          <div className="rounded-lg bg-white/70 border border-slate-200/60 px-3 py-2">
+                          <div className="rounded-lg bg-white border border-slate-200 px-3 py-2">
                             <code className="text-[11px] font-mono text-slate-700">{c.formula}</code>
                           </div>
                         )}

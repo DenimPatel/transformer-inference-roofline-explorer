@@ -103,20 +103,20 @@ export default function InteractiveRoofline({
             <rect x={PADX} y={PADY_T} width={Wc} height={Hc} rx={8} />
           </clipPath>
           <linearGradient id="memgrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#f5a623" stopOpacity="0.22" />
-            <stop offset="100%" stopColor="#f5a623" stopOpacity="0.02" />
+            <stop offset="0%" stopColor="#c8963a" stopOpacity="0.22" />
+            <stop offset="100%" stopColor="#c8963a" stopOpacity="0.02" />
           </linearGradient>
         </defs>
 
         {/* banding panels: memory (left of ridge) vs compute (right) */}
-        <rect x={PADX} y={PADY_T} width={ridgeX - PADX} height={Hc} fill="#f5a623" opacity="0.08" />
-        <rect x={ridgeX} y={PADY_T} width={PADX + Wc - ridgeX} height={Hc} fill="#22c48b" opacity="0.07" />
+        <rect x={PADX} y={PADY_T} width={ridgeX - PADX} height={Hc} fill="#c8963a" opacity="0.08" />
+        <rect x={ridgeX} y={PADY_T} width={PADX + Wc - ridgeX} height={Hc} fill="#2f8365" opacity="0.07" />
 
         {/* gridlines */}
         {[0.1, 1, 10, 100, 1000, 10000, 100000].map((t) => (
           <g key={t}>
-            <line x1={PADX} y1={PADY_T} x2={PADX} y2={PADY_T + Hc} stroke="#64748b" strokeOpacity="0.14" />
-            <text x={scaleX(t)} y={H - 8} textAnchor="middle" fontSize="9.5" fill="#94a3b8">
+            <line x1={PADX} y1={PADY_T} x2={PADX} y2={PADY_T + Hc} stroke="#7d7979" strokeOpacity="0.14" />
+            <text x={scaleX(t)} y={H - 8} textAnchor="middle" fontSize="9.5" fill="#928e8e">
               {t >= 1000 ? `${t / 1000}k` : t}
             </text>
           </g>
@@ -127,17 +127,17 @@ export default function InteractiveRoofline({
           if (v < yMin) v = Math.max(v, yMin * 1.01);
           if (v > yMax) v = yMax * 0.99;
           return (
-            <text key={v} x={PADX - 6} y={scaleY(v) + 3} textAnchor="end" fontSize="9.5" fill="#94a3b8">
+            <text key={v} x={PADX - 6} y={scaleY(v) + 3} textAnchor="end" fontSize="9.5" fill="#928e8e">
               {v >= 1e12 ? `${(v / 1e12).toFixed(1)}T` : v.toFixed(1)}
             </text>
           );
         })}
 
         {/* memory & compute labels */}
-        <text x={(PADX + ridgeX) / 2} y={PADY_T + 18} textAnchor="middle" fontSize="10" fontWeight="700" fill="#c08a1d">
+        <text x={(PADX + ridgeX) / 2} y={PADY_T + 18} textAnchor="middle" fontSize="10" fontWeight="700" fill="#ab7c22">
           MEMORY BOUND
         </text>
-        <text x={(ridgeX + PADX + Wc) / 2} y={PADY_T + 18} textAnchor="middle" fontSize="10" fontWeight="700" fill="#15896a">
+        <text x={(ridgeX + PADX + Wc) / 2} y={PADY_T + 18} textAnchor="middle" fontSize="10" fontWeight="700" fill="#1f6b51">
           COMPUTE BOUND
         </text>
 
@@ -145,7 +145,7 @@ export default function InteractiveRoofline({
         <path
           d={`M ${roof}`}
           fill="none"
-          stroke="#5b7cfa"
+          stroke="#0088b0"
           strokeWidth="3"
           strokeLinejoin="round"
           strokeLinecap="round"
@@ -157,24 +157,24 @@ export default function InteractiveRoofline({
           y1={PADY_T}
           x2={ridgeX}
           y2={PADY_T + Hc}
-          stroke="#f25f7d"
+          stroke="#ff458e"
           strokeWidth="1.5"
           strokeDasharray="5 4"
         />
-        <text x={ridgeX + 4} y={PADY_T + 12} fontSize="9.5" fill="#f25f7d" fontWeight="700">
+        <text x={ridgeX + 4} y={PADY_T + 12} fontSize="9.5" fill="#ff458e" fontWeight="700">
           ridge
         </text>
 
         {/* crosshair + point */}
-        <line x1={pointX} y1={PADY_T} x2={pointX} y2={PADY_T + Hc} stroke={isMemBound ? '#c08a1d' : '#15896a'} strokeWidth="1" strokeDasharray="3 3" opacity="0.5" />
-        <circle cx={pointX} cy={pointY} r="6.5" fill={isMemBound ? '#f5a623' : '#22c48b'} stroke="#fff" strokeWidth="2.5" />
-        <circle cx={pointX} cy={pointY} r="13" fill={isMemBound ? '#f5a623' : '#22c48b'} opacity="0.2" />
+        <line x1={pointX} y1={PADY_T} x2={pointX} y2={PADY_T + Hc} stroke={isMemBound ? '#ab7c22' : '#1f6b51'} strokeWidth="1" strokeDasharray="3 3" opacity="0.5" />
+        <circle cx={pointX} cy={pointY} r="6.5" fill={isMemBound ? '#c8963a' : '#2f8365'} stroke="#fff" strokeWidth="2.5" />
+        <circle cx={pointX} cy={pointY} r="13" fill={isMemBound ? '#c8963a' : '#2f8365'} opacity="0.2" />
 
         {/* formula labels */}
-        <text x={PADX + 4} y={H - PADY_B + 22} fontSize="9" fill="#94a3b8">
+        <text x={PADX + 4} y={H - PADY_B + 22} fontSize="9" fill="#928e8e">
           x → Arithmetic intensity (FLOPs/B, log)
         </text>
-        <text x={12} y={PADY_T + 12} fontSize="9" fill="#94a3b8" transform={`rotate(-90 12 ${PADY_T + 12})`} textAnchor="end">
+        <text x={12} y={PADY_T + 12} fontSize="9" fill="#928e8e" transform={`rotate(-90 12 ${PADY_T + 12})`} textAnchor="end">
           Throughput (FLOPs/s, log)
         </text>
       </svg>

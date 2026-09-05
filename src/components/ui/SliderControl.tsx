@@ -51,7 +51,7 @@ export default function SliderControl({
   })();
 
   const bgStyle: CSSProperties = {
-    background: `linear-gradient(90deg, ${accent}, ${accent}99)`,
+    background: accent,
   };
 
   return (

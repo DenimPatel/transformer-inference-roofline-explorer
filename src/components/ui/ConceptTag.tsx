@@ -12,7 +12,7 @@ export default function ConceptTag({ id }: ConceptTagProps) {
       conceptId={id}
       iconSize={12}
       label={`Learn about ${id.replace(/-/g, ' ')}`}
-      className="glass-chip px-2.5 py-1 text-[10.5px] font-medium text-slate-600 hover:bg-white/90"
+      className="glass-chip px-2.5 py-1 text-[10.5px] font-medium text-slate-600 hover:bg-slate-100"
     >
       <span className="capitalize">{id.replace(/-/g, ' ')}</span>
     </InfoPopover>
