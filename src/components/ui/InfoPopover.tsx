@@ -96,7 +96,7 @@ export default function InfoPopover({
         aria-label={label}
         title={label}
         className={cn(
-          'inline-flex items-center justify-center gap-1.5 rounded-full text-slate-400 transition-colors hover:text-[var(--color-accent)] hover:bg-white/70 cursor-help shrink-0',
+          'inline-flex items-center justify-center gap-1.5 rounded-full text-slate-400 transition-colors hover:text-[var(--color-accent)] hover:bg-slate-100 cursor-help shrink-0',
           className
         )}
       >
@@ -143,7 +143,7 @@ export default function InfoPopover({
           )}
 
           {f && (
-            <div className="flex items-start gap-2 mb-3 rounded-lg bg-white/70 border border-slate-200/60 px-2.5 py-2">
+            <div className="flex items-start gap-2 mb-3 rounded-lg bg-white border border-slate-200 px-2.5 py-2">
               <span className="text-[var(--color-amber)] mt-0.5">
                 <Calculator style={{ width: 13, height: 13 }} />
               </span>

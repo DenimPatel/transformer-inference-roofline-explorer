@@ -70,8 +70,8 @@ export default function LessonKVCache({ onComplete }: { onComplete: () => void }
           <div className="glass-strong rounded-2xl p-4 space-y-3">
             <div className="text-xs text-slate-500">HBM footprint vs 80 GB H100</div>
             <div className="space-y-2">
-              <Bar label="Parameters (7B @ bf16)" bytes={PARAMS_BYTES} color="#5b7cfa" />
-              <Bar label="KV cache" bytes={kvBytes} color="#f5a623" />
+              <Bar label="Parameters (7B @ bf16)" bytes={PARAMS_BYTES} color="#0088b0" />
+              <Bar label="KV cache" bytes={kvBytes} color="#c8963a" />
             </div>
             <div className="text-xs text-slate-500">
               Total:{' '}

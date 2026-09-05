@@ -6,6 +6,14 @@ analysis — arithmetic intensity, batch size, latency, and cost tradeoffs.
 
 **Live demo:** https://denimpatel.github.io/transformer-inference-roofline-explorer/
 
+## Design
+
+The site is set in the **Broadsheet** design language shared with the companion
+site at [DenimPatel/AI](https://github.com/DenimPatel/AI): near-black Source Serif
+on paper white, cyan and magenta used sparingly as spot color, hierarchy from type
+scale and whitespace rather than boxes. The tokens live in `src/index.css`; chart
+literals that cannot read CSS variables come from `src/lib/theme.ts`.
+
 ## Run Locally
 
 **Prerequisites:**  Node.js

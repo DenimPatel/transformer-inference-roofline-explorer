@@ -12,19 +12,8 @@ import ConceptTag from './ui/ConceptTag';
 import KvUsageExplain from './ui/KvUsageExplain';
 import { MicroGPT, DEFAULT_CONFIG, softmax, type KV, type ForwardResult } from '../lib/microgpt';
 import { SAMPLE_CORPUS, rawNames, sampleNames } from '../lib/names_data';
+import { CHART as C } from '../lib/theme';
 
-const C = {
-  compute: '#22c48b',
-  memory: '#f25f7d',
-  ridge: '#f43f5e',
-  accent: '#5b7cfa',
-  accentSoft: '#8aa0ff',
-  sky: '#0ea5e9',
-  amber: '#f59e0b',
-  violet: '#8b5cf6',
-  slate: '#94a3b8',
-  ink: '#0b1220',
-};
 
 function fmtNum(v: number, digits = 0) {
   return Number(v).toLocaleString('en-US', { maximumFractionDigits: digits });
@@ -90,7 +79,7 @@ export default function TokenGenerationTab() {
       </section>
 
       {/* ---- Section nav ---- */}
-      <nav className="sticky top-0 z-30 -mx-2 px-2 py-3 mb-8 blur-[1px] backdrop-blur-md bg-[#eef1fb]/70 rounded-2xl">
+      <nav className="sticky top-0 z-30 -mx-2 px-2 py-3 mb-8 bg-[#f3f2f2] border-b border-slate-200 rounded-2xl">
         <div className="flex gap-1.5 overflow-x-auto custom-scrollbar py-1">
           {SECTIONS.map((s) => (
             <a key={s.id} href={`#${s.id}`}
@@ -477,7 +466,7 @@ function PrefillVisual() {
         {tokens.map((t, i) => (
           <div key={i}
             className="rounded-lg px-2.5 py-1.5 text-xs font-bold text-white"
-            style={{ background: i === 0 ? '#8b5cf6' : 'linear-gradient(135deg,#5b7cfa,#7f6bf0)' }}>
+            style={{ background: i === 0 ? '#7b4b90' : 'var(--color-accent)' }}>
             {t}
           </div>
         ))}
@@ -673,7 +662,7 @@ function MicroGptLab({ model, trained, sessionKey }: {
               onClick={handlePrefill}
               disabled={ready && !done}
               className="rounded-xl px-4 py-2 text-sm font-semibold text-white disabled:opacity-40"
-              style={{ background: 'linear-gradient(135deg, #5b7cfa, #7f6bf0)' }}
+              style={{ background: 'var(--color-accent)' }}
             >
               <span className="inline-flex items-center gap-1.5"><Play className="w-3.5 h-3.5" /> Prefill</span>
             </button>
@@ -682,14 +671,14 @@ function MicroGptLab({ model, trained, sessionKey }: {
               onClick={handleGenerate}
               disabled={!ready || done}
               className="rounded-xl px-4 py-2 text-sm font-semibold text-white disabled:opacity-40"
-              style={{ background: 'linear-gradient(135deg, #22c48b, #149263)' }}
+              style={{ background: 'var(--color-emerald-600)' }}
             >
               <span className="inline-flex items-center gap-1.5">Generate <ArrowRight className="w-3.5 h-3.5" /></span>
             </button>
             <button
               type="button"
               onClick={handleReset}
-              className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-600 bg-white/70 hover:bg-white"
+              className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-600 bg-white hover:bg-white"
             >
               <span className="inline-flex items-center gap-1.5"><RotateCcw className="w-3.5 h-3.5" /> Reset</span>
             </button>
@@ -753,7 +742,7 @@ function MicroGptLab({ model, trained, sessionKey }: {
                     !isBOS && !isPrompt && (isSampled ? '' : 'opacity-85'),
                     isNew && 'ring-2 ring-[var(--color-accent)] ring-offset-1',
                   )}
-                  style={!isBOS && !isPrompt ? { background: 'linear-gradient(135deg,#5b7cfa,#7f6bf0)' } : undefined}
+                  style={!isBOS && !isPrompt ? { background: 'var(--color-accent)' } : undefined}
                 >
                   {isBOS ? '⟨BOS⟩' : model.labelForToken(id)}
                   {isNew && <span className="absolute -top-2 -right-1 text-[9px] font-black text-[var(--color-accent)]">†</span>}
@@ -770,7 +759,7 @@ function MicroGptLab({ model, trained, sessionKey }: {
         <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3 text-[11px] text-slate-400">
           <span><span className="inline-block w-2.5 h-2.5 rounded-sm bg-violet-200 mr-1 align-middle" />BOS</span>
           <span><span className="inline-block w-2.5 h-2.5 rounded-sm bg-white border border-slate-300 mr-1 align-middle" />prompt</span>
-          <span><span className="inline-block w-2.5 h-2.5 rounded-sm mr-1 align-middle" style={{ background: '#9aa5ff' }} />generated</span>
+          <span><span className="inline-block w-2.5 h-2.5 rounded-sm mr-1 align-middle" style={{ background: '#99e0ff' }} />generated</span>
           <span><span className="inline-block w-2.5 h-2.5 rounded-sm ring-1 ring-[var(--color-accent)] mr-1 align-middle" />newest KV†</span>
         </div>
         {done && <p className="text-xs text-emerald-600 font-semibold mt-2">Generation ended (stop token or max context reached).</p>}
@@ -835,7 +824,7 @@ function MicroGptLab({ model, trained, sessionKey }: {
                           width: `${w * 100}%`,
                           background: p === a.weights.length - 1
                             ? C.violet
-                            : p === 0 ? '#c7b3ff' : `hsl(${220 - p * 8}, 70%, ${55 + p * 2}%)`,
+                            : p === 0 ? '#d7bfe1' : `hsl(${220 - p * 8}, 70%, ${55 + p * 2}%)`,
                         }} />
                     ))}
                   </div>
@@ -997,7 +986,7 @@ function TrainPanel({ model, trained, onTrained, onUntrained }: {
             {training ? (
               <button type="button" onClick={() => handleStop()}
                 className="rounded-xl px-4 py-2 text-sm font-semibold text-white disabled:opacity-40"
-                style={{ background: 'linear-gradient(135deg, #f43f5e, #be123c)' }}>
+                style={{ background: 'var(--color-accent-2)' }}>
                 <span className="inline-flex items-center gap-1.5">
                   <Loader2 className="w-3.5 h-3.5 animate-spin" /> Stop ({progress}/{steps})
                 </span>
@@ -1006,7 +995,7 @@ function TrainPanel({ model, trained, onTrained, onUntrained }: {
               <button type="button" onClick={() => handleTrain()}
                 disabled={docs.length === 0}
                 className="rounded-xl px-4 py-2 text-sm font-semibold text-white disabled:opacity-40"
-                style={{ background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)' }}>
+                style={{ background: '#7b4b90' }}>
                 <span className="inline-flex items-center gap-1.5">
                   <GraduationCap className="w-3.5 h-3.5" /> Train
                 </span>
@@ -1014,12 +1003,12 @@ function TrainPanel({ model, trained, onTrained, onUntrained }: {
             )}
             <button type="button" onClick={() => handleSampleNames()}
               disabled={training || !trained}
-              className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-600 bg-white/70 hover:bg-white disabled:opacity-40">
+              className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-600 bg-white hover:bg-white disabled:opacity-40">
               <span className="inline-flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5" /> Sample names</span>
             </button>
             <button type="button" onClick={() => handleRandomize()}
               disabled={training}
-              className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-600 bg-white/70 hover:bg-white">
+              className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-600 bg-white hover:bg-white">
               <span className="inline-flex items-center gap-1.5"><RotateCcw className="w-3.5 h-3.5" /> Random weights</span>
             </button>
           </div>
@@ -1028,13 +1017,13 @@ function TrainPanel({ model, trained, onTrained, onUntrained }: {
         <div className="flex flex-wrap items-center gap-3">
           <span className="text-xs font-semibold text-slate-600">Dataset:</span>
           <button type="button" onClick={() => handleLoadSample('inline')} disabled={training}
-            className="rounded-lg px-3 py-1.5 text-xs font-semibold bg-white/70 hover:bg-white">30 inline names</button>
+            className="rounded-lg px-3 py-1.5 text-xs font-semibold bg-white hover:bg-white">30 inline names</button>
           <button type="button" onClick={() => handleLoadSample('names')} disabled={training}
-            className="rounded-lg px-3 py-1.5 text-xs font-semibold bg-white/70 hover:bg-white">
+            className="rounded-lg px-3 py-1.5 text-xs font-semibold bg-white hover:bg-white">
             Load names.txt subset (300)
           </button>
           <button type="button" onClick={() => handleLoadFull()} disabled={training || loadingFull}
-            className="rounded-lg px-3 py-1.5 text-xs font-semibold bg-white/70 hover:bg-white">
+            className="rounded-lg px-3 py-1.5 text-xs font-semibold bg-white hover:bg-white">
             <span className="inline-flex items-center gap-1.5">
               {loadingFull && <Loader2 className="w-3 h-3 animate-spin" />}
               Load full names.txt (32k)
@@ -1089,7 +1078,7 @@ function TrainPanel({ model, trained, onTrained, onUntrained }: {
             <div className="flex flex-wrap gap-1.5">
               {samples.map((s, i) => (
                 <span key={i} className="rounded-lg px-2.5 py-1.5 text-sm font-bold text-white"
-                  style={{ background: 'linear-gradient(135deg,#8b5cf6,#6d28d9)' }}>
+                  style={{ background: '#7b4b90' }}>
                   {s}
                 </span>
               ))}
@@ -1160,7 +1149,7 @@ function KvSizeGauge({ positions, promptPositions, maxPositions, nEmbd, nLayer, 
       </div>
       <div className="h-2.5 rounded-full bg-slate-200 overflow-hidden flex">
         <div className="h-full" style={{ width: `${pctPrompt}%`, background: C.accent }} />
-        <div className="h-full" style={{ width: `${pctGen}%`, background: '#9aa5ff' }} />
+        <div className="h-full" style={{ width: `${pctGen}%`, background: '#99e0ff' }} />
       </div>
       <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1.5 text-[10px] text-slate-400">
         <span className="flex items-center gap-1">
@@ -1168,7 +1157,7 @@ function KvSizeGauge({ positions, promptPositions, maxPositions, nEmbd, nLayer, 
           prefill {Math.min(positions, promptPositions)} pos · {fmtNum(prefillValues)} values
         </span>
         <span className="flex items-center gap-1">
-          <span className="inline-block w-2 h-2 rounded-sm align-middle" style={{ background: '#9aa5ff' }} />
+          <span className="inline-block w-2 h-2 rounded-sm align-middle" style={{ background: '#99e0ff' }} />
           generated {genPositions} pos · {fmtNum(genValues)} values
         </span>
         <span className="flex items-center gap-1">

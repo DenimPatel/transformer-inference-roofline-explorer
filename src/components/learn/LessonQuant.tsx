@@ -50,10 +50,10 @@ export default function LessonQuant({ onComplete }: { onComplete: () => void }) 
               <XAxis dataKey="name" tick={{ fontSize: 9.5 }} />
               <YAxis tickFormatter={(v) => (v === 4000 ? '∞' : `${v}`)} label={{ value: 'B_crit', angle: -90, position: 'insideLeft', fontSize: 10 }} />
               <Tooltip formatter={(v: any, n: any, p: any) => [p.payload.infinite ? '∞ (always bound)' : `${Number(v).toFixed(0)}`, 'Critical batch']} labelFormatter={(l, payload) => payload?.[0]?.payload?.note || l} />
-              <ReferenceLine y={B} stroke="#475569" strokeDasharray="3 3" label={{ position: 'top', value: `your B=${B}`, fill: '#475569', fontSize: 10 }} />
+              <ReferenceLine y={B} stroke="#605d5d" strokeDasharray="3 3" label={{ position: 'top', value: `your B=${B}`, fill: '#605d5d', fontSize: 10 }} />
               <Bar dataKey="bCrit" radius={[6, 6, 0, 0]}>
                 {data.map((d) => (
-                  <Cell key={d.id} fill={d.infinite ? '#f25f7d' : B >= d.bCrit ? '#22c48b' : '#c7d2fe'} />
+                  <Cell key={d.id} fill={d.infinite ? '#ff458e' : B >= d.bCrit ? '#2f8365' : '#cbeeff'} />
                 ))}
               </Bar>
             </BarChart>

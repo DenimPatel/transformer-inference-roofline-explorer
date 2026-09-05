@@ -8,7 +8,7 @@
   "bytesPerParam": 1,
   "tdp": 1000,
   "price": 45000,
-  "color": "#b9ff42",
+  "color": "#38a6cf",
   "vectorTflops": 80,
   "onChipMemMB": 160,
   "onChipBwTBs": 60,

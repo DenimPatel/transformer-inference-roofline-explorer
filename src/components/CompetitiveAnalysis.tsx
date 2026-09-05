@@ -89,7 +89,7 @@ function ChartCard({ title, subtitle, conceptId, tags, rationale, wide, children
         </div>
         {subtitle && <p className="text-sm text-slate-500 mt-0.5">{subtitle}</p>}
         {rationale && (
-          <p className="mt-2 text-[12px] leading-relaxed text-slate-600 bg-white/60 border border-slate-200/60 rounded-lg px-3 py-2">
+          <p className="mt-2 text-[12px] leading-relaxed text-slate-600 bg-white border border-slate-200 rounded-lg px-3 py-2">
             <Lightbulb className="inline -mt-0.5 mr-1.5 text-[var(--color-amber)]" style={{ width: 13, height: 13 }} />
             {rationale}
           </p>
@@ -108,11 +108,11 @@ const fmtInt = (n: number) => n.toLocaleString('en-US', { maximumFractionDigits:
 const fmtMs = (n: number) => `${n.toFixed(1)} ms`;
 const fmtUsd = (n: number) => `$${n.toFixed(2)}`;
 
-const AXIS = { stroke: '#cbd5e1', tick: { fill: '#64748b', fontSize: 11 } };
+const AXIS = { stroke: '#d7d3d3', tick: { fill: '#7d7979', fontSize: 11 } };
 const BatchLogAxis = ({ l }: { l?: boolean }) =>
   <XAxis dataKey="batchSize" scale="log" domain={['dataMin', 'dataMax']} type="number"
     tickFormatter={(v) => (v >= 1000 ? `${Math.round(v / 1000)}k` : v)} {...AXIS}
-    label={l ? { value: 'Batch size (tokens, log)', position: 'insideBottom', offset: -10, fill: '#64748b', fontSize: 11 } : undefined} />;
+    label={l ? { value: 'Batch size (tokens, log)', position: 'insideBottom', offset: -10, fill: '#7d7979', fontSize: 11 } : undefined} />;
 
 /* ------------------------------------------------------------------ *
  *  Tooltips
@@ -260,7 +260,7 @@ export default function CompetitiveAnalysis({ units, rowInputs, selectedProfiles
       <div className="glass rounded-2xl p-5">
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-xl text-white flex items-center justify-center shrink-0"
-            style={{ background: 'linear-gradient(135deg,#5b7cfa,#f25f7d)', boxShadow: '0 8px 22px -8px rgba(91,124,250,0.7)' }}>
+            style={{ background: 'var(--color-accent)' }}>
             <BarChart3 className="w-5 h-5" />
           </div>
           <div>
@@ -279,7 +279,7 @@ export default function CompetitiveAnalysis({ units, rowInputs, selectedProfiles
               <button
                 type="button"
                 onClick={() => setBatch(240)}
-                className="glass-chip px-2.5 py-1 text-[10.5px] font-medium text-slate-600 hover:bg-white/90"
+                className="glass-chip px-2.5 py-1 text-[10.5px] font-medium text-slate-600 hover:bg-slate-100"
               >
                 Jump to B_crit ≈ ridge
               </button>
@@ -313,9 +313,9 @@ export default function CompetitiveAnalysis({ units, rowInputs, selectedProfiles
             </span>
             <InfoPopover conceptId="critical-batch" iconSize={13} />
           </div>
-          <button type="button" onClick={() => setBatch(512)} className="glass-chip px-2.5 py-1 text-xs text-slate-600 hover:bg-white/90">512</button>
-          <button type="button" onClick={() => setBatch(1024)} className="glass-chip px-2.5 py-1 text-xs text-slate-600 hover:bg-white/90">1k</button>
-          <button type="button" onClick={() => setBatch(4096)} className="glass-chip px-2.5 py-1 text-xs text-slate-600 hover:bg-white/90">4k</button>
+          <button type="button" onClick={() => setBatch(512)} className="glass-chip px-2.5 py-1 text-xs text-slate-600 hover:bg-slate-100">512</button>
+          <button type="button" onClick={() => setBatch(1024)} className="glass-chip px-2.5 py-1 text-xs text-slate-600 hover:bg-slate-100">1k</button>
+          <button type="button" onClick={() => setBatch(4096)} className="glass-chip px-2.5 py-1 text-xs text-slate-600 hover:bg-slate-100">4k</button>
           <div className="w-full lg:w-72 ml-auto">
             <SliderControl label="Current Batch (tokens)" value={batch} min={1} max={32768} step={1} onChange={setBatch} unit="tok" logScale conceptId="critical-batch" />
           </div>
@@ -327,9 +327,9 @@ export default function CompetitiveAnalysis({ units, rowInputs, selectedProfiles
           <ChartCard title="Cost at this batch" subtitle={`USD per 1M tokens, batch = ${batch.toLocaleString()}`} conceptId="tco" tags={['tco']}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={snapshot} layout="vertical" margin={{ top: 4, right: 30, left: 8, bottom: 4 }}>
-                <CartesianGrid strokeDasharray="4 4" stroke="#e2e8f0" horizontal={false} />
+                <CartesianGrid strokeDasharray="4 4" stroke="#eae7e7" horizontal={false} />
                 <XAxis type="number" {...AXIS} tickFormatter={(v) => `$${v.toFixed(2)}`} />
-                <YAxis type="category" dataKey="id" width={190} {...AXIS} tick={{ fill: '#334155', fontSize: 11 }} />
+                <YAxis type="category" dataKey="id" width={190} {...AXIS} tick={{ fill: '#444141', fontSize: 11 }} />
                 <Tooltip content={<MultiTooltip formatter={(v: any) => fmtUsd(v)} titleKey={(l) => `Hardware: ${l}`} />} />
                 <Bar dataKey="cost" radius={[0, 6, 6, 0]} isAnimationActive>
                   {snapshot.map((s) => <Cell key={s.id} fill={s.color} />)}
@@ -340,9 +340,9 @@ export default function CompetitiveAnalysis({ units, rowInputs, selectedProfiles
           <ChartCard title="Throughput at this batch" subtitle="Tokens per second (decode) across the whole accelerator" conceptId="latency-throughput" tags={['latency-throughput']}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={snapshot} layout="vertical" margin={{ top: 4, right: 30, left: 8, bottom: 4 }}>
-                <CartesianGrid strokeDasharray="4 4" stroke="#e2e8f0" horizontal={false} />
+                <CartesianGrid strokeDasharray="4 4" stroke="#eae7e7" horizontal={false} />
                 <XAxis type="number" {...AXIS} tickFormatter={(v) => fmtInt(v)} />
-                <YAxis type="category" dataKey="id" width={190} {...AXIS} tick={{ fill: '#334155', fontSize: 11 }} />
+                <YAxis type="category" dataKey="id" width={190} {...AXIS} tick={{ fill: '#444141', fontSize: 11 }} />
                 <Tooltip content={<MultiTooltip formatter={(v: any) => `${fmtInt(v)} tok/s`} titleKey={(l) => `Hardware: ${l}`} />} />
                 <Bar dataKey="throughput" radius={[0, 6, 6, 0]} isAnimationActive>
                   {snapshot.map((s) => <Cell key={s.id} fill={s.color} />)}
@@ -368,13 +368,13 @@ export default function CompetitiveAnalysis({ units, rowInputs, selectedProfiles
                   </linearGradient>
                 ))}
               </defs>
-              <CartesianGrid strokeDasharray="4 4" stroke="#e2e8f0" />
+              <CartesianGrid strokeDasharray="4 4" stroke="#eae7e7" />
               <XAxis dataKey="intensity" scale="log" domain={['dataMin', 'dataMax']} type="number" {...AXIS}
                 tickFormatter={(v) => (Number(v) < 1 ? Number(v).toFixed(1) : Number(v).toFixed(0))}
-                label={{ value: 'Arithmetic intensity (FLOPs / byte) — log', position: 'insideBottom', offset: -12, fill: '#64748b', fontSize: 11 }} />
+                label={{ value: 'Arithmetic intensity (FLOPs / byte) — log', position: 'insideBottom', offset: -12, fill: '#7d7979', fontSize: 11 }} />
               <YAxis scale="log" domain={['dataMin', 'dataMax']} type="number" {...AXIS}
                 tickFormatter={(v) => (v / 1e12).toFixed(0)}
-                label={{ value: 'Throughput (TFLOP/s) — log', angle: -90, position: 'insideLeft', fill: '#64748b', fontSize: 11 }} />
+                label={{ value: 'Throughput (TFLOP/s) — log', angle: -90, position: 'insideLeft', fill: '#7d7979', fontSize: 11 }} />
               <Tooltip labelFormatter={(v: any) => `Intensity: ${Number(v).toFixed(2)}`} formatter={(v: any, n: any) => [`${(Number(v) / 1e12).toFixed(1)} TFLOP/s`]} />
               <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }} />
               {rooflineData.map((c) => (
@@ -394,15 +394,15 @@ export default function CompetitiveAnalysis({ units, rowInputs, selectedProfiles
           rationale="B_crit = Peak FLOPs/s ÷ memory bandwidth (× β for precision). Below this your per-token batch is memory-bound and you waste FLOPs. It is a single, human-scale number that ranks how hard each chip is to saturate — Groq's enormous bandwidth makes it nearly impossible to compute-bound.">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={bCritData} layout="vertical" margin={{ top: 4, right: 30, left: 8, bottom: 4 }}>
-              <CartesianGrid strokeDasharray="4 4" stroke="#e2e8f0" horizontal={false} />
+              <CartesianGrid strokeDasharray="4 4" stroke="#eae7e7" horizontal={false} />
               <XAxis type="number" {...AXIS} tickFormatter={(v) => fmtInt(v)} />
-              <YAxis type="category" dataKey="name" width={190} {...AXIS} tick={{ fill: '#334155', fontSize: 11 }} />
+              <YAxis type="category" dataKey="name" width={190} {...AXIS} tick={{ fill: '#444141', fontSize: 11 }} />
               <Tooltip content={<MultiTooltip formatter={(v: any) => `${fmtInt(v)} tokens`} titleKey={(l) => `Hardware: ${l}`} />} />
               <Bar dataKey="bCrit" radius={[0, 6, 6, 0]} isAnimationActive>
-                {bCritData.map((d, i) => <Cell key={d.name} fill={i === 0 ? '#f43f5e' : d.color} />)}
+                {bCritData.map((d, i) => <Cell key={d.name} fill={i === 0 ? '#d6006c' : d.color} />)}
               </Bar>
-              <ReferenceLine x={batch} stroke="#1e293b" strokeWidth={1.5} strokeDasharray="4 4"
-                label={{ value: `your batch ${fmtInt(batch)}`, position: 'top', fill: '#1e293b', fontSize: 10 }} />
+              <ReferenceLine x={batch} stroke="#2d2b2b" strokeWidth={1.5} strokeDasharray="4 4"
+                label={{ value: `your batch ${fmtInt(batch)}`, position: 'top', fill: '#2d2b2b', fontSize: 10 }} />
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
@@ -412,9 +412,9 @@ export default function CompetitiveAnalysis({ units, rowInputs, selectedProfiles
           rationale="Advertised TFLOP/s are never fully realized. This chart shows the gap between peak (dashed) and achievable (solid bar) compute for each chip. When comparing 'which is fastest', comparing achieved FLOPs is more honest than comparing datasheets.">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={flopsData} margin={{ top: 4, right: 20, left: 0, bottom: 40 }}>
-              <CartesianGrid strokeDasharray="4 4" stroke="#e2e8f0" vertical={false} />
-              <XAxis dataKey="name" {...AXIS} angle={-25} textAnchor="end" height={70} tick={{ fill: '#334155', fontSize: 10 }} />
-              <YAxis {...AXIS} tickFormatter={(v) => `${Number(v / 1000).toFixed(1)}P`} label={{ value: 'TFLOP/s', angle: -90, position: 'insideLeft', fill: '#64748b', fontSize: 11 }} />
+              <CartesianGrid strokeDasharray="4 4" stroke="#eae7e7" vertical={false} />
+              <XAxis dataKey="name" {...AXIS} angle={-25} textAnchor="end" height={70} tick={{ fill: '#444141', fontSize: 10 }} />
+              <YAxis {...AXIS} tickFormatter={(v) => `${Number(v / 1000).toFixed(1)}P`} label={{ value: 'TFLOP/s', angle: -90, position: 'insideLeft', fill: '#7d7979', fontSize: 11 }} />
               <Tooltip content={<MultiTooltip formatter={(v: any, p: any) => `${fmtInt(v)} TFLOP/s (${Math.round((p.mfu ?? 1) * 100)}% MFU)`} titleKey={(l) => `Hardware: ${l}`} />} />
               <Legend wrapperStyle={{ fontSize: '11px' }} />
               <Bar dataKey="achieved" name="Achieved" radius={[4, 4, 0, 0]} isAnimationActive>
@@ -432,12 +432,12 @@ export default function CompetitiveAnalysis({ units, rowInputs, selectedProfiles
           rationale="At small batches latency is set by the fixed cost of streaming all weights from HBM (memory-bound). As you batch up, latency climbs gently. Smaller latency at a given batch = more bandwidth per parameter stream.">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={combined} margin={{ top: 10, right: 24, left: 0, bottom: 16 }}>
-              <CartesianGrid strokeDasharray="4 4" stroke="#e2e8f0" vertical={false} />
+              <CartesianGrid strokeDasharray="4 4" stroke="#eae7e7" vertical={false} />
               <XAxis dataKey="batchSize" scale="log" domain={['dataMin', 'dataMax']} type="number"
                 tickFormatter={(v) => (v >= 1000 ? `${Math.round(v / 1000)}k` : v)} {...AXIS}
-                label={{ value: 'Batch (log)', position: 'insideBottom', offset: -10, fill: '#64748b', fontSize: 11 }} />
+                label={{ value: 'Batch (log)', position: 'insideBottom', offset: -10, fill: '#7d7979', fontSize: 11 }} />
               <YAxis {...AXIS} scale="log" domain={['dataMin', 'dataMax']} tickFormatter={(v) => v.toFixed(1)}
-                label={{ value: 'Latency (ms)', angle: -90, position: 'insideLeft', fill: '#64748b', fontSize: 11 }} />
+                label={{ value: 'Latency (ms)', angle: -90, position: 'insideLeft', fill: '#7d7979', fontSize: 11 }} />
               <Tooltip content={<MultiTooltip formatter={(v: any) => fmtMs(v)} titleKey={(l) => `Batch: ${Number(l).toLocaleString()} tokens`} />} />
               <Legend wrapperStyle={{ fontSize: '10px' }} />
               {runs.map((r) => <Line key={`lat_${r.profile.id}`} type="monotone" dataKey={`lat_${r.profile.id}`} name={r.profile.id} stroke={r.profile.color} strokeWidth={2} dot={false} />)}
@@ -450,12 +450,12 @@ export default function CompetitiveAnalysis({ units, rowInputs, selectedProfiles
           rationale="Higher is better. Curves climb steeply then flatten as each chip saturates. Notice the winner at small batch (high bandwidth, e.g. Groq) vs large batch (raw FLOPs) can be different — that flip is exactly what the roofline predicts.">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={combined} margin={{ top: 10, right: 24, left: 0, bottom: 16 }}>
-              <CartesianGrid strokeDasharray="4 4" stroke="#e2e8f0" vertical={false} />
+              <CartesianGrid strokeDasharray="4 4" stroke="#eae7e7" vertical={false} />
               <XAxis dataKey="batchSize" scale="log" domain={['dataMin', 'dataMax']} type="number"
                 tickFormatter={(v) => (v >= 1000 ? `${Math.round(v / 1000)}k` : v)} {...AXIS}
-                label={{ value: 'Batch (log)', position: 'insideBottom', offset: -10, fill: '#64748b', fontSize: 11 }} />
+                label={{ value: 'Batch (log)', position: 'insideBottom', offset: -10, fill: '#7d7979', fontSize: 11 }} />
               <YAxis {...AXIS} scale="log" domain={['dataMin', 'dataMax']} tickFormatter={(v) => fmtInt(v)}
-                label={{ value: 'Tokens / s', angle: -90, position: 'insideLeft', fill: '#64748b', fontSize: 11 }} />
+                label={{ value: 'Tokens / s', angle: -90, position: 'insideLeft', fill: '#7d7979', fontSize: 11 }} />
               <Tooltip content={<MultiTooltip formatter={(v: any) => `${fmtInt(v)} tok/s`} titleKey={(l) => `Batch: ${Number(l).toLocaleString()} tokens`} />} />
               <Legend wrapperStyle={{ fontSize: '10px' }} />
               {runs.map((r) => <Line key={`thr_${r.profile.id}`} type="monotone" dataKey={`thr_${r.profile.id}`} name={r.profile.id} stroke={r.profile.color} strokeWidth={2} dot={false} />)}
@@ -468,11 +468,11 @@ export default function CompetitiveAnalysis({ units, rowInputs, selectedProfiles
           rationale="Small batches are fast but under-utilize hardware; large batches are slow but efficient. Each line traces one accelerator's tradeoff, and 'best' means where your application wants to sit. Doubling per-token latency can buy a ~100× drop in per-token cost.">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart margin={{ top: 10, right: 24, left: 0, bottom: 16 }}>
-              <CartesianGrid strokeDasharray="4 4" stroke="#e2e8f0" vertical={false} />
+              <CartesianGrid strokeDasharray="4 4" stroke="#eae7e7" vertical={false} />
               <XAxis type="number" dataKey="thr" {...AXIS} scale="log" domain={['auto', 'auto']} tickFormatter={(v) => fmtInt(v)}
-                label={{ value: 'Throughput (tokens/s) — log', position: 'insideBottom', offset: -10, fill: '#64748b', fontSize: 11 }} />
+                label={{ value: 'Throughput (tokens/s) — log', position: 'insideBottom', offset: -10, fill: '#7d7979', fontSize: 11 }} />
               <YAxis type="number" dataKey="lat" {...AXIS} scale="log" domain={['auto', 'auto']} tickFormatter={(v) => v.toFixed(1)}
-                label={{ value: 'Latency (ms) — log', angle: -90, position: 'insideLeft', fill: '#64748b', fontSize: 11 }} />
+                label={{ value: 'Latency (ms) — log', angle: -90, position: 'insideLeft', fill: '#7d7979', fontSize: 11 }} />
               <Tooltip content={<MultiTooltip formatter={(v: any, p: any) => (p ? fmtMs(p.lat) + ' · ' + fmtInt(p.thr) + ' tok/s' : '')} titleKey={() => 'Point on frontier (batch increases right→)'} />} />
               <Legend wrapperStyle={{ fontSize: '10px' }} />
               {fullCurve.map((c) => (
@@ -491,12 +491,12 @@ export default function CompetitiveAnalysis({ units, rowInputs, selectedProfiles
           rationale="Cost = electricity (Joules × PUE × $/kWh) + amortized hardware. Cost per token falls as you batch up (efficient utilization) but bottoms out — the right operating point is the curve's low knee, not the most expensive fast chip.">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={combined} margin={{ top: 10, right: 24, left: 0, bottom: 16 }}>
-              <CartesianGrid strokeDasharray="4 4" stroke="#e2e8f0" vertical={false} />
+              <CartesianGrid strokeDasharray="4 4" stroke="#eae7e7" vertical={false} />
               <XAxis dataKey="batchSize" scale="log" domain={['dataMin', 'dataMax']} type="number"
                 tickFormatter={(v) => (v >= 1000 ? `${Math.round(v / 1000)}k` : v)} {...AXIS}
-                label={{ value: 'Batch (log)', position: 'insideBottom', offset: -10, fill: '#64748b', fontSize: 11 }} />
+                label={{ value: 'Batch (log)', position: 'insideBottom', offset: -10, fill: '#7d7979', fontSize: 11 }} />
               <YAxis {...AXIS} scale="log" domain={['dataMin', 'dataMax']} tickFormatter={(v) => `$${Number(v).toFixed(2)}`}
-                label={{ value: 'Cost (USD/1M)', angle: -90, position: 'insideLeft', fill: '#64748b', fontSize: 11 }} />
+                label={{ value: 'Cost (USD/1M)', angle: -90, position: 'insideLeft', fill: '#7d7979', fontSize: 11 }} />
               <Tooltip content={<MultiTooltip formatter={(v: any) => fmtUsd(v)} titleKey={(l) => `Batch: ${Number(l).toLocaleString()} tokens`} />} />
               <Legend wrapperStyle={{ fontSize: '10px' }} />
               {runs.map((r) => <Line key={`cost_${r.profile.id}`} type="monotone" dataKey={`cost_${r.profile.id}`} name={r.profile.id} stroke={r.profile.color} strokeWidth={2} dot={false} />)}
@@ -509,12 +509,12 @@ export default function CompetitiveAnalysis({ units, rowInputs, selectedProfiles
           rationale="Equal to power draw × step time ÷ tokens. Batched workloads are more energy-efficient per token because fixed weight-loading is amortized. This is the metric that decides your electricity bill and carbon footprint.">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={combined} margin={{ top: 10, right: 24, left: 0, bottom: 16 }}>
-              <CartesianGrid strokeDasharray="4 4" stroke="#e2e8f0" vertical={false} />
+              <CartesianGrid strokeDasharray="4 4" stroke="#eae7e7" vertical={false} />
               <XAxis dataKey="batchSize" scale="log" domain={['dataMin', 'dataMax']} type="number"
                 tickFormatter={(v) => (v >= 1000 ? `${Math.round(v / 1000)}k` : v)} {...AXIS}
-                label={{ value: 'Batch (log)', position: 'insideBottom', offset: -10, fill: '#64748b', fontSize: 11 }} />
+                label={{ value: 'Batch (log)', position: 'insideBottom', offset: -10, fill: '#7d7979', fontSize: 11 }} />
               <YAxis {...AXIS} scale="log" domain={['dataMin', 'dataMax']} tickFormatter={(v) => Number(v).toFixed(3)}
-                label={{ value: 'Joules / token', angle: -90, position: 'insideLeft', fill: '#64748b', fontSize: 11 }} />
+                label={{ value: 'Joules / token', angle: -90, position: 'insideLeft', fill: '#7d7979', fontSize: 11 }} />
               <Tooltip content={<MultiTooltip formatter={(v: any) => `${Number(v).toFixed(3)} J`} titleKey={(l) => `Batch: ${Number(l).toLocaleString()} tokens`} />} />
               <Legend wrapperStyle={{ fontSize: '10px' }} />
               {runs.map((r) => <Line key={`energy_${r.profile.id}`} type="monotone" dataKey={`energy_${r.profile.id}`} name={r.profile.id} stroke={r.profile.color} strokeWidth={2} dot={false} />)}
@@ -527,9 +527,9 @@ export default function CompetitiveAnalysis({ units, rowInputs, selectedProfiles
           rationale="Generated tokens each need a fresh KV cache. Fewer concurrent sequences = smaller batch = worse FLOPs utilization. This is often the real ceiling, more than math speed — huge-HBM chips (Vera, H200, Rubin) fit far more concurrent users.">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={capacityData} layout="vertical" margin={{ top: 4, right: 30, left: 8, bottom: 4 }}>
-              <CartesianGrid strokeDasharray="4 4" stroke="#e2e8f0" horizontal={false} />
-              <XAxis type="number" {...AXIS} tickFormatter={(v) => fmtInt(v)} label={{ value: 'concurrent sequences', position: 'insideBottom', offset: -4, fill: '#64748b', fontSize: 10 }} />
-              <YAxis type="category" dataKey="name" width={190} {...AXIS} tick={{ fill: '#334155', fontSize: 11 }} />
+              <CartesianGrid strokeDasharray="4 4" stroke="#eae7e7" horizontal={false} />
+              <XAxis type="number" {...AXIS} tickFormatter={(v) => fmtInt(v)} label={{ value: 'concurrent sequences', position: 'insideBottom', offset: -4, fill: '#7d7979', fontSize: 10 }} />
+              <YAxis type="category" dataKey="name" width={190} {...AXIS} tick={{ fill: '#444141', fontSize: 11 }} />
               <Tooltip content={<MultiTooltip formatter={(v: any) => `${fmtInt(v)} sequences`} titleKey={(l) => `Hardware: ${l}`} />} />
               <Bar dataKey="capacity" radius={[0, 6, 6, 0]} isAnimationActive>
                 {capacityData.map((d) => <Cell key={d.name} fill={d.color} />)}
@@ -609,7 +609,7 @@ export default function CompetitiveAnalysis({ units, rowInputs, selectedProfiles
             <span><strong className="text-slate-800">Batching makes or breaks it.</strong> To get compute-bound and efficient, your per-replica token batch must exceed B_crit — often 240-300 tokens on GPUs/TPUs, far higher on bandwidth-rich LPUs.</span>
           </div>
         </div>
-        <div className="mt-4 flex items-start gap-2 bg-white/60 border border-slate-200/60 rounded-lg px-4 py-3">
+        <div className="mt-4 flex items-start gap-2 bg-white border border-slate-200 rounded-lg px-4 py-3">
           <BookOpen className="w-4 h-4 text-[var(--color-amber)] mt-0.5 shrink-0" />
           <p>
             <strong className="text-slate-800">Sanity-check the tradeoff:</strong> at a small batch (4 tokens) a 30B model on 16 TPU v5e runs a step in ≈<span className="font-mono">2.5 ms</span>; at batch 256 it is ≈<span className="font-mono">21 ms</span> — but far more tokens per step. Latency and throughput really are opposite ends of the same curve.

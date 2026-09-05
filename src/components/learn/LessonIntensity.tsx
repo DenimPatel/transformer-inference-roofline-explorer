@@ -122,10 +122,10 @@ export default function LessonIntensity({ onComplete }: { onComplete: () => void
                 <XAxis dataKey="batch" type="number" scale="log" domain={['dataMin', 'dataMax']} tickFormatter={(v) => `${v}`} label={{ value: 'Token batch (log)', position: 'bottom', fontSize: 10 }} />
                 <YAxis label={{ value: 'Intensity', angle: -90, position: 'insideLeft', fontSize: 10 }} />
                 <Tooltip />
-                <Line type="monotone" dataKey="approx" name="≈ B" stroke="#94a3b8" strokeWidth={2} strokeDasharray="4 4" dot={false} />
-                <Line type="monotone" dataKey="intensity" name="Exact" stroke="#5b7cfa" strokeWidth={3} dot={false} />
-                <ReferenceLine y={RIDGE} stroke="#f25f7d" strokeDasharray="3 3" label={{ position: 'top', value: 'Ridge', fill: '#f25f7d', fontSize: 10 }} />
-                <ReferenceLine x={B} stroke="#475569" />
+                <Line type="monotone" dataKey="approx" name="≈ B" stroke="#928e8e" strokeWidth={2} strokeDasharray="4 4" dot={false} />
+                <Line type="monotone" dataKey="intensity" name="Exact" stroke="#0088b0" strokeWidth={3} dot={false} />
+                <ReferenceLine y={RIDGE} stroke="#ff458e" strokeDasharray="3 3" label={{ position: 'top', value: 'Ridge', fill: '#ff458e', fontSize: 10 }} />
+                <ReferenceLine x={B} stroke="#605d5d" />
               </ComposedChart>
             </ResponsiveContainer>
           </div>

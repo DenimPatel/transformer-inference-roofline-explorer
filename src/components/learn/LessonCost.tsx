@@ -67,7 +67,7 @@ export default function LessonCost({ onComplete }: { onComplete: () => void }) {
                   key={r.id}
                   type="button"
                   onClick={() => setRegion(r)}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${region.id === r.id ? 'bg-[var(--color-accent)] text-white' : 'glass-chip text-slate-600 hover:bg-white/80'}`}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${region.id === r.id ? 'bg-[var(--color-accent)] text-white' : 'glass-chip text-slate-600 hover:bg-slate-100'}`}
                 >
                   {r.id}
                 </button>
@@ -88,16 +88,16 @@ export default function LessonCost({ onComplete }: { onComplete: () => void }) {
             <ComposedChart data={curve} margin={{ top: 8, right: 12, left: -6, bottom: 12 }}>
               <defs>
                 <linearGradient id="costFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#5b7cfa" stopOpacity={0.35} />
-                  <stop offset="100%" stopColor="#5b7cfa" stopOpacity={0.02} />
+                  <stop offset="0%" stopColor="#0088b0" stopOpacity={0.35} />
+                  <stop offset="100%" stopColor="#0088b0" stopOpacity={0.02} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.4} />
               <XAxis dataKey="batchSize" type="number" scale="log" domain={['dataMin', 'dataMax']} tickFormatter={(v) => (v >= 1000 ? `${v / 1000}k` : v)} label={{ position: 'bottom', value: 'Batch (log)', fontSize: 10 }} />
               <YAxis tickFormatter={(v) => `$${Number(v).toFixed(0)}`} label={{ value: 'USD / 1M', angle: -90, position: 'insideLeft', fontSize: 10 }} />
               <Tooltip formatter={(v: any, n: any) => [`$${Number(v).toFixed(2)}`, n]} labelFormatter={(v) => `Batch ${Number(v).toLocaleString()}`} />
-              <Area type="monotone" dataKey="totalCost1M" name="Total TCO" stroke="#5b7cfa" strokeWidth={3} fill="url(#costFill)" dot={false} />
-              <ReferenceLine x={best.batchSize} stroke="#22c48b" strokeWidth={2} label={{ position: 'top', value: 'min', fill: '#15896a', fontSize: 10 }} />
+              <Area type="monotone" dataKey="totalCost1M" name="Total TCO" stroke="#0088b0" strokeWidth={3} fill="url(#costFill)" dot={false} />
+              <ReferenceLine x={best.batchSize} stroke="#2f8365" strokeWidth={2} label={{ position: 'top', value: 'min', fill: '#1f6b51', fontSize: 10 }} />
             </ComposedChart>
           </ResponsiveContainer>
         </div>

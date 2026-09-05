@@ -23,10 +23,10 @@ export default function LessonInsideChip({ onComplete }: { onComplete: () => voi
   const arrayIntensity = n;
 
   const ops = useMemo(() => ([
-    { name: 'Dot product', intensity: 0.5, unit: 'VPU', color: '#ef4444' },
-    { name: 'Softmax / layernorm', intensity: 1.5, unit: 'VPU', color: '#f59e0b' },
-    { name: 'Matmul, B=64', intensity: 64, unit: 'MXU', color: '#3b82f6' },
-    { name: 'Matmul, B=1024', intensity: 1024, unit: 'MXU', color: '#8b5cf6' },
+    { name: 'Dot product', intensity: 0.5, unit: 'VPU', color: '#c00a60' },
+    { name: 'Softmax / layernorm', intensity: 1.5, unit: 'VPU', color: '#c8963a' },
+    { name: 'Matmul, B=64', intensity: 64, unit: 'MXU', color: '#1186ac' },
+    { name: 'Matmul, B=1024', intensity: 1024, unit: 'MXU', color: '#7b4b90' },
   ]), []);
 
   return (
@@ -138,10 +138,10 @@ export default function LessonInsideChip({ onComplete }: { onComplete: () => voi
                 tickFormatter={(v: any) => (v < 1 ? v.toFixed(1) : v.toFixed(0))}
                 label={{ value: 'Intensity (FLOPs/B, log)', angle: -90, position: 'insideLeft', fontSize: 10 }} />
               <Tooltip formatter={(v: any, _n: any, p: any) => [`${Number(v).toFixed(1)} FLOPs/B`, `Runs on the ${p.payload.unit}`]} />
-              <ReferenceLine y={VPU_RIDGE} stroke="#f59e0b" strokeDasharray="3 3"
-                label={{ position: 'top', value: `VPU ridge ${VPU_RIDGE.toFixed(0)}`, fill: '#f59e0b', fontSize: 10 }} />
-              <ReferenceLine y={MXU_RIDGE} stroke="#f43f5e" strokeDasharray="3 3"
-                label={{ position: 'top', value: `MXU ridge ${MXU_RIDGE.toFixed(0)}`, fill: '#f43f5e', fontSize: 10 }} />
+              <ReferenceLine y={VPU_RIDGE} stroke="#c8963a" strokeDasharray="3 3"
+                label={{ position: 'top', value: `VPU ridge ${VPU_RIDGE.toFixed(0)}`, fill: '#c8963a', fontSize: 10 }} />
+              <ReferenceLine y={MXU_RIDGE} stroke="#d6006c" strokeDasharray="3 3"
+                label={{ position: 'top', value: `MXU ridge ${MXU_RIDGE.toFixed(0)}`, fill: '#d6006c', fontSize: 10 }} />
               <Bar dataKey="intensity" radius={[6, 6, 0, 0]}>
                 {ops.map((o) => <Cell key={o.name} fill={o.color} />)}
               </Bar>

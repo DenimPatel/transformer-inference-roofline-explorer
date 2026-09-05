@@ -1,8 +1,8 @@
 import React from 'react';
 import { cn } from '../../lib/utils';
 
-const COLOR_K = '#5b7cfa';
-const COLOR_V = '#22c48b';
+const COLOR_K = '#0088b0';
+const COLOR_V = '#2f8365';
 
 // Round an element of a K/V vector for the mini display.
 function fmtCell(v: number): string {

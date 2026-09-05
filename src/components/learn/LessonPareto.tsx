@@ -57,8 +57,8 @@ export default function LessonPareto({ onComplete }: { onComplete: () => void })
                 <XAxis dataKey="batchSize" type="number" scale="log" domain={['dataMin', 'dataMax']} tickFormatter={(v) => (v >= 1000 ? `${v / 1000}k` : v)} label={{ position: 'bottom', value: 'Batch (log)', fontSize: 10 }} />
                 <YAxis tickFormatter={(v) => `${v.toFixed(1)}`} label={{ value: 'ms', angle: -90, position: 'insideLeft', fontSize: 10 }} />
                 <Tooltip formatter={(v: any) => [`${Number(v).toFixed(1)} ms`, 'Latency']} labelFormatter={(v) => `Batch ${Number(v).toLocaleString()}`} />
-                <Line type="monotone" dataKey="latency" stroke="#f25f7d" strokeWidth={3} dot={false} />
-                <ReferenceLine x={batch} stroke="#475569" strokeWidth={2} />
+                <Line type="monotone" dataKey="latency" stroke="#ff458e" strokeWidth={3} dot={false} />
+                <ReferenceLine x={batch} stroke="#605d5d" strokeWidth={2} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -69,8 +69,8 @@ export default function LessonPareto({ onComplete }: { onComplete: () => void })
                 <XAxis dataKey="batchSize" type="number" scale="log" domain={['dataMin', 'dataMax']} tickFormatter={(v) => (v >= 1000 ? `${v / 1000}k` : v)} label={{ position: 'bottom', value: 'Batch (log)', fontSize: 10 }} />
                 <YAxis tickFormatter={(v) => `${v.toFixed(0)}`} label={{ value: 'tok/s', angle: -90, position: 'insideLeft', fontSize: 10 }} />
                 <Tooltip formatter={(v: any) => [`${Number(v).toFixed(0)} tok/s`, 'Throughput']} labelFormatter={(v) => `Batch ${Number(v).toLocaleString()}`} />
-                <Line type="monotone" dataKey="throughput" stroke="#22c48b" strokeWidth={3} dot={false} />
-                <ReferenceLine x={batch} stroke="#475569" strokeWidth={2} />
+                <Line type="monotone" dataKey="throughput" stroke="#2f8365" strokeWidth={3} dot={false} />
+                <ReferenceLine x={batch} stroke="#605d5d" strokeWidth={2} />
               </ComposedChart>
             </ResponsiveContainer>
           </div>

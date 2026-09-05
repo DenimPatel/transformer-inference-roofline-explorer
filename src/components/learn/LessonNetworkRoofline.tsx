@@ -136,11 +136,11 @@ export default function LessonNetworkRoofline({ onComplete }: { onComplete: () =
                 label={{ value: '% of peak FLOPs', angle: -90, position: 'insideLeft', fontSize: 10 }} />
               <Tooltip formatter={(v: any) => [`${Number(v).toFixed(0)}%`, 'of peak']}
                 labelFormatter={(v: any) => `D = ${Number(v).toLocaleString()}`} />
-              <ReferenceLine x={8755} stroke="#f43f5e" strokeDasharray="3 3"
-                label={{ position: 'top', value: 'ICI needs D > 8755', fill: '#f43f5e', fontSize: 10 }} />
-              <ReferenceLine x={D} stroke="#475569" />
-              <Line type="monotone" dataKey="ici" name="ICI / NVLink" stroke="#5b7cfa" strokeWidth={3} dot={false} />
-              <Line type="monotone" dataKey="dcn" name="DCN / InfiniBand" stroke="#f59e0b" strokeWidth={3} strokeDasharray="6 4" dot={false} />
+              <ReferenceLine x={8755} stroke="#d6006c" strokeDasharray="3 3"
+                label={{ position: 'top', value: 'ICI needs D > 8755', fill: '#d6006c', fontSize: 10 }} />
+              <ReferenceLine x={D} stroke="#605d5d" />
+              <Line type="monotone" dataKey="ici" name="ICI / NVLink" stroke="#0088b0" strokeWidth={3} dot={false} />
+              <Line type="monotone" dataKey="dcn" name="DCN / InfiniBand" stroke="#c8963a" strokeWidth={3} strokeDasharray="6 4" dot={false} />
             </ComposedChart>
           </ResponsiveContainer>
         </div>

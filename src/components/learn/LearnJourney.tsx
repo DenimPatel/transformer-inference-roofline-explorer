@@ -2,10 +2,9 @@ import { useEffect, useState } from 'react';
 import type { ComponentType, CSSProperties } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
-  GraduationCap, Gauge, Percent, Layers, Timer, Database, DollarSign, SlidersHorizontal, ArrowLeft, ArrowRight, Play, CheckCircle2, FlaskConical,
+  Gauge, Percent, Layers, Timer, Database, DollarSign, SlidersHorizontal, ArrowLeft, ArrowRight, Play, CheckCircle2, FlaskConical,
   MemoryStick, Network, BrainCircuit, Workflow, Cpu, Grid3x3,
 } from 'lucide-react';
-import GlassCard from '../ui/GlassCard';
 import LessonRoofline from './LessonRoofline';
 import LessonIntensity from './LessonIntensity';
 import LessonPrefillGen from './LessonPrefillGen';
@@ -20,6 +19,9 @@ import LessonServing from './LessonServing';
 import LessonInsideChip from './LessonInsideChip';
 import LessonNetworkRoofline from './LessonNetworkRoofline';
 import { cn } from '../../lib/utils';
+import { HARDWARE_PROFILES } from '../../lib/hardware';
+import { MODEL_PROFILES } from '../../lib/models';
+import { CONCEPTS } from '../../lib/concepts';
 
 const STORAGE_KEY = 'roofline-learn-progress';
 
@@ -113,8 +115,8 @@ export default function LearnJourney({ onLab }: { onLab: () => void }) {
             <button
               type="button"
               onClick={onLab}
-              className="inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold text-white"
-              style={{ background: 'linear-gradient(135deg, #5b7cfa, #7f6bf0)' }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-[var(--color-accent)] hover:bg-[var(--color-accent-600)]"
+
             >
               <FlaskConical style={{ width: 14, height: 14 }} /> Open in Lab
             </button>
@@ -146,8 +148,8 @@ export default function LearnJourney({ onLab }: { onLab: () => void }) {
             <button
               type="button"
               onClick={() => setCurrent(LESSONS[idx + 1].id)}
-              className="inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-semibold text-white"
-              style={{ background: 'linear-gradient(135deg, #5b7cfa, #7f6bf0)' }}
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-[var(--color-accent)] hover:bg-[var(--color-accent-600)]"
+
             >
               Next: {LESSONS[idx + 1].title} <ArrowRight style={{ width: 16, height: 16 }} />
             </button>
@@ -155,8 +157,8 @@ export default function LearnJourney({ onLab }: { onLab: () => void }) {
             <button
               type="button"
               onClick={onLab}
-              className="inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-semibold text-white"
-              style={{ background: 'linear-gradient(135deg, #22c48b, #149263)' }}
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-[var(--color-accent-2)] hover:bg-[var(--color-accent-2-700)]"
+
             >
               <FlaskConical style={{ width: 15, height: 15 }} /> Put it together in the Lab
             </button>
@@ -169,38 +171,70 @@ export default function LearnJourney({ onLab }: { onLab: () => void }) {
   // ---- Overview ----
   const done = completed.length;
   const pct = Math.round((done / LESSONS.length) * 100);
+  const readingMinutes = LESSONS.reduce((sum, l) => sum + l.minutes, 0);
 
   return (
     <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="max-w-5xl mx-auto pt-4 pb-16">
-      <GlassCard className="p-6 mb-6 shimmer" hover>
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-          <div className="flex items-center justify-center w-14 h-14 rounded-2xl text-white shrink-0"
-            style={{ background: 'linear-gradient(135deg, #5b7cfa, #7f6bf0)' }}>
-            <GraduationCap style={{ width: 26, height: 26 }} />
-          </div>
-          <div className="flex-1">
-            <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Learn how transformer inference really works</h2>
-            <p className="text-sm text-slate-500 mt-1">
-              A guided, interactive intro to the roofline, arithmetic intensity, batch size, latency and cost — drawn from the{' '}
-              <em>How to Scale Your Model</em> reference. Complete the checkpoints, then experiment in the Lab.
-            </p>
-          </div>
+      {/* Masthead */}
+      <section className="hero">
+        <span className="section-kicker section-kicker--accent">A working model</span>
+        <h1>
+          Transformer inference,<br />priced by the byte.
+        </h1>
+        <p>
+          Why a decoder spends its life waiting on memory, what a batch actually buys you, and
+          where the money goes — worked through interactively, one lesson at a time, then left
+          open for you to experiment in the Lab.
+        </p>
+      </section>
+
+      <section className="pb-8">
+        <div className="stats" />
+        <p className="stats-row">
+          <span>Roofline analysis</span>
+          <span>Compiled by Denim Patel</span>
+          <span>After &ldquo;How to Scale Your Model&rdquo;</span>
+          <span>{readingMinutes} min read</span>
+        </p>
+        <div className="stats-rule" />
+        <div className="stats-grid">
+          <p className="stat">
+            <span>Lessons</span><span className="stat-fill" />
+            <span className="stat-value stat-value--accent">{LESSONS.length}</span>
+          </p>
+          <p className="stat">
+            <span>Lessons completed</span><span className="stat-fill" />
+            <span className="stat-value">{done}</span>
+          </p>
+          <p className="stat">
+            <span>Hardware profiles</span><span className="stat-fill" />
+            <span className="stat-value">{HARDWARE_PROFILES.length}</span>
+          </p>
+          <p className="stat">
+            <span>Model profiles</span><span className="stat-fill" />
+            <span className="stat-value">{MODEL_PROFILES.length}</span>
+          </p>
+          <p className="stat">
+            <span>Concepts glossed</span><span className="stat-fill" />
+            <span className="stat-value">{CONCEPTS.length}</span>
+          </p>
+          <p className="stat">
+            <span>Progress</span><span className="stat-fill" />
+            <span className="stat-value">{pct}%</span>
+          </p>
         </div>
-        <div className="mt-5">
-          <div className="flex justify-between text-xs mb-1.5">
-            <span className="text-slate-500 font-medium">Progress</span>
-            <span className="font-mono text-slate-600">{done}/{LESSONS.length} · {pct}%</span>
-          </div>
-          <div className="h-2.5 rounded-full bg-slate-200/60 overflow-hidden">
-            <motion.div
-              className="h-full rounded-full"
-              style={{ background: 'linear-gradient(90deg, #5b7cfa, #22c48b)' }}
-              animate={{ width: `${pct}%` }}
-              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            />
-          </div>
+        <div className="stats-rule" />
+        <div className="h-1 bg-slate-200 mt-4 overflow-hidden">
+          <motion.div
+            className="h-full"
+            style={{ background: 'var(--color-accent)' }}
+            animate={{ width: `${pct}%` }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          />
         </div>
-      </GlassCard>
+      </section>
+
+      <span className="section-kicker">The course</span>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {LESSONS.map((l, i) => {
@@ -217,8 +251,7 @@ export default function LearnJourney({ onLab }: { onLab: () => void }) {
               className="glass-card glass-card-hover shimmer p-5 text-left relative overflow-hidden"
             >
               <div className="flex items-center gap-3 mb-3">
-                <span className="flex items-center justify-center w-9 h-9 rounded-xl text-white shrink-0"
-                  style={{ background: 'linear-gradient(135deg, #5b7cfa, #7f6bf0)' }}>
+                <span className="flex items-center justify-center w-9 h-9 shrink-0 text-[var(--color-accent-700)] border border-[var(--color-divider)] bg-[var(--color-accent-100)]">
                   <Comp style={{ width: 18, height: 18 }} />
                 </span>
                 <div className="flex-1">
@@ -228,14 +261,14 @@ export default function LearnJourney({ onLab }: { onLab: () => void }) {
                 {isDone ? (
                   <CheckCircle2 className="text-emerald-500 shrink-0" style={{ width: 20, height: 20 }} />
                 ) : (
-                  <span className="flex items-center justify-center w-8 h-8 rounded-full bg-white/70 text-[var(--color-accent)] shrink-0">
+                  <span className="flex items-center justify-center w-8 h-8 rounded-full bg-[var(--color-surface)] text-[var(--color-accent)] shrink-0">
                     <Play style={{ width: 16, height: 16 }} />
                   </span>
                 )}
               </div>
               <p className="text-[13px] text-slate-500 leading-relaxed">{l.summary}</p>
-              <div className={cn('mt-3 h-1 rounded-full', isDone ? 'bg-emerald-400' : 'bg-slate-200/70')}>
-                {isDone && <div className="h-full rounded-full bg-emerald-400" style={{ width: '100%' }} />}
+              <div className={cn('mt-3 h-1 rounded-full', isDone ? 'bg-emerald-500' : 'bg-slate-200')}>
+                {isDone && <div className="h-full rounded-full bg-emerald-500" style={{ width: '100%' }} />}
               </div>
             </motion.button>
           );
