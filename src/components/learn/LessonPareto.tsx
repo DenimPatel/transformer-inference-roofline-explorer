@@ -4,7 +4,7 @@ import {
 } from 'recharts';
 import GlassCard from '../ui/GlassCard';
 import { ConceptTag } from '../ui/ConceptTag';
-import LessonShell from './LessonShell';
+import SectionBody from '../shell/SectionBody';
 import Checkpoint from './Checkpoint';
 import SliderControl from '../ui/SliderControl';
 import { physicalUnits, computeRow, maxThroughput } from '../../lib/roofline';
@@ -25,7 +25,7 @@ export default function LessonPareto({ onComplete }: { onComplete: () => void })
   const row = computeRow(batch, UNITS, X);
 
   return (
-    <LessonShell
+    <SectionBody
       number={4}
       title="Latency vs Throughput & the Critical Batch"
       subtitle="Small batches are fast but waste the hardware; big batches are efficient but add latency and KV-memory pressure."
@@ -99,7 +99,7 @@ export default function LessonPareto({ onComplete }: { onComplete: () => void })
           },
         ]}
       />
-    </LessonShell>
+    </SectionBody>
   );
 }
 

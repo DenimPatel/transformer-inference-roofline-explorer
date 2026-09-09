@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { ComposedChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import GlassCard from '../ui/GlassCard';
 import { ConceptTag } from '../ui/ConceptTag';
-import LessonShell from './LessonShell';
+import SectionBody from '../shell/SectionBody';
 import Checkpoint from './Checkpoint';
 import SliderControl from '../ui/SliderControl';
 import { cn } from '../../lib/utils';
@@ -39,7 +39,7 @@ export default function LessonNetworkRoofline({ onComplete }: { onComplete: () =
   }, []);
 
   return (
-    <LessonShell
+    <SectionBody
       number={13}
       title="The Network Roofline"
       subtitle="Once a model spans chips, the fabric becomes the roof — and the threshold stops depending on batch size."
@@ -206,6 +206,6 @@ export default function LessonNetworkRoofline({ onComplete }: { onComplete: () =
           },
         ]}
       />
-    </LessonShell>
+    </SectionBody>
   );
 }

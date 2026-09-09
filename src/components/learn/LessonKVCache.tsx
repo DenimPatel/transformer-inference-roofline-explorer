@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion } from 'motion/react';
 import GlassCard from '../ui/GlassCard';
 import { ConceptTag } from '../ui/ConceptTag';
-import LessonShell from './LessonShell';
+import SectionBody from '../shell/SectionBody';
 import Checkpoint from './Checkpoint';
 import SliderControl from '../ui/SliderControl';
 
@@ -23,7 +23,7 @@ export default function LessonKVCache({ onComplete }: { onComplete: () => void }
   const total = PARAMS_BYTES + kvBytes;
 
   return (
-    <LessonShell
+    <SectionBody
       number={5}
       title="The KV Cache: Where Inference Memory Goes"
       subtitle="The caches that accelerate generation can dwarf your parameters — and that is the memory/bandwidth cost that matters."
@@ -112,7 +112,7 @@ export default function LessonKVCache({ onComplete }: { onComplete: () => void }
           },
         ]}
       />
-    </LessonShell>
+    </SectionBody>
   );
 }
 

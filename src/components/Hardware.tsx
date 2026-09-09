@@ -637,7 +637,7 @@ export default function HardwareTab() {
             <strong>Batch size fixes memory rooflines. Model width fixes network rooflines.</strong> The HBM rule and the
             data-parallel rule both have <i>B</i> in them, so batching your way out works. The tensor-parallel rule and
             the 2-chip <i>D/2</i> rule do not contain <i>B</i> at all — no amount of batching helps, and the only levers
-            are a wider model, a faster link, or less sharding. Lesson 9 walks through each parallelism strategy in turn.
+            are a wider model, a faster link, or less sharding. “Sharding the model” walks through each parallelism strategy in turn.
           </p>
         </div>
       </SectionCard>

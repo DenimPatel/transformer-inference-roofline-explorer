@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { ComposedChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Area, AreaChart } from 'recharts';
 import GlassCard from '../ui/GlassCard';
 import { ConceptTag } from '../ui/ConceptTag';
-import LessonShell from './LessonShell';
+import SectionBody from '../shell/SectionBody';
 import Checkpoint from './Checkpoint';
 import SliderControl from '../ui/SliderControl';
 
@@ -35,7 +35,7 @@ export default function LessonAttention({ onComplete }: { onComplete: () => void
   }, [D]);
 
   return (
-    <LessonShell
+    <SectionBody
       number={10}
       title="Attention Deep Dive"
       subtitle="Attention intensity ST/(S+T) flips from compute-bound prefill to always-memory-bound generation."
@@ -154,6 +154,6 @@ export default function LessonAttention({ onComplete }: { onComplete: () => void
           },
         ]}
       />
-    </LessonShell>
+    </SectionBody>
   );
 }

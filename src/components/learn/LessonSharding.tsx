@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ComposedChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Cell } from 'recharts';
 import GlassCard from '../ui/GlassCard';
 import { ConceptTag } from '../ui/ConceptTag';
-import LessonShell from './LessonShell';
+import SectionBody from '../shell/SectionBody';
 import Checkpoint from './Checkpoint';
 import SliderControl from '../ui/SliderControl';
 import { cn } from '../../lib/utils';
@@ -60,7 +60,7 @@ export default function LessonSharding({ onComplete }: { onComplete: () => void 
   })();
 
   return (
-    <LessonShell
+    <SectionBody
       number={9}
       title="Distributing the Model"
       subtitle="Data, tensor, pipeline and expert parallelism — and the roofline rules that say when each becomes communication-bound."
@@ -177,6 +177,6 @@ export default function LessonSharding({ onComplete }: { onComplete: () => void 
           },
         ]}
       />
-    </LessonShell>
+    </SectionBody>
   );
 }

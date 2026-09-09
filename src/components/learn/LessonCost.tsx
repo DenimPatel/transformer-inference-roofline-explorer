@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Area, ComposedChart } from 'recharts';
 import GlassCard from '../ui/GlassCard';
 import { ConceptTag } from '../ui/ConceptTag';
-import LessonShell from './LessonShell';
+import SectionBody from '../shell/SectionBody';
 import Checkpoint from './Checkpoint';
 import SliderControl from '../ui/SliderControl';
 import { physicalUnits, computeRow } from '../../lib/roofline';
@@ -41,7 +41,7 @@ export default function LessonCost({ onComplete }: { onComplete: () => void }) {
   const best = useMemo(() => curve.reduce((a, b) => (b.totalCost1M < a.totalCost1M ? b : a)), [curve]);
 
   return (
-    <LessonShell
+    <SectionBody
       number={6}
       title="Total Cost of Ownership"
       subtitle="Electricity plus amortized hardware — and why location, utilization, and batch all move the price."
@@ -125,7 +125,7 @@ export default function LessonCost({ onComplete }: { onComplete: () => void }) {
           },
         ]}
       />
-    </LessonShell>
+    </SectionBody>
   );
 }
 

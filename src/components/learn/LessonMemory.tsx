@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, ComposedChart, Bar, Cell } from 'recharts';
 import GlassCard from '../ui/GlassCard';
 import { ConceptTag } from '../ui/ConceptTag';
-import LessonShell from './LessonShell';
+import SectionBody from '../shell/SectionBody';
 import Checkpoint from './Checkpoint';
 import SliderControl from '../ui/SliderControl';
 import { cn } from '../../lib/utils';
@@ -33,7 +33,7 @@ export default function LessonMemory({ onComplete }: { onComplete: () => void })
   ];
 
   return (
-    <LessonShell
+    <SectionBody
       number={8}
       title="Memory Hierarchy & the On-Chip Wall"
       subtitle="HBM is big and slow; on-chip VMEM is tiny but ~22x faster — and it decides whether you can saturate the math units."
@@ -197,6 +197,6 @@ export default function LessonMemory({ onComplete }: { onComplete: () => void })
           },
         ]}
       />
-    </LessonShell>
+    </SectionBody>
   );
 }

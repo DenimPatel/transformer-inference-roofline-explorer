@@ -4,7 +4,7 @@ import {
 } from 'recharts';
 import GlassCard from '../ui/GlassCard';
 import { ConceptTag } from '../ui/ConceptTag';
-import LessonShell from './LessonShell';
+import SectionBody from '../shell/SectionBody';
 import Checkpoint from './Checkpoint';
 import { cn } from '../../lib/utils';
 
@@ -29,7 +29,7 @@ export default function LessonIntensity({ onComplete }: { onComplete: () => void
   }, [D, F]);
 
   return (
-    <LessonShell
+    <SectionBody
       number={2}
       title="Arithmetic Intensity & The B Rule"
       subtitle="How much math you get per byte — and why a matmul is compute-bound iff its token batch exceeds the ridge."
@@ -176,6 +176,6 @@ export default function LessonIntensity({ onComplete }: { onComplete: () => void
           },
         ]}
       />
-    </LessonShell>
+    </SectionBody>
   );
 }

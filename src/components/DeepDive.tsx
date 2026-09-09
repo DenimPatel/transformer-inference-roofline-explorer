@@ -1892,7 +1892,7 @@ function WorkedProblemsSection({ peakFlops, peakBw, hardwareIntensity }: any) {
         </div>
         <Answer id="q3">
           <p>Both curves saturate at the hardware peak (~{(bf16Flops / 1e12).toFixed(0)} TFLOP/s on the textbook TPU), but the bigger model crosses the ridge at a smaller batch. Small matmuls need ~2&times; the batch to become compute-bound.</p>
-          <p className="text-[10px] text-slate-400">This mirrors the Interactive Lab: small batches are memory-bound, and the crossover is set by the hardware ridge (≈{fmtNum(hardwareIntensity)} here).</p>
+          <p className="text-[10px] text-slate-400">Small batches are memory-bound, and the crossover is set by the hardware ridge (≈{fmtNum(hardwareIntensity)} here).</p>
         </Answer>
       </Q>
 

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { ComposedChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import GlassCard from '../ui/GlassCard';
 import { ConceptTag } from '../ui/ConceptTag';
-import LessonShell from './LessonShell';
+import SectionBody from '../shell/SectionBody';
 import Checkpoint from './Checkpoint';
 import SliderControl from '../ui/SliderControl';
 import { SystolicArray } from '../Hardware';
@@ -30,7 +30,7 @@ export default function LessonInsideChip({ onComplete }: { onComplete: () => voi
   ]), []);
 
   return (
-    <LessonShell
+    <SectionBody
       number={12}
       title="Inside the Chip"
       subtitle="The MXU manufactures arithmetic intensity; the VPU has a ridge of its own. Knowing which unit runs your op is half of diagnosing it."
@@ -150,7 +150,7 @@ export default function LessonInsideChip({ onComplete }: { onComplete: () => voi
         </div>
         <p className="text-xs text-slate-400 mt-3">
           The two elementwise ops sit below <em>both</em> lines, so no hardware choice rescues them. The matmuls climb
-          with batch, which is the entire content of the B-rule you learned in Lesson 2.
+          with batch, which is the entire content of the B-rule in “Arithmetic intensity”.
         </p>
       </GlassCard>
 
@@ -192,6 +192,6 @@ export default function LessonInsideChip({ onComplete }: { onComplete: () => voi
           },
         ]}
       />
-    </LessonShell>
+    </SectionBody>
   );
 }

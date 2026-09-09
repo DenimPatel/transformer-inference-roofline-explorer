@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import GlassCard from '../ui/GlassCard';
 import { ConceptTag } from '../ui/ConceptTag';
-import LessonShell from './LessonShell';
+import SectionBody from '../shell/SectionBody';
 import Checkpoint from './Checkpoint';
 import SliderControl from '../ui/SliderControl';
 import { cn } from '../../lib/utils';
@@ -56,7 +56,7 @@ export default function LessonServing({ onComplete }: { onComplete: () => void }
   const pDisplay = Math.ceil(requiredP);
 
   return (
-    <LessonShell
+    <SectionBody
       number={11}
       title="Serving Systems"
       subtitle="TTFT, continuous batching, disaggregation, prefix caching and speculative decoding — how real engines turn the roofline into an SLA."
@@ -150,6 +150,6 @@ export default function LessonServing({ onComplete }: { onComplete: () => void }
           },
         ]}
       />
-    </LessonShell>
+    </SectionBody>
   );
 }

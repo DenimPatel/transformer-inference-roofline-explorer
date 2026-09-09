@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Cell } from 'recharts';
 import GlassCard from '../ui/GlassCard';
 import { ConceptTag } from '../ui/ConceptTag';
-import LessonShell from './LessonShell';
+import SectionBody from '../shell/SectionBody';
 import Checkpoint from './Checkpoint';
 import SliderControl from '../ui/SliderControl';
 import { cn } from '../../lib/utils';
@@ -23,7 +23,7 @@ export default function LessonQuant({ onComplete }: { onComplete: () => void }) 
   const isComputeAt = (bCrit: number) => B >= bCrit;
 
   return (
-    <LessonShell
+    <SectionBody
       number={7}
       title="Quantization & the β Rule"
       subtitle="Lowering bytes-per-parameter changes intensity and moves the critical batch size."
@@ -94,6 +94,6 @@ export default function LessonQuant({ onComplete }: { onComplete: () => void }) 
           },
         ]}
       />
-    </LessonShell>
+    </SectionBody>
   );
 }

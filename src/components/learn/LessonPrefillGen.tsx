@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 import { Layers, Zap } from 'lucide-react';
 import GlassCard from '../ui/GlassCard';
 import { ConceptTag } from '../ui/ConceptTag';
-import LessonShell from './LessonShell';
+import SectionBody from '../shell/SectionBody';
 import Checkpoint from './Checkpoint';
 import { cn } from '../../lib/utils';
 
@@ -30,7 +30,7 @@ export default function LessonPrefillGen({ onComplete }: { onComplete: () => voi
   const [go, setGo] = useState(true);
 
   return (
-    <LessonShell
+    <SectionBody
       number={3}
       title="Prefill vs Generation: Why Inference Flips the Roofline"
       subtitle="Inference is two different workloads. Prefill is compute-bound; generation is almost always memory-bound."
@@ -48,7 +48,7 @@ export default function LessonPrefillGen({ onComplete }: { onComplete: () => voi
           <strong className="text-slate-800">Prefill</strong> processes a long prompt all at once — weights are reused
           across thousands of tokens, so it saturates the FLOPs. <strong className="text-slate-800">Generation</strong>{' '}
           emits one token at a time and must stream the entire parameter set plus its KV cache every step — so bytes
-          dominate. That is why the Interactive Lab's decode model sits below the ridge.
+          dominate. That is why your configured decode step sits below the ridge.
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -117,6 +117,6 @@ export default function LessonPrefillGen({ onComplete }: { onComplete: () => voi
           },
         ]}
       />
-    </LessonShell>
+    </SectionBody>
   );
 }
