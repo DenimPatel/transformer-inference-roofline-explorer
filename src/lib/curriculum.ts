@@ -1,20 +1,22 @@
 import type { ComponentType } from 'react';
 
 import Orientation from '../components/sections/Orientation';
-
-import LessonInsideChip from '../components/learn/LessonInsideChip';
-import LessonMemory from '../components/learn/LessonMemory';
-import LessonNetworkRoofline from '../components/learn/LessonNetworkRoofline';
+import InsideTheChip from '../components/sections/InsideTheChip';
+import MemoryHierarchy from '../components/sections/MemoryHierarchy';
+import TheFabric from '../components/sections/TheFabric';
 import OneToken from '../components/sections/OneToken';
-import LessonAttention from '../components/learn/LessonAttention';
-import LessonKVCache from '../components/learn/LessonKVCache';
-import LessonIntensity from '../components/learn/LessonIntensity';
+import Attention from '../components/sections/Attention';
+import KvCache from '../components/sections/KvCache';
+import Moe from '../components/sections/Moe';
+import ArithmeticIntensity from '../components/sections/ArithmeticIntensity';
 import TheRoofline from '../components/sections/TheRoofline';
-import LessonPrefillGen from '../components/learn/LessonPrefillGen';
-import LessonQuant from '../components/learn/LessonQuant';
-import LessonPareto from '../components/learn/LessonPareto';
-import LessonSharding from '../components/learn/LessonSharding';
-import LessonServing from '../components/learn/LessonServing';
+import PrefillVsGeneration from '../components/sections/PrefillVsGeneration';
+import Quantization from '../components/sections/Quantization';
+import SecondRidge from '../components/sections/SecondRidge';
+import LatencyVsThroughput from '../components/sections/LatencyVsThroughput';
+import Sharding from '../components/sections/Sharding';
+import ServingInPractice from '../components/sections/ServingInPractice';
+import DoesItFit from '../components/sections/DoesItFit';
 import Tco from '../components/sections/Tco';
 import ComparingHardware from '../components/sections/ComparingHardware';
 
@@ -83,7 +85,7 @@ export const CURRICULUM: Part[] = [
           'Matrix multiplication does not happen in a general-purpose core. It happens in a dedicated grid of multipliers, and that grid has its own rules.',
         minutes: 7,
         concepts: ['systolic-array', 'tpu-architecture', 'sm-streaming-multiprocessor', 'vector-unit-ridge'],
-        Component: LessonInsideChip,
+        Component: InsideTheChip,
       },
       {
         id: 'memory-hierarchy',
@@ -92,7 +94,7 @@ export const CURRICULUM: Part[] = [
           'On-chip memory is roughly twenty times faster than HBM. Almost every optimisation in this site is a way of staying on the fast side of that gap.',
         minutes: 6,
         concepts: ['memory-hierarchy', 'tiling', 'flash-attention'],
-        Component: LessonMemory,
+        Component: MemoryHierarchy,
       },
       {
         id: 'the-fabric',
@@ -101,7 +103,7 @@ export const CURRICULUM: Part[] = [
           'Once a model spans more than one chip, the network gets a roofline of its own — and batching cannot lift it.',
         minutes: 7,
         concepts: ['network-roofline', 'collectives', 'nvlink-domain', 'ici-topology', 'tpu-networking'],
-        Component: LessonNetworkRoofline,
+        Component: TheFabric,
       },
     ],
   },
@@ -127,7 +129,7 @@ export const CURRICULUM: Part[] = [
           'Attention is compute-bound while reading a prompt and memory-bound while writing an answer. That single flip explains most of what follows.',
         minutes: 6,
         concepts: ['attention-intensity', 'attention-flops', 'flash-attention', 'gqa', 'attention-params'],
-        Component: LessonAttention,
+        Component: Attention,
       },
       {
         id: 'kv-cache',
@@ -136,7 +138,16 @@ export const CURRICULUM: Part[] = [
           'Generation avoids redoing work by remembering it. The memory that remembering costs is where inference capacity actually goes.',
         minutes: 6,
         concepts: ['kv-cache', 'gqa', 'paged-attention', 'kv-sharding'],
-        Component: LessonKVCache,
+        Component: KvCache,
+      },
+      {
+        id: 'moe',
+        title: 'Mixture of experts',
+        standfirst:
+          'A large model that only uses a small part of itself per token breaks the link between size and arithmetic — and moves the two limits in opposite directions.',
+        minutes: 5,
+        concepts: ['moe', 'expert-parallelism', 'flops-per-token'],
+        Component: Moe,
       },
     ],
   },
@@ -154,7 +165,7 @@ export const CURRICULUM: Part[] = [
           'Every operation has a ratio: how much arithmetic it does per byte it moves. That one number decides which of the chip’s budgets you run out of first.',
         minutes: 6,
         concepts: ['arithmetic-intensity', 'matmul-intensity', 'flops-per-token', 'dot-product-intensity'],
-        Component: LessonIntensity,
+        Component: ArithmeticIntensity,
       },
       {
         id: 'the-roofline',
@@ -172,7 +183,7 @@ export const CURRICULUM: Part[] = [
           'Reading a prompt and writing a reply are the same arithmetic at different batch sizes — which is why one saturates the chip and the other starves it.',
         minutes: 5,
         concepts: ['prefill', 'generation', 'critical-batch', 'ttft'],
-        Component: LessonPrefillGen,
+        Component: PrefillVsGeneration,
       },
       {
         id: 'quantization',
@@ -181,7 +192,16 @@ export const CURRICULUM: Part[] = [
           'Using fewer bits per weight moves the ridge. It buys throughput not by making the maths faster but by making the bytes fewer.',
         minutes: 5,
         concepts: ['quantization', 'critical-batch', 'ridge-point'],
-        Component: LessonQuant,
+        Component: Quantization,
+      },
+      {
+        id: 'second-ridge',
+        title: 'The second ridge',
+        standfirst:
+          'The matrix unit is not the only unit on the chip. Measured against the vector unit, softmax and layer norm have a ridge of their own — and they are always on the wrong side of it.',
+        minutes: 6,
+        concepts: ['vector-unit-ridge', 'dot-product-intensity', 'two-bandwidth-roofline'],
+        Component: SecondRidge,
       },
     ],
   },
@@ -198,7 +218,7 @@ export const CURRICULUM: Part[] = [
           'Bigger batches serve more users per second and make each of them wait longer. There is no setting that wins both.',
         minutes: 6,
         concepts: ['latency-throughput', 'critical-batch', 'ttft'],
-        Component: LessonPareto,
+        Component: LatencyVsThroughput,
       },
       {
         id: 'sharding',
@@ -210,7 +230,7 @@ export const CURRICULUM: Part[] = [
           'model-parallelism', 'tensor-parallelism', 'pipeline-parallelism',
           'expert-parallelism', 'data-parallelism', 'collectives', 'collective-matmul',
         ],
-        Component: LessonSharding,
+        Component: Sharding,
       },
       {
         id: 'serving-in-practice',
@@ -222,7 +242,16 @@ export const CURRICULUM: Part[] = [
           'continuous-batching', 'disaggregated-serving', 'prefix-caching',
           'speculative-decoding', 'paged-attention', 'ttft',
         ],
-        Component: LessonServing,
+        Component: ServingInPractice,
+      },
+      {
+        id: 'does-it-fit',
+        title: 'Does it fit?',
+        standfirst:
+          'Compute and bandwidth are rates you can be slow at. Capacity is a wall: miss it and the deployment does not run at all.',
+        minutes: 6,
+        concepts: ['kv-cache', 'quantization', 'model-parallelism', 'moe'],
+        Component: DoesItFit,
       },
     ],
   },

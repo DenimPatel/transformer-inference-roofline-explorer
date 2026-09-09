@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, ComposedChart, Bar, Cell } from 'recharts';
 import GlassCard from '../ui/GlassCard';
+import Figure from '../shell/Figure';
 import { ConceptTag } from '../ui/ConceptTag';
 import SectionBody from '../shell/SectionBody';
 import Checkpoint from './Checkpoint';
@@ -127,6 +128,7 @@ export default function LessonMemory({ onComplete }: { onComplete: () => void })
 
       <GlassCard className="p-5">
         <h3 className="font-bold text-slate-800 mb-3">Where ops land vs the on-chip & HBM ridges</h3>
+        <Figure takeaway="Each bar is one tier of the hierarchy and the intensity an operation needs to saturate it. The on-chip tiers demand far more arithmetic per byte, which is the same statement as: they are much faster.">
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={ops} margin={{ top: 10, right: 20, left: -10, bottom: 10 }}>
@@ -144,6 +146,8 @@ export default function LessonMemory({ onComplete }: { onComplete: () => void })
             </ComposedChart>
           </ResponsiveContainer>
         </div>
+        </Figure>
+        <Figure takeaway="Intensity rises with tile size, because a larger tile reuses each loaded byte more times. This is the whole mechanism behind tiling and FlashAttention — not fewer bytes, but more work per byte.">
         <div className="h-56 mt-4">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={curve} margin={{ top: 10, right: 20, left: -10, bottom: 10 }}>
@@ -157,6 +161,7 @@ export default function LessonMemory({ onComplete }: { onComplete: () => void })
             </LineChart>
           </ResponsiveContainer>
         </div>
+        </Figure>
       </GlassCard>
 
       <Checkpoint

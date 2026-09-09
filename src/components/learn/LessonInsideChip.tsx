@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { ComposedChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import GlassCard from '../ui/GlassCard';
+import Figure from '../shell/Figure';
 import { ConceptTag } from '../ui/ConceptTag';
 import SectionBody from '../shell/SectionBody';
 import Checkpoint from './Checkpoint';
@@ -129,6 +130,7 @@ export default function LessonInsideChip({ onComplete }: { onComplete: () => voi
 
       <GlassCard className="p-5">
         <h3 className="font-bold text-slate-800 mb-3">Which ridge applies to which op</h3>
+        <Figure takeaway="The matrix unit and the vector unit have very different peaks, so they have very different ridges. An elementwise operation measured against the vector unit's much lower ridge is still memory-bound.">
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={ops} margin={{ top: 10, right: 20, left: -10, bottom: 10 }}>
@@ -148,6 +150,7 @@ export default function LessonInsideChip({ onComplete }: { onComplete: () => voi
             </ComposedChart>
           </ResponsiveContainer>
         </div>
+        </Figure>
         <p className="text-xs text-slate-400 mt-3">
           The two elementwise ops sit below <em>both</em> lines, so no hardware choice rescues them. The matmuls climb
           with batch, which is the entire content of the B-rule in “Arithmetic intensity”.

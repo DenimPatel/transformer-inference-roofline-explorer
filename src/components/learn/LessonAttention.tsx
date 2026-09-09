@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { ComposedChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Area, AreaChart } from 'recharts';
 import GlassCard from '../ui/GlassCard';
+import Figure from '../shell/Figure';
 import { ConceptTag } from '../ui/ConceptTag';
 import SectionBody from '../shell/SectionBody';
 import Checkpoint from './Checkpoint';
@@ -81,6 +82,7 @@ export default function LessonAttention({ onComplete }: { onComplete: () => void
 
       <GlassCard className="p-5">
         <h3 className="font-bold text-slate-800 mb-3">Attention intensity vs sequence length</h3>
+        <Figure takeaway="Prefill's attention intensity grows with sequence length, so long prompts are comfortably compute-bound. Generation's sits flat at roughly 1 no matter how long the context — which is why decoding never escapes the memory-bound regime.">
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={prefillCurve} margin={{ top: 10, right: 20, left: -10, bottom: 10 }}>
@@ -94,6 +96,7 @@ export default function LessonAttention({ onComplete }: { onComplete: () => void
             </ComposedChart>
           </ResponsiveContainer>
         </div>
+        </Figure>
         <div className="flex flex-wrap gap-2 mt-3 text-[11px] text-slate-500">
           <span className="glass-chip px-2.5 py-1">At S={seq.toLocaleString()}: prefill intensity {prefillI.toFixed(0)} {prefillI >= RIDGE ? '(compute-bound ✓)' : '(still below ridge)'}</span>
           <span className="glass-chip px-2.5 py-1">Generation intensity ≈ {genI.toFixed(2)} — always bandwidth-bound</span>
@@ -102,6 +105,7 @@ export default function LessonAttention({ onComplete }: { onComplete: () => void
 
       <GlassCard className="p-5">
         <h3 className="font-bold text-slate-800 mb-3">When does attention dominate FLOPs? (ratio = T / 8D)</h3>
+        <Figure takeaway="Attention's share of total work grows with sequence length. At short contexts the feed-forward matmuls dominate and attention is a rounding error; past a few thousand tokens it becomes the thing worth optimising.">
         <div className="h-60">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={flopsCurve} margin={{ top: 10, right: 20, left: -10, bottom: 10 }}>
@@ -121,6 +125,7 @@ export default function LessonAttention({ onComplete }: { onComplete: () => void
             </AreaChart>
           </ResponsiveContainer>
         </div>
+        </Figure>
         <p className="text-[13px] text-slate-600 mt-3">
           For D ≈ {D.toLocaleString()} the crossover is near {crossover.toLocaleString()} tokens. Below that, MLP matmuls dominate FLOPs; attention is a
           memory problem (KV cache) even when it is not a FLOPs problem.

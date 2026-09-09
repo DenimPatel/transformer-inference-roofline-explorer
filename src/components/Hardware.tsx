@@ -7,6 +7,7 @@ import {
   MemoryStick, Gauge, Zap,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { useConfig } from '../state/ConfigContext';
 import { HARDWARE_PROFILES, effectiveMfu, onChipBwRatio, type HardwareProfile } from '../lib/hardware';
 import ConceptTag from './ui/ConceptTag';
 import { CHART as C } from '../lib/theme';
@@ -310,91 +311,33 @@ function MemoryTiers({ hw }: { hw: HardwareProfile }) {
 // ---------------------------------------------------------------------------
 // Main tab
 // ---------------------------------------------------------------------------
-export default function HardwareTab() {
+/**
+ * The chip these sections describe. Follows the reader's global hardware
+ * choice when that profile publishes internals, so the whole site stays on one
+ * accelerator; otherwise it falls back to a profile that does.
+ */
+function useChip() {
+  const { activeProfileId } = useConfig();
   const withInternals = HARDWARE_PROFILES.filter((h) => h.linkBwGBs !== undefined);
-  const [hwId, setHwId] = useState(withInternals.find((h) => h.id === 'TPU v5p')?.id ?? withInternals[0].id);
+  const preferred = withInternals.find((h) => h.id === activeProfileId)
+    ?? withInternals.find((h) => h.id === 'TPU v5p')
+    ?? withInternals[0];
+  const [hwId, setHwId] = useState(preferred.id);
   const hw = HARDWARE_PROFILES.find((h) => h.id === hwId) || withInternals[0];
-
   const peakFlops = hw.tflops * 1e12;
   const hbmBw = hw.memBw * 1e12;
-  const ridge = peakFlops / hbmBw;
-  const mfu = effectiveMfu(hw);
+  return {
+    withInternals, hwId, setHwId, hw, peakFlops, hbmBw,
+    ridge: peakFlops / hbmBw,
+    mfu: effectiveMfu(hw),
+  };
+}
 
-  const sections = [
-    { id: 'tpu', label: 'What Is a TPU', icon: Cpu },
-    { id: 'systolic', label: 'Systolic Array', icon: Grid3x3 },
-    { id: 'gpu', label: 'What Is a GPU', icon: Server },
-    { id: 'hierarchy', label: 'Memory Hierarchy', icon: Layers },
-    { id: 'network', label: 'Networking', icon: Network },
-    { id: 'rules', label: 'Scaling Rules', icon: Sparkles },
-  ];
 
+/** Chip internals: tpu. */
+export function HwTpu() {
+  const { withInternals, hwId, setHwId, hw, peakFlops, hbmBw, ridge, mfu } = useChip();
   return (
-    <div className="pb-16 max-w-6xl mx-auto mt-6 px-4">
-      {/* ---- Hero ---- */}
-      <section className="text-center mb-10">
-        <div className="inline-flex items-center gap-2 glass-chip px-3 py-1 text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-4">
-          <Cpu className="w-3.5 h-3.5 text-accent" /> Inside the accelerator
-        </div>
-        <h1 className="text-4xl sm:text-5xl font-extrabold text-slate-900 tracking-tight mb-4">
-          Where the roofline <span className="text-accent">comes from</span>
-        </h1>
-        <p className="text-slate-500 max-w-3xl mx-auto leading-relaxed">
-          Every ridge point on this site is a ratio of two hardware numbers. This page opens the chip up and shows you
-          where those numbers live: the <strong>matrix unit</strong> that produces the FLOPs, the <strong>memory
-          hierarchy</strong> that produces the bytes, and the <strong>network</strong> that decides how far you can shard
-          before the fabric becomes the roof.
-        </p>
-
-        {/* hardware picker */}
-        <div className="mt-6 max-w-xl mx-auto">
-          <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-2">
-            Numbers on this page follow your selection
-          </div>
-          <div className="flex flex-wrap justify-center gap-1.5">
-            {withInternals.map((h) => (
-              <button key={h.id} onClick={() => setHwId(h.id)}
-                className={cn('glass rounded-lg px-2.5 py-1.5 text-[11px] font-semibold transition-colors',
-                  hwId === h.id ? 'bg-accent text-white border-accent' : 'text-slate-600 hover:border-accent/40')}>
-                {h.id}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-8 max-w-3xl mx-auto">
-          <HeroKpi icon={Cpu} label="Matrix peak" value={fmtFlops(peakFlops)} sub={hw.computeUnits ?? hw.arch} />
-          <HeroKpi icon={MemoryStick} label="HBM" value={`${hw.memBw} TB/s`} sub={`${hw.capacity} GB`} />
-          <HeroKpi icon={Gauge} label="HBM ridge" value={fmtNum(ridge)} sub="FLOPs / byte" />
-          <HeroKpi icon={Zap} label="Realistic MFU" value={`${Math.round(mfu * 100)}%`} sub={fmtFlops(peakFlops * mfu)} />
-        </div>
-
-        <div className="flex flex-wrap justify-center gap-2 mt-6">
-          <ConceptTag id="tpu-architecture" />
-          <ConceptTag id="systolic-array" />
-          <ConceptTag id="sm-streaming-multiprocessor" />
-          <ConceptTag id="vector-unit-ridge" />
-          <ConceptTag id="memory-hierarchy" />
-          <ConceptTag id="two-bandwidth-roofline" />
-          <ConceptTag id="ici-topology" />
-          <ConceptTag id="nvlink-domain" />
-          <ConceptTag id="mfu" />
-        </div>
-      </section>
-
-      {/* ---- Section nav ---- */}
-      <nav className="sticky top-0 z-30 -mx-2 px-2 py-3 mb-8 bg-[#f3f2f2] border-b border-slate-200 rounded-2xl">
-        <div className="flex gap-1.5 overflow-x-auto custom-scrollbar py-1">
-          {sections.map((s) => (
-            <a key={s.id} href={`#${s.id}`}
-              className="shrink-0 inline-flex items-center gap-1.5 glass-chip px-3 py-1.5 text-[11px] font-semibold text-slate-600 hover:text-accent hover:border-accent/40 transition-colors">
-              <s.icon className="w-3.5 h-3.5" /> {s.label}
-            </a>
-          ))}
-        </div>
-      </nav>
-
-      {/* ---- 01 What is a TPU ---- */}
       <SectionCard id="tpu" icon={Cpu} color={C.accent} number="01" title="What Is a TPU?">
         <div className="prose prose-slate max-w-none text-slate-600 mb-6 space-y-4">
           <p>
@@ -436,8 +379,14 @@ export default function HardwareTab() {
           </p>
         </div>
       </SectionCard>
+  );
+}
 
-      {/* ---- 02 Systolic array ---- */}
+
+/** Chip internals: systolic. */
+export function HwSystolic() {
+  const { withInternals, hwId, setHwId, hw, peakFlops, hbmBw, ridge, mfu } = useChip();
+  return (
       <SectionCard id="systolic" icon={Grid3x3} color={C.compute} number="02" title="How a Systolic Array Works">
         <div className="prose prose-slate max-w-none text-slate-600 mb-6 space-y-4">
           <p>
@@ -478,8 +427,14 @@ export default function HardwareTab() {
           </div>
         </div>
       </SectionCard>
+  );
+}
 
-      {/* ---- 03 What is a GPU ---- */}
+
+/** Chip internals: gpu. */
+export function HwGpu() {
+  const { withInternals, hwId, setHwId, hw, peakFlops, hbmBw, ridge, mfu } = useChip();
+  return (
       <SectionCard id="gpu" icon={Server} color={C.violet} number="03" title="What Is a GPU?">
         <div className="prose prose-slate max-w-none text-slate-600 mb-6 space-y-4">
           <p>
@@ -532,8 +487,14 @@ export default function HardwareTab() {
           ))}
         </div>
       </SectionCard>
+  );
+}
 
-      {/* ---- 04 Memory hierarchy ---- */}
+
+/** Chip internals: hierarchy. */
+export function HwHierarchy() {
+  const { withInternals, hwId, setHwId, hw, peakFlops, hbmBw, ridge, mfu } = useChip();
+  return (
       <SectionCard id="hierarchy" icon={Layers} color={C.sky} number="04" title="Memory Hierarchy, Chip by Chip">
         <div className="prose prose-slate max-w-none text-slate-600 mb-6">
           <p>
@@ -543,8 +504,14 @@ export default function HardwareTab() {
         </div>
         <MemoryTiers hw={hw} />
       </SectionCard>
+  );
+}
 
-      {/* ---- 05 Networking ---- */}
+
+/** Chip internals: network. */
+export function HwNetwork() {
+  const { withInternals, hwId, setHwId, hw, peakFlops, hbmBw, ridge, mfu } = useChip();
+  return (
       <SectionCard id="network" icon={Network} color={C.amber} number="05" title="Networking: Torus vs Domain">
         <div className="prose prose-slate max-w-none text-slate-600 mb-6 space-y-4">
           <p>
@@ -600,8 +567,14 @@ export default function HardwareTab() {
           </p>
         </div>
       </SectionCard>
+  );
+}
 
-      {/* ---- 06 Scaling rules ---- */}
+
+/** Chip internals: rules. */
+export function HwScalingRules() {
+  const { withInternals, hwId, setHwId, hw, peakFlops, hbmBw, ridge, mfu } = useChip();
+  return (
       <SectionCard id="rules" icon={Sparkles} color={C.compute} number="06" title="Scaling Rules of Thumb">
         <div className="prose prose-slate max-w-none text-slate-600 mb-6">
           <p>
@@ -641,6 +614,6 @@ export default function HardwareTab() {
           </p>
         </div>
       </SectionCard>
-    </div>
   );
 }
+

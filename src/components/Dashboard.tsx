@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { ArrowLeft, ArrowRight, HelpCircle, SlidersHorizontal, X, List } from 'lucide-react';
 import {
@@ -12,6 +12,7 @@ import ConfigPanel from './nav/ConfigPanel';
 import Section from './shell/Section';
 import ConceptGlossary from './learn/ConceptGlossary';
 import Playground from './playground/Playground';
+import Problems from './sections/Problems';
 
 /** Sections that want the comparison checkbox list in the config panel. */
 const COMPARISON_SECTIONS = new Set(['comparing-hardware']);
@@ -44,7 +45,8 @@ function Shell() {
   }, [navigate]);
 
   const entry = findSection(route);
-  const isPlayground = route === 'playground';
+  const BENCH: Record<string, () => React.ReactElement> = { playground: Playground, problems: Problems };
+  const BenchPage = BENCH[route];
   const { prev, next } = neighbours(route);
 
   const markComplete = useCallback((id: string) => {
@@ -54,8 +56,8 @@ function Shell() {
   // An unknown slug (a stale bookmark) falls back to the front door rather
   // than rendering nothing.
   useEffect(() => {
-    if (!entry && !isPlayground) navigate(FIRST_SECTION_ID);
-  }, [entry, isPlayground, navigate]);
+    if (!entry && !BenchPage) navigate(FIRST_SECTION_ID);
+  }, [entry, BenchPage, navigate]);
 
   const showComparison = COMPARISON_SECTIONS.has(route);
 
@@ -113,8 +115,8 @@ function Shell() {
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
             >
-              {isPlayground ? (
-                <Playground />
+              {BenchPage ? (
+                <BenchPage />
               ) : entry ? (
                 <Section
                   part={`${entry.part.label} · ${entry.part.title}`}
@@ -129,7 +131,7 @@ function Shell() {
             </motion.div>
           </AnimatePresence>
 
-          {!isPlayground && (
+          {!BenchPage && (
             <nav className="flex items-stretch justify-between gap-3 mt-10 pt-6 border-t border-slate-200">
               {prev ? (
                 <button type="button" onClick={() => go(prev.section.id)}

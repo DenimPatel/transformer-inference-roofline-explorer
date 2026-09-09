@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Cell } from 'recharts';
 import GlassCard from '../ui/GlassCard';
+import Figure from '../shell/Figure';
 import { ConceptTag } from '../ui/ConceptTag';
 import SectionBody from '../shell/SectionBody';
 import Checkpoint from './Checkpoint';
@@ -43,6 +44,7 @@ export default function LessonQuant({ onComplete }: { onComplete: () => void }) 
 
         <SliderControl label="Current token batch (B)" value={B} min={1} max={1024} step={1} onChange={setB} unit="tokens" conceptId="critical-batch" />
 
+        <Figure takeaway="Each bar is a precision scheme and its critical batch. Halving the bytes per weight halves the batch you need to become compute-bound; halving the bytes *and* doubling the arithmetic rate cancels out and moves nothing.">
         <div className="h-56">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data} margin={{ top: 8, right: 12, left: -8, bottom: 30 }}>
@@ -59,6 +61,7 @@ export default function LessonQuant({ onComplete }: { onComplete: () => void }) 
             </BarChart>
           </ResponsiveContainer>
         </div>
+        </Figure>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {data.map((d) => (

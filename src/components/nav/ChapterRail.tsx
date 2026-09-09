@@ -1,5 +1,5 @@
 import { Fragment } from 'react';
-import { Check, BookOpen, FlaskConical } from 'lucide-react';
+import { Check, BookOpen, FlaskConical, PenLine } from 'lucide-react';
 import { CURRICULUM, FLAT_SECTIONS, TOTAL_MINUTES } from '../../lib/curriculum';
 
 interface ChapterRailProps {
@@ -76,6 +76,7 @@ export default function ChapterRail({
         <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400 pb-1">The bench</p>
         {[
           { label: 'Glossary', icon: BookOpen, action: onOpenGlossary },
+          { label: 'Problems', icon: PenLine, action: () => onNavigate('problems') },
           { label: 'microGPT playground', icon: FlaskConical, action: () => onNavigate('playground') },
         ].map(({ label, icon: Icon, action }) => (
           <Fragment key={label}>
