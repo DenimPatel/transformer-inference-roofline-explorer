@@ -7,6 +7,7 @@ import {
   Server, Timer, Braces, Hash, Activity,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { useConfig } from '../state/ConfigContext';
 import { HARDWARE_PROFILES } from '../lib/hardware';
 import { findModel, type ModelProfile } from '../lib/models';
 import ConceptTag from './ui/ConceptTag';
@@ -142,61 +143,27 @@ function HeroKpi({ icon: I, label, value, sub }: any) {
 // ---------------------------------------------------------------------------
 // Main tab — owns the shared GPU + precision state so every section agrees
 // ---------------------------------------------------------------------------
-export default function ServingTab() {
+/**
+ * Shared setup for the two serving sections. The accelerator now follows the
+ * reader's global configuration where it is one of the serving GPUs, instead
+ * of a dropdown private to this page; the model stays fixed because these two
+ * sections are one worked example rather than a simulator.
+ */
+function useServingCase() {
+  const { activeProfileId } = useConfig();
   const model = findModel('qwen3-8-flash-next');
-
-  const [hwId, setHwId] = useState('B200 (Blackwell)');
+  const preferred = GPU_IDS.includes(activeProfileId) ? activeProfileId : 'B200 (Blackwell)';
+  const [hwId, setHwId] = useState(preferred);
   const hw = HARDWARE_PROFILES.find((h) => h.id === hwId) || HARDWARE_PROFILES[0];
   const [precision, setPrecision] = useState(hw.bytesPerParam);
+  return { model, hw, hwId, setHwId, precision, setPrecision };
+}
 
-  const sections = [
-    { id: 'facts', label: 'Model Facts', icon: Hash },
-    { id: 'gpu', label: 'GPU', icon: Server },
-    { id: 'fit', label: 'Does It Fit?', icon: Database },
-    { id: 'budget', label: 'Per-Request Budget', icon: Gauge },
-    { id: 'where', label: 'Where Resources Go', icon: Activity },
-    { id: 'thinking', label: 'How to Think', icon: Sparkles },
-  ];
-
+/** Part IV: the capacity question — what must be resident, and does it fit. */
+export function ServingFit() {
+  const { model, hw, hwId, setHwId, precision, setPrecision } = useServingCase();
   return (
-    <div className="pb-16 max-w-6xl mx-auto mt-6 px-4">
-      {/* ---- Hero ---- */}
-      <section className="text-center mb-10">
-        <div className="inline-flex items-center gap-2 glass-chip px-3 py-1 text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-4">
-          <Rocket className="w-3.5 h-3.5 text-accent" /> Serving a real model on a real GPU
-        </div>
-        <h1 className="text-4xl sm:text-5xl font-extrabold text-slate-900 tracking-tight mb-4">
-          One request, <span className="text-accent">from first token to last</span>
-        </h1>
-        <p className="text-slate-500 max-w-3xl mx-auto leading-relaxed">
-          How many <strong>FLOPs</strong> and how much <strong>memory</strong> does a single inference
-          request actually burn — and <em>where</em> does that compute and memory go? We take
-          <strong> Qwen3.8 Flash-Next</strong> (125B params, 6B active) and serve it on NVIDIA Blackwell{' '}
-          <strong>B200</strong> or the newest <strong>Rubin R100</strong>, breaking every number down by phase.
-        </p>
-        <div className="flex flex-wrap justify-center gap-2 mt-6">
-          <ConceptTag id="prefill" />
-          <ConceptTag id="generation" />
-          <ConceptTag id="kv-cache" />
-          <ConceptTag id="moe" />
-          <ConceptTag id="linear-attention" />
-          <ConceptTag id="sparse-attention" />
-          <ConceptTag id="n-gram-embedding" />
-        </div>
-      </section>
-
-      {/* ---- Section nav ---- */}
-      <nav className="sticky top-0 z-30 -mx-2 px-2 py-3 mb-8 bg-[#f3f2f2] border-b border-slate-200 rounded-2xl">
-        <div className="flex gap-1.5 overflow-x-auto custom-scrollbar py-1">
-          {sections.map((s) => (
-            <a key={s.id} href={`#${s.id}`}
-              className="shrink-0 inline-flex items-center gap-1.5 glass-chip px-3 py-1.5 text-[11px] font-semibold text-slate-600 hover:text-accent hover:border-accent/40 transition-colors">
-              <s.icon className="w-3.5 h-3.5" /> {s.label}
-            </a>
-          ))}
-        </div>
-      </nav>
-
+    <div className="space-y-2">
       {/* 01 Model Facts */}
       <SectionCard id="facts" icon={Hash} color={C.accent} number="01" title="Model Facts">
         <div className="prose prose-slate max-w-none text-slate-600 mb-6 space-y-4">
@@ -256,14 +223,17 @@ export default function ServingTab() {
       <SectionCard id="fit" icon={Database} color={C.amber} number="03" title="Does It Fit in HBM?">
         <FitSection hw={hw} model={model} precision={precision} setPrecision={setPrecision} />
       </SectionCard>
+    </div>
+  );
+}
 
-      {/* 04 Budget */}
+/** Part IV: the per-request budget, where it goes, and how to reason about it. */
+export function ServingPractice() {
+  const { model, hw, precision } = useServingCase();
+  return (
+    <div className="space-y-2">
       <BudgetSection hw={hw} model={model} precision={precision} />
-
-      {/* 05 Where resources go */}
       <WhereResources hw={hw} model={model} precision={precision} />
-
-      {/* 06 How to think */}
       <ServThinking />
     </div>
   );

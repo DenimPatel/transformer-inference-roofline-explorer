@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Area, ComposedChart } from 'recharts';
 import GlassCard from '../ui/GlassCard';
+import Figure from '../shell/Figure';
 import { ConceptTag } from '../ui/ConceptTag';
-import LessonShell from './LessonShell';
+import SectionBody from '../shell/SectionBody';
 import Checkpoint from './Checkpoint';
 import SliderControl from '../ui/SliderControl';
 import { physicalUnits, computeRow } from '../../lib/roofline';
@@ -41,7 +42,7 @@ export default function LessonCost({ onComplete }: { onComplete: () => void }) {
   const best = useMemo(() => curve.reduce((a, b) => (b.totalCost1M < a.totalCost1M ? b : a)), [curve]);
 
   return (
-    <LessonShell
+    <SectionBody
       number={6}
       title="Total Cost of Ownership"
       subtitle="Electricity plus amortized hardware — and why location, utilization, and batch all move the price."
@@ -83,6 +84,7 @@ export default function LessonCost({ onComplete }: { onComplete: () => void }) {
           <Stat label="Min TCO" value={`$${best.totalCost1M.toFixed(2)}`} unit={'/1M tkns @ batch ' + best.batchSize.toLocaleString()} />
         </div>
 
+        <Figure takeaway="Cost per million tokens falls steeply while batching still has fixed weight-loading cost to amortise, then flattens once the chip is saturated. The bottom of the curve is the cheapest way to serve this model on this hardware.">
         <div className="h-56">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={curve} margin={{ top: 8, right: 12, left: -6, bottom: 12 }}>
@@ -101,6 +103,7 @@ export default function LessonCost({ onComplete }: { onComplete: () => void }) {
             </ComposedChart>
           </ResponsiveContainer>
         </div>
+        </Figure>
       </GlassCard>
 
       <Checkpoint
@@ -125,7 +128,7 @@ export default function LessonCost({ onComplete }: { onComplete: () => void }) {
           },
         ]}
       />
-    </LessonShell>
+    </SectionBody>
   );
 }
 

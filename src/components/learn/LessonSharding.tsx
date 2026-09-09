@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { ComposedChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Cell } from 'recharts';
 import GlassCard from '../ui/GlassCard';
+import Figure from '../shell/Figure';
 import { ConceptTag } from '../ui/ConceptTag';
-import LessonShell from './LessonShell';
+import SectionBody from '../shell/SectionBody';
 import Checkpoint from './Checkpoint';
 import SliderControl from '../ui/SliderControl';
 import { cn } from '../../lib/utils';
@@ -60,7 +61,7 @@ export default function LessonSharding({ onComplete }: { onComplete: () => void 
   })();
 
   return (
-    <LessonShell
+    <SectionBody
       number={9}
       title="Distributing the Model"
       subtitle="Data, tensor, pipeline and expert parallelism — and the roofline rules that say when each becomes communication-bound."
@@ -127,6 +128,7 @@ export default function LessonSharding({ onComplete }: { onComplete: () => void 
 
       <GlassCard className="p-5">
         <h3 className="font-bold text-slate-800 mb-3">Boundaries to remember</h3>
+        <Figure takeaway="Each bar is a parallelism strategy and the point at which communication overtakes computation. Past its threshold, adding chips to that strategy makes the system slower, not faster.">
         <div className="h-56">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={data} margin={{ top: 10, right: 20, left: -10, bottom: 20 }}>
@@ -142,6 +144,7 @@ export default function LessonSharding({ onComplete }: { onComplete: () => void 
             </ComposedChart>
           </ResponsiveContainer>
         </div>
+        </Figure>
         <ul className="text-[12.5px] text-slate-600 space-y-1.5 mt-3">
           <li><strong>DP/FSDP:</strong> compute-bound only when per-device token batch ≳ 2550 (v5p ICI) — otherwise bandwidth-bound.</li>
           <li><strong>Tensor:</strong> keep sharding ≤ F/2550; past that every layer's AllGather/ReduceScatter dominates the critical path.</li>
@@ -177,6 +180,6 @@ export default function LessonSharding({ onComplete }: { onComplete: () => void 
           },
         ]}
       />
-    </LessonShell>
+    </SectionBody>
   );
 }

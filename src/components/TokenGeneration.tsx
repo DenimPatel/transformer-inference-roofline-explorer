@@ -298,7 +298,33 @@ x = rmsnorm(x)`}
           </div>
         </div>
       </SectionCard>
+      <p className="text-center text-xs text-slate-400 mt-12">
+        Implemented from <code className="text-xs bg-slate-100 px-1 rounded">reference/microgpt.py</code> — the
+        "atomic" GPT. Everything above is computed live; nothing is a static image. The lab that runs and
+        trains this model lives in the playground.
+      </p>
+    </div>
+  );
+}
 
+/**
+ * The microGPT lab and trainer, on their own. This is a training toy rather
+ * than a roofline tool, so it sits outside the curriculum spine at its own
+ * route instead of being sub-tabs nine and ten of an explanation.
+ */
+export function MicroGptPlayground() {
+  const modelRef = useRef<MicroGPT | null>(null);
+  if (!modelRef.current) modelRef.current = new MicroGPT();
+  const sharedModel = modelRef.current;
+
+  const [trained, setTrained] = useState(false);
+  const [sessionKey, setSessionKey] = useState(0);
+  const bumpSession = () => setSessionKey((k) => k + 1);
+  const markTrained = () => { setTrained(true); bumpSession(); };
+  const markUntrained = () => { setTrained(false); bumpSession(); };
+
+  return (
+    <div className="pb-16 max-w-6xl mx-auto">
       {/* 09 Lab */}
       <SectionCard id="lab" icon={FlaskConical} color={C.accent} number="09"
         title="The Interactive MicroGPT Lab">
@@ -322,10 +348,6 @@ x = rmsnorm(x)`}
         <TrainPanel model={sharedModel} trained={trained} onTrained={markTrained} onUntrained={markUntrained} />
       </SectionCard>
 
-      <p className="text-center text-xs text-slate-400 mt-12">
-        Implemented from <code className="text-xs bg-slate-100 px-1 rounded">reference/microgpt.py</code> — the
-        "atomic" GPT. Everything above is computed live; nothing is a static image.
-      </p>
     </div>
   );
 }

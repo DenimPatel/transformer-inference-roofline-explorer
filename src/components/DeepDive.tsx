@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { HARDWARE_PROFILES, effectiveMfu, onChipBwRatio } from '../lib/hardware';
+import { useConfig } from '../state/ConfigContext';
 import ConceptTag from './ui/ConceptTag';
 import KvUsageExplain from './ui/KvUsageExplain';
 import { CHART as C } from '../lib/theme';
@@ -91,12 +92,18 @@ function Slider({ label, value, min, max, step = 1, onChange, format }: any) {
 // ---------------------------------------------------------------------------
 // Main tab
 // ---------------------------------------------------------------------------
-export default function DeepDiveTab({ hardwareProfileId }: { hardwareProfileId: string }) {
-  const hw = HARDWARE_PROFILES.find((h) => h.id === hardwareProfileId) || HARDWARE_PROFILES[0];
+
+/**
+ * Hardware facts the deep-dive figures are drawn against, derived from the
+ * reader's current configuration rather than a prop threaded down from a tab.
+ */
+export function useDeepHw() {
+  const { activeProfileId } = useConfig();
+  const hw = HARDWARE_PROFILES.find((h) => h.id === activeProfileId) || HARDWARE_PROFILES[0];
   const peakFlops = hw.tflops * 1e12;
   const peakBw = hw.memBw * 1e12;
   const hardwareIntensity = peakFlops / peakBw;
-  const criticalBatch = hardwareIntensity; // bf16 matmul becomes compute-bound when B > ridge
+  const criticalBatch = hardwareIntensity;
 
   // On-chip scratchpad (VMEM on TPUs, SMEM/L2 on GPUs) is the second bandwidth
   // tier. Profiles that do not publish it fall back to the book's ~22x figure.
@@ -105,68 +112,25 @@ export default function DeepDiveTab({ hardwareProfileId }: { hardwareProfileId: 
   const onChipRidge = peakFlops / onChipBw;
 
   // Vector unit (VPU / CUDA cores). Its much lower peak gives a second, far
-  // smaller ridge — which is the right yardstick for elementwise ops.
+  // smaller ridge — the right yardstick for elementwise ops.
   const vectorFlops = (hw.vectorTflops ?? hw.tflops / 60) * 1e12;
   const vectorRidge = vectorFlops / peakBw;
 
-  const mfu = effectiveMfu(hw);
+  return {
+    hw, peakFlops, peakBw, hardwareIntensity, criticalBatch,
+    onChipRatio, onChipBw, onChipRidge, vectorFlops, vectorRidge,
+    mfu: effectiveMfu(hw),
+  };
+}
 
-  const sections = [
-    { id: 'framework', label: 'Roofline', icon: Activity },
-    { id: 'intensity', label: 'Intensity', icon: Sigma },
-    { id: 'low-intensity', label: 'Second Ridge', icon: ShieldCheck },
-    { id: 'matmul', label: 'Matmul', icon: Cpu },
-    { id: 'prefill-gen', label: 'Prefill vs Gen', icon: Gauge },
-    { id: 'kv-cache', label: 'KV Cache', icon: MemoryStick },
-    { id: 'latency', label: 'Latency vs TP', icon: ArrowDownWideNarrow },
-    { id: 'network', label: 'Network', icon: Network },
-    { id: 'attention', label: 'Attn FLOPs', icon: Eye },
-    { id: 'quant', label: 'Quantization', icon: Zap },
-    { id: 'memory', label: 'Memory Hierarchy', icon: Layers },
-    { id: 'moe', label: 'MoE', icon: Sparkles },
-    { id: 'problems', label: 'Problems', icon: BookOpen },
-  ];
 
+/** Deep-dive figure set: framework. */
+export function DeepFramework() {
+  const {
+    hw, peakFlops, peakBw, hardwareIntensity, criticalBatch,
+    onChipRatio, onChipBw, onChipRidge, vectorFlops, vectorRidge, mfu,
+  } = useDeepHw();
   return (
-    <div className="pb-16 max-w-6xl mx-auto mt-6 px-4">
-      {/* ---- Hero ---- */}
-      <section className="text-center mb-10">
-        <div className="inline-flex items-center gap-2 glass-chip px-3 py-1 text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-4">
-          <BookOpen className="w-3.5 h-3.5 text-accent" /> Interactive deep dive
-        </div>
-        <h1 className="text-4xl sm:text-5xl font-extrabold text-slate-900 tracking-tight mb-4">
-          The Roofline, <span className="text-accent">Intuitively</span>
-        </h1>
-        <p className="text-slate-500 max-w-2xl mx-auto leading-relaxed">
-          Every plot below is live — drag the sliders to feel where an operation sits.
-          Move <strong>left of the ridge</strong> and you are <em>bandwidth-bound</em> (wasting FLOPs);
-          move <strong>right</strong> and you saturate the silicon.
-        </p>
-        {/* hardware KPIs */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-8 max-w-3xl mx-auto">
-          <HeroKpi icon={Cpu} label="Peak compute" value={fmtFlops(peakFlops)} sub={`${hw.id}`} />
-          <HeroKpi icon={MemoryStick} label="Memory bandwidth" value={fmtBytes(peakBw) + '/s'} sub="HBM" />
-          <HeroKpi icon={Sigma} label="Ridge point" value={fmtNum(hardwareIntensity)} sub="FLOPs / byte" />
-          <HeroKpi icon={Activity} label="Critical batch" value={`≈${fmtNum(criticalBatch)}`} sub="bf16 tokens" />
-        </div>
-      </section>
-
-      {/* ---- Section nav ---- */}
-      <nav className="sticky top-0 z-30 -mx-2 px-2 py-3 mb-8 bg-[#f3f2f2] border-b border-slate-200 rounded-2xl">
-        <div className="flex gap-1.5 overflow-x-auto custom-scrollbar py-1">
-          {sections.map((s) => (
-            <a
-              key={s.id}
-              href={`#${s.id}`}
-              className="shrink-0 inline-flex items-center gap-1.5 glass-chip px-3 py-1.5 text-[11px] font-semibold text-slate-600 hover:text-accent hover:border-accent/40 transition-colors"
-            >
-              <s.icon className="w-3.5 h-3.5" /> {s.label}
-            </a>
-          ))}
-        </div>
-      </nav>
-
-      {/* ---- 1. Framework ---- */}
       <SectionCard id="framework" icon={Calculator} color={C.accent} number="01"
         title="Formalized Mathematical Framework"
         tags={['overlap', 'roofline', 'arithmetic-intensity', 'two-bandwidth-roofline', 'mfu']}>
@@ -309,8 +273,17 @@ export default function DeepDiveTab({ hardwareProfileId }: { hardwareProfileId: 
           </div>
         </div>
       </SectionCard>
+  );
+}
 
-      {/* ---- 2. Arithmetic Intensity ---- */}
+
+/** Deep-dive figure set: intensity. */
+export function DeepIntensity() {
+  const {
+    hw, peakFlops, peakBw, hardwareIntensity, criticalBatch,
+    onChipRatio, onChipBw, onChipRidge, vectorFlops, vectorRidge, mfu,
+  } = useDeepHw();
+  return (
       <SectionCard id="intensity" icon={Info} color={C.sky} number="02"
         title="Arithmetic Intensity &amp; the Ridge Point"
         tags={['arithmetic-intensity', 'ridge-point', 'critical-batch']}>
@@ -324,8 +297,17 @@ export default function DeepDiveTab({ hardwareProfileId }: { hardwareProfileId: 
         </div>
         <ArithmeticIntensitySection hardwareIntensity={hardwareIntensity} />
       </SectionCard>
+  );
+}
 
-      {/* ---- 3. Low-intensity ops and the second ridge ---- */}
+
+/** Deep-dive figure set: low-intensity. */
+export function DeepSecondRidge() {
+  const {
+    hw, peakFlops, peakBw, hardwareIntensity, criticalBatch,
+    onChipRatio, onChipBw, onChipRidge, vectorFlops, vectorRidge, mfu,
+  } = useDeepHw();
+  return (
       <SectionCard id="low-intensity" icon={ShieldCheck} color={C.rose} number="03"
         title="Low-Intensity Ops &amp; the Second Ridge"
         tags={['dot-product-intensity', 'vector-unit-ridge', 'ridge-point', 'memory-hierarchy']}>
@@ -411,8 +393,17 @@ export default function DeepDiveTab({ hardwareProfileId }: { hardwareProfileId: 
           </p>
         </div>
       </SectionCard>
+  );
+}
 
-      {/* ---- 3. Matmul Math ---- */}
+
+/** Deep-dive figure set: matmul. */
+export function DeepMatmul() {
+  const {
+    hw, peakFlops, peakBw, hardwareIntensity, criticalBatch,
+    onChipRatio, onChipBw, onChipRidge, vectorFlops, vectorRidge, mfu,
+  } = useDeepHw();
+  return (
       <SectionCard id="matmul" icon={Cpu} color={C.compute} number="04"
         title="Matrix Multiplication Math"
         tags={['matmul-intensity', 'critical-batch']}>
@@ -443,8 +434,17 @@ export default function DeepDiveTab({ hardwareProfileId }: { hardwareProfileId: 
 
         <MatmulInteractiveSection hardwareIntensity={hardwareIntensity} />
       </SectionCard>
+  );
+}
 
-      {/* ---- 4. Prefill vs Generation ---- */}
+
+/** Deep-dive figure set: prefill-gen. */
+export function DeepPrefillGen() {
+  const {
+    hw, peakFlops, peakBw, hardwareIntensity, criticalBatch,
+    onChipRatio, onChipBw, onChipRidge, vectorFlops, vectorRidge, mfu,
+  } = useDeepHw();
+  return (
       <SectionCard id="prefill-gen" icon={Activity} color={C.accentSoft} number="05"
         title="Prefill vs Generation: Why Inference Flips the Roofline"
         tags={['prefill', 'generation', 'attention-intensity']}>
@@ -470,8 +470,17 @@ export default function DeepDiveTab({ hardwareProfileId }: { hardwareProfileId: 
           <KvUsageExplain />
         </div>
       </SectionCard>
+  );
+}
 
-      {/* ---- 5. KV Cache (NEW) ---- */}
+
+/** Deep-dive figure set: kv-cache. */
+export function DeepKvCache() {
+  const {
+    hw, peakFlops, peakBw, hardwareIntensity, criticalBatch,
+    onChipRatio, onChipBw, onChipRidge, vectorFlops, vectorRidge, mfu,
+  } = useDeepHw();
+  return (
       <SectionCard id="kv-cache" icon={MemoryStick} color={C.violet} number="06"
         title="The KV Cache: Where Inference Memory Goes"
         tags={['kv-cache', 'memory-bound', 'generation']}>
@@ -492,8 +501,17 @@ export default function DeepDiveTab({ hardwareProfileId }: { hardwareProfileId: 
         </div>
         <KVCacheSection hardwareIntensity={hardwareIntensity} hw={hw} />
       </SectionCard>
+  );
+}
 
-      {/* ---- 6. Latency vs Throughput (NEW) ---- */}
+
+/** Deep-dive figure set: latency. */
+export function DeepLatency() {
+  const {
+    hw, peakFlops, peakBw, hardwareIntensity, criticalBatch,
+    onChipRatio, onChipBw, onChipRidge, vectorFlops, vectorRidge, mfu,
+  } = useDeepHw();
+  return (
       <SectionCard id="latency" icon={ArrowDownWideNarrow} color={C.amber} number="07"
         title="Latency vs Throughput: The Pareto Tradeoff"
         tags={['latency-throughput', 'generation', 'critical-batch']}>
@@ -507,8 +525,17 @@ export default function DeepDiveTab({ hardwareProfileId }: { hardwareProfileId: 
         </div>
         <LatencyThroughputSection hw={hw} peakFlops={peakFlops} peakBw={peakBw} hardwareIntensity={hardwareIntensity} />
       </SectionCard>
+  );
+}
 
-      {/* ---- 7. Network ---- */}
+
+/** Deep-dive figure set: network. */
+export function DeepNetwork() {
+  const {
+    hw, peakFlops, peakBw, hardwareIntensity, criticalBatch,
+    onChipRatio, onChipBw, onChipRidge, vectorFlops, vectorRidge, mfu,
+  } = useDeepHw();
+  return (
       <SectionCard id="network" icon={Network} color={C.violet} number="08"
         title="Inter-Chip Network Rooflines"
         tags={['network-roofline', 'model-parallelism', 'ici-topology', 'nvlink-domain']}>
@@ -522,8 +549,17 @@ export default function DeepDiveTab({ hardwareProfileId }: { hardwareProfileId: 
         </div>
         <NetworkRooflineInteractiveSection hw={hw} />
       </SectionCard>
+  );
+}
 
-      {/* ---- 8. Attention FLOPs crossover (NEW) ---- */}
+
+/** Deep-dive figure set: attention. */
+export function DeepAttention() {
+  const {
+    hw, peakFlops, peakBw, hardwareIntensity, criticalBatch,
+    onChipRatio, onChipBw, onChipRidge, vectorFlops, vectorRidge, mfu,
+  } = useDeepHw();
+  return (
       <SectionCard id="attention" icon={Eye} color={C.sky} number="09"
         title="When Does Attention Dominate Compute?"
         tags={['attention-flops', 'attention-intensity']}>
@@ -537,8 +573,17 @@ export default function DeepDiveTab({ hardwareProfileId }: { hardwareProfileId: 
         </div>
         <AttentionFlopsSection />
       </SectionCard>
+  );
+}
 
-      {/* ---- 9. Quantization ---- */}
+
+/** Deep-dive figure set: quant. */
+export function DeepQuant() {
+  const {
+    hw, peakFlops, peakBw, hardwareIntensity, criticalBatch,
+    onChipRatio, onChipBw, onChipRidge, vectorFlops, vectorRidge, mfu,
+  } = useDeepHw();
+  return (
       <SectionCard id="quant" icon={Zap} color={C.amber} number="10"
         title="Quantization &amp; Mixed Precision"
         tags={['quantization', 'critical-batch']}>
@@ -553,8 +598,17 @@ export default function DeepDiveTab({ hardwareProfileId }: { hardwareProfileId: 
         </div>
         <QuantizationInteractiveSection hardwareIntensity={hardwareIntensity} hw={hw} />
       </SectionCard>
+  );
+}
 
-      {/* ---- 10. Memory hierarchy & tiling (NEW) ---- */}
+
+/** Deep-dive figure set: memory. */
+export function DeepMemory() {
+  const {
+    hw, peakFlops, peakBw, hardwareIntensity, criticalBatch,
+    onChipRatio, onChipBw, onChipRidge, vectorFlops, vectorRidge, mfu,
+  } = useDeepHw();
+  return (
       <SectionCard id="memory" icon={Layers} color={C.sky} number="11"
         title="Memory Hierarchy &amp; Tiling: VMEM Changes Everything"
         tags={['memory-hierarchy', 'tiling', 'matmul-intensity']}>
@@ -568,8 +622,17 @@ export default function DeepDiveTab({ hardwareProfileId }: { hardwareProfileId: 
         </div>
         <MemoryHierarchySection hw={hw} hardwareIntensity={hardwareIntensity} onChipRatio={onChipRatio} onChipRidge={onChipRidge} />
       </SectionCard>
+  );
+}
 
-      {/* ---- 11. MoE (NEW) ---- */}
+
+/** Deep-dive figure set: moe. */
+export function DeepMoe() {
+  const {
+    hw, peakFlops, peakBw, hardwareIntensity, criticalBatch,
+    onChipRatio, onChipBw, onChipRidge, vectorFlops, vectorRidge, mfu,
+  } = useDeepHw();
+  return (
       <SectionCard id="moe" icon={Sparkles} color={C.compute} number="12"
         title="Mixture-of-Experts: A Hidden Batch Requirement"
         tags={['moe', 'critical-batch']}>
@@ -583,8 +646,17 @@ export default function DeepDiveTab({ hardwareProfileId }: { hardwareProfileId: 
         </div>
         <MoeSection />
       </SectionCard>
+  );
+}
 
-      {/* ---- 12. Worked Problems ---- */}
+
+/** Deep-dive figure set: problems. */
+export function DeepProblems() {
+  const {
+    hw, peakFlops, peakBw, hardwareIntensity, criticalBatch,
+    onChipRatio, onChipBw, onChipRidge, vectorFlops, vectorRidge, mfu,
+  } = useDeepHw();
+  return (
       <SectionCard id="problems" icon={BookOpen} color={C.rose} number="13"
         title="Worked Problems"
         tags={['matmul-intensity', 'quantization', 'arithmetic-intensity']}>
@@ -594,14 +666,9 @@ export default function DeepDiveTab({ hardwareProfileId }: { hardwareProfileId: 
           <code className="text-xs bg-slate-100 px-1 rounded">reference/scaling-book/roofline.md</code>.
         </p>
       </SectionCard>
-
-      <p className="text-center text-xs text-slate-400 mt-12">
-        Every curve is computed live from the formulas in the scaling-book reference material — no static images,
-        so you can always drag, compare, and <em>feel</em> the roofline.
-      </p>
-    </div>
   );
 }
+
 
 // ---------------------------------------------------------------------------
 // Small layout pieces
@@ -1892,7 +1959,7 @@ function WorkedProblemsSection({ peakFlops, peakBw, hardwareIntensity }: any) {
         </div>
         <Answer id="q3">
           <p>Both curves saturate at the hardware peak (~{(bf16Flops / 1e12).toFixed(0)} TFLOP/s on the textbook TPU), but the bigger model crosses the ridge at a smaller batch. Small matmuls need ~2&times; the batch to become compute-bound.</p>
-          <p className="text-[10px] text-slate-400">This mirrors the Interactive Lab: small batches are memory-bound, and the crossover is set by the hardware ridge (≈{fmtNum(hardwareIntensity)} here).</p>
+          <p className="text-[10px] text-slate-400">Small batches are memory-bound, and the crossover is set by the hardware ridge (≈{fmtNum(hardwareIntensity)} here).</p>
         </Answer>
       </Q>
 

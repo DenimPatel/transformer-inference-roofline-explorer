@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react';
 import { ComposedChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import GlassCard from '../ui/GlassCard';
+import Figure from '../shell/Figure';
 import { ConceptTag } from '../ui/ConceptTag';
-import LessonShell from './LessonShell';
+import SectionBody from '../shell/SectionBody';
 import Checkpoint from './Checkpoint';
 import SliderControl from '../ui/SliderControl';
 import { SystolicArray } from '../Hardware';
@@ -30,7 +31,7 @@ export default function LessonInsideChip({ onComplete }: { onComplete: () => voi
   ]), []);
 
   return (
-    <LessonShell
+    <SectionBody
       number={12}
       title="Inside the Chip"
       subtitle="The MXU manufactures arithmetic intensity; the VPU has a ridge of its own. Knowing which unit runs your op is half of diagnosing it."
@@ -129,6 +130,7 @@ export default function LessonInsideChip({ onComplete }: { onComplete: () => voi
 
       <GlassCard className="p-5">
         <h3 className="font-bold text-slate-800 mb-3">Which ridge applies to which op</h3>
+        <Figure takeaway="The matrix unit and the vector unit have very different peaks, so they have very different ridges. An elementwise operation measured against the vector unit's much lower ridge is still memory-bound.">
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={ops} margin={{ top: 10, right: 20, left: -10, bottom: 10 }}>
@@ -148,9 +150,10 @@ export default function LessonInsideChip({ onComplete }: { onComplete: () => voi
             </ComposedChart>
           </ResponsiveContainer>
         </div>
+        </Figure>
         <p className="text-xs text-slate-400 mt-3">
           The two elementwise ops sit below <em>both</em> lines, so no hardware choice rescues them. The matmuls climb
-          with batch, which is the entire content of the B-rule you learned in Lesson 2.
+          with batch, which is the entire content of the B-rule in “Arithmetic intensity”.
         </p>
       </GlassCard>
 
@@ -192,6 +195,6 @@ export default function LessonInsideChip({ onComplete }: { onComplete: () => voi
           },
         ]}
       />
-    </LessonShell>
+    </SectionBody>
   );
 }

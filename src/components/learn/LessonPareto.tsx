@@ -3,8 +3,9 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, ComposedChart,
 } from 'recharts';
 import GlassCard from '../ui/GlassCard';
+import Figure from '../shell/Figure';
 import { ConceptTag } from '../ui/ConceptTag';
-import LessonShell from './LessonShell';
+import SectionBody from '../shell/SectionBody';
 import Checkpoint from './Checkpoint';
 import SliderControl from '../ui/SliderControl';
 import { physicalUnits, computeRow, maxThroughput } from '../../lib/roofline';
@@ -25,7 +26,7 @@ export default function LessonPareto({ onComplete }: { onComplete: () => void })
   const row = computeRow(batch, UNITS, X);
 
   return (
-    <LessonShell
+    <SectionBody
       number={4}
       title="Latency vs Throughput & the Critical Batch"
       subtitle="Small batches are fast but waste the hardware; big batches are efficient but add latency and KV-memory pressure."
@@ -50,6 +51,7 @@ export default function LessonPareto({ onComplete }: { onComplete: () => void })
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Figure takeaway="Latency per step is flat while you are memory-bound — extra requests ride along for free — then climbs linearly once compute takes over. The vertical marker is the batch you have chosen.">
           <div className="h-52">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={curve} margin={{ top: 8, right: 10, left: -12, bottom: 12 }}>
@@ -62,6 +64,8 @@ export default function LessonPareto({ onComplete }: { onComplete: () => void })
               </LineChart>
             </ResponsiveContainer>
           </div>
+          </Figure>
+          <Figure takeaway="Throughput climbs steeply through the memory-bound region, then flattens. Everything to the right of the knee costs each user latency and buys almost no extra tokens per second.">
           <div className="h-52">
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={curve} margin={{ top: 8, right: 10, left: -12, bottom: 12 }}>
@@ -74,6 +78,7 @@ export default function LessonPareto({ onComplete }: { onComplete: () => void })
               </ComposedChart>
             </ResponsiveContainer>
           </div>
+          </Figure>
         </div>
       </GlassCard>
 
@@ -99,7 +104,7 @@ export default function LessonPareto({ onComplete }: { onComplete: () => void })
           },
         ]}
       />
-    </LessonShell>
+    </SectionBody>
   );
 }
 

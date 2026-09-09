@@ -3,8 +3,9 @@ import {
   ComposedChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine,
 } from 'recharts';
 import GlassCard from '../ui/GlassCard';
+import Figure from '../shell/Figure';
 import { ConceptTag } from '../ui/ConceptTag';
-import LessonShell from './LessonShell';
+import SectionBody from '../shell/SectionBody';
 import Checkpoint from './Checkpoint';
 import { cn } from '../../lib/utils';
 
@@ -29,7 +30,7 @@ export default function LessonIntensity({ onComplete }: { onComplete: () => void
   }, [D, F]);
 
   return (
-    <LessonShell
+    <SectionBody
       number={2}
       title="Arithmetic Intensity & The B Rule"
       subtitle="How much math you get per byte — and why a matmul is compute-bound iff its token batch exceeds the ridge."
@@ -115,6 +116,7 @@ export default function LessonIntensity({ onComplete }: { onComplete: () => void
               </p>
             </GlassCard>
           </div>
+          <Figure takeaway="Arithmetic intensity rises with batch size while the hardware ridge stays put. The point where the rising line crosses the ridge is the critical batch: below it you are paying for bandwidth you cannot avoid, above it the chip's arithmetic is the limit.">
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={data} margin={{ top: 10, right: 10, left: -14, bottom: 20 }}>
@@ -129,6 +131,7 @@ export default function LessonIntensity({ onComplete }: { onComplete: () => void
               </ComposedChart>
             </ResponsiveContainer>
           </div>
+          </Figure>
         </div>
       </GlassCard>
 
@@ -176,6 +179,6 @@ export default function LessonIntensity({ onComplete }: { onComplete: () => void
           },
         ]}
       />
-    </LessonShell>
+    </SectionBody>
   );
 }

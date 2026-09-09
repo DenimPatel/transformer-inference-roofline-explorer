@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react';
 import { ComposedChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import GlassCard from '../ui/GlassCard';
+import Figure from '../shell/Figure';
 import { ConceptTag } from '../ui/ConceptTag';
-import LessonShell from './LessonShell';
+import SectionBody from '../shell/SectionBody';
 import Checkpoint from './Checkpoint';
 import SliderControl from '../ui/SliderControl';
 import { cn } from '../../lib/utils';
@@ -39,7 +40,7 @@ export default function LessonNetworkRoofline({ onComplete }: { onComplete: () =
   }, []);
 
   return (
-    <LessonShell
+    <SectionBody
       number={13}
       title="The Network Roofline"
       subtitle="Once a model spans chips, the fabric becomes the roof — and the threshold stops depending on batch size."
@@ -125,6 +126,7 @@ export default function LessonNetworkRoofline({ onComplete }: { onComplete: () =
 
       <GlassCard className="p-5">
         <h3 className="font-bold text-slate-800 mb-3">Same model, two fabrics</h3>
+        <Figure takeaway="Two links, two rooflines. The in-node fabric stays compute-bound across most model widths, while the datacenter network crosses into comms-bound far earlier — which is why sharding across pods costs so much more than sharding within one.">
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={curve} margin={{ top: 10, right: 20, left: -10, bottom: 10 }}>
@@ -144,6 +146,7 @@ export default function LessonNetworkRoofline({ onComplete }: { onComplete: () =
             </ComposedChart>
           </ResponsiveContainer>
         </div>
+        </Figure>
         <p className="text-xs text-slate-400 mt-3">
           The scale-out curve needs a model roughly 7x wider to reach the same utilization. That single gap is why tensor
           parallelism stops at the edge of an NVLink node or ICI slice, and data or pipeline parallelism takes over
@@ -206,6 +209,6 @@ export default function LessonNetworkRoofline({ onComplete }: { onComplete: () =
           },
         ]}
       />
-    </LessonShell>
+    </SectionBody>
   );
 }

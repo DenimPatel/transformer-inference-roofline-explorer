@@ -3,7 +3,7 @@ import GlassCard from '../ui/GlassCard';
 import InfoPopover from '../ui/InfoPopover';
 import { ConceptTag } from '../ui/ConceptTag';
 import InteractiveRoofline from './InteractiveRoofline';
-import LessonShell from './LessonShell';
+import SectionBody from '../shell/SectionBody';
 import Checkpoint from './Checkpoint';
 
 const PEAK_FLOPS = 9.89e14; // H100 bf16 (without sparsity)
@@ -14,7 +14,7 @@ export default function LessonRoofline({ onComplete }: { onComplete: () => void 
   const ridge = PEAK_FLOPS / PEAK_BW;
 
   return (
-    <LessonShell
+    <SectionBody
       number={1}
       title="The Roofline: Why Does Inference Take Time?"
       subtitle="An operation is bounded by how fast we do math, how fast we move bytes, and how much memory we have."
@@ -61,7 +61,7 @@ export default function LessonRoofline({ onComplete }: { onComplete: () => void 
         <p className="text-sm leading-relaxed text-slate-600">
           <strong>Capacity behaves differently.</strong> It is not a rate you can trade against, it is a wall: exceed
           HBM and the model simply does not run, no matter how favourable your intensity. That is why the KV cache
-          (Lesson 5) so often decides your deployment before the roofline ever gets a say.
+          (Part II) so often decides your deployment before the roofline ever gets a say.
         </p>
 
         <p className="text-sm leading-relaxed text-slate-600">
@@ -85,7 +85,7 @@ export default function LessonRoofline({ onComplete }: { onComplete: () => void 
 
         <p className="text-[12px] text-slate-400">
           For this H100 the ridge sits at ≈{ridge.toFixed(0)} FLOPs/B. Anything below it wastes FLOPs — which is exactly
-          what happens to most transformer <em>generation</em> steps (see Lesson 3).
+          what happens to most transformer <em>generation</em> steps (see “Prefill vs generation”).
         </p>
       </GlassCard>
 
@@ -122,6 +122,6 @@ export default function LessonRoofline({ onComplete }: { onComplete: () => void 
           },
         ]}
       />
-    </LessonShell>
+    </SectionBody>
   );
 }
