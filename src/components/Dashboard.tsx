@@ -17,6 +17,9 @@ import Problems from './sections/Problems';
 /** Sections that want the comparison checkbox list in the config panel. */
 const COMPARISON_SECTIONS = new Set(['comparing-hardware']);
 
+/** Routes where the global hardware/economics Configure panel has no effect. */
+const HIDES_CONFIG = new Set(['playground']);
+
 export default function Dashboard() {
   return (
     <ConfigProvider>
@@ -60,6 +63,7 @@ function Shell() {
   }, [entry, BenchPage, navigate]);
 
   const showComparison = COMPARISON_SECTIONS.has(route);
+  const showConfig = !HIDES_CONFIG.has(route);
 
   return (
     <div className="min-h-screen text-slate-900 font-sans flex flex-col selection:bg-[var(--color-accent)]/20">
@@ -82,11 +86,13 @@ function Shell() {
             className="btn-ghost xl:hidden text-xs">
             <List style={{ width: 14, height: 14 }} /> Contents
           </button>
-          <button type="button" onClick={() => setConfigOpen((o) => !o)}
-            className="btn-ghost text-xs" aria-expanded={configOpen}>
-            <SlidersHorizontal style={{ width: 14, height: 14 }} />
-            <span className="hidden sm:inline">Configure</span>
-          </button>
+          {showConfig && (
+            <button type="button" onClick={() => setConfigOpen((o) => !o)}
+              className="btn-ghost text-xs" aria-expanded={configOpen}>
+              <SlidersHorizontal style={{ width: 14, height: 14 }} />
+              <span className="hidden sm:inline">Configure</span>
+            </button>
+          )}
           <button type="button" onClick={() => setGlossaryOpen(true)} className="btn-ghost text-xs">
             <HelpCircle style={{ width: 14, height: 14 }} />
             <span className="hidden sm:inline">Concepts</span>
@@ -156,7 +162,7 @@ function Shell() {
         </main>
 
         {/* Configuration — docked, and read by every section */}
-        {configOpen && (
+        {showConfig && configOpen && (
           <>
             <button
               type="button"
