@@ -136,7 +136,7 @@ export default function MicroGptLab({ model, trained, sessionKey }: {
               onClick={handlePrefill}
               disabled={ready && !done}
               className="rounded-xl px-4 py-2 text-sm font-semibold text-white disabled:opacity-40"
-              style={{ background: 'var(--color-accent)' }}
+              style={{ background: 'var(--c-accent-solid)' }}
             >
               <span className="inline-flex items-center gap-1.5"><Play className="w-3.5 h-3.5" /> Prefill</span>
             </button>
@@ -152,7 +152,7 @@ export default function MicroGptLab({ model, trained, sessionKey }: {
             <button
               type="button"
               onClick={handleReset}
-              className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-600 bg-white hover:bg-white"
+              className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-600 bg-surface hover:bg-surface"
             >
               <span className="inline-flex items-center gap-1.5"><RotateCcw className="w-3.5 h-3.5" /> Reset</span>
             </button>
@@ -214,12 +214,12 @@ export default function MicroGptLab({ model, trained, sessionKey }: {
                   className={cn(
                     'relative rounded-lg px-2.5 py-1.5 text-sm font-bold transition-all',
                     isBOS && 'bg-violet-100 text-violet-700',
-                    !isBOS && isPrompt && 'bg-white text-slate-800 border border-slate-200',
+                    !isBOS && isPrompt && 'bg-surface text-slate-800 border border-slate-200',
                     !isBOS && !isPrompt && 'text-white',
                     !isBOS && !isPrompt && (isSampled ? '' : 'opacity-85'),
                     isNew && 'ring-2 ring-[var(--color-accent)] ring-offset-1',
                   )}
-                  style={!isBOS && !isPrompt ? { background: 'var(--color-accent)' } : undefined}
+                  style={!isBOS && !isPrompt ? { background: 'var(--c-accent-solid)' } : undefined}
                 >
                   {isBOS ? '⟨BOS⟩' : model.labelForToken(id)}
                   {isNew && <span className="absolute -top-2 -right-1 text-[9px] font-black text-[var(--color-accent)]">†</span>}
@@ -235,8 +235,8 @@ export default function MicroGptLab({ model, trained, sessionKey }: {
         )}
         <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3 text-[11px] text-slate-400">
           <span><span className="inline-block w-2.5 h-2.5 rounded-sm bg-violet-200 mr-1 align-middle" />BOS</span>
-          <span><span className="inline-block w-2.5 h-2.5 rounded-sm bg-white border border-slate-300 mr-1 align-middle" />prompt</span>
-          <span><span className="inline-block w-2.5 h-2.5 rounded-sm mr-1 align-middle" style={{ background: '#99e0ff' }} />generated</span>
+          <span><span className="inline-block w-2.5 h-2.5 rounded-sm bg-surface border border-slate-300 mr-1 align-middle" />prompt</span>
+          <span><span className="inline-block w-2.5 h-2.5 rounded-sm mr-1 align-middle" style={{ background: 'var(--color-accent-300)' }} />generated</span>
           <span><span className="inline-block w-2.5 h-2.5 rounded-sm ring-1 ring-[var(--color-accent)] mr-1 align-middle" />newest KV†</span>
         </div>
         {done && <p className="text-xs text-emerald-600 font-semibold mt-2">Generation ended (stop token or max context reached).</p>}
@@ -316,7 +316,7 @@ export default function MicroGptLab({ model, trained, sessionKey }: {
                             width: `${w * 100}%`,
                             background: p === a.weights.length - 1
                               ? C.violet
-                              : p === 0 ? '#d7bfe1' : `hsl(${220 - p * 8}, 70%, ${55 + p * 2}%)`,
+                              : p === 0 ? 'var(--c-border-strong)' : `hsl(${220 - p * 8}, 70%, ${55 + p * 2}%)`,
                           }} />
                       ))}
                     </div>

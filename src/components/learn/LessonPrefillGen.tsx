@@ -6,6 +6,7 @@ import { ConceptTag } from '../ui/ConceptTag';
 import SectionBody from '../shell/SectionBody';
 import Checkpoint from './Checkpoint';
 import { cn } from '../../lib/utils';
+import { tint } from '../../lib/theme';
 
 const BLOCKS = 14;
 
@@ -19,7 +20,7 @@ function FlowBlocks({ count, color }: { count: number; color: string }) {
           animate={{ opacity: [0.15, 1, 0.15], scale: [0.9, 1, 0.9] }}
           transition={{ duration: 1.6, delay: (i % 6) * 0.28, repeat: Infinity, ease: 'easeInOut' }}
           className="h-6 w-5 rounded-md"
-          style={{ backgroundColor: color, boxShadow: `0 0 12px ${color}66` }}
+          style={{ backgroundColor: color, boxShadow: `0 0 12px ${tint(color, 40)}` }}
         />
       ))}
     </div>
@@ -59,7 +60,7 @@ export default function LessonPrefillGen({ onComplete }: { onComplete: () => voi
             </div>
             <p className="text-xs text-slate-500 mb-3">Processes all prompt tokens at once. Weight re-use → high intensity.</p>
             <span className="inline-block px-2 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-700 mb-3">✔ Compute-bound</span>
-            <FlowBlocks color="#0088b0" count={BLOCKS} />
+            <FlowBlocks color="var(--color-accent)" count={BLOCKS} />
             <p className="text-[11px] text-slate-400 mt-3">Attention intensity ∝ T/2 — way above the ridge.</p>
           </div>
 
@@ -70,7 +71,7 @@ export default function LessonPrefillGen({ onComplete }: { onComplete: () => voi
             </div>
             <p className="text-xs text-slate-500 mb-3">One token per step; streams all weights + KV cache each time.</p>
             <span className="inline-block px-2 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-700 mb-3">⚠️ Memory-bound</span>
-            <FlowBlocks color="#c8963a" count={BLOCKS} />
+            <FlowBlocks color="var(--chart-series-3)" count={BLOCKS} />
             <p className="text-[11px] text-slate-400 mt-3">Attention intensity ≈ ST/(S+T) ≈ 1 — constant & below the ridge.</p>
           </div>
         </div>
@@ -80,7 +81,7 @@ export default function LessonPrefillGen({ onComplete }: { onComplete: () => voi
             type="button"
             onClick={() => setGo((g) => !g)}
             className="rounded-xl px-4 py-2 text-sm font-semibold text-white"
-            style={{ background: 'var(--color-accent)' }}
+            style={{ background: 'var(--c-accent-solid)' }}
           >
             {go ? 'Pause animation' : 'Play animation'}
           </button>

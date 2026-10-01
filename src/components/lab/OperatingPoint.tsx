@@ -40,11 +40,11 @@ function RooflineGrounding({
               label={{ value: 'Throughput (TFLOPs/s) — log', angle: -90, position: 'insideLeft', fontSize: 11 }} />
             <Tooltip labelFormatter={(v) => `Intensity: ${Number(v).toFixed(2)} FLOPs/B`}
               formatter={(v) => [`${(Number(v) / 1e12).toFixed(2)} TFLOP/s`]} />
-            <Line type="monotone" dataKey="achievable" name="Roofline" stroke="#0088b0" strokeWidth={3} dot={false} />
-            <ReferenceLine x={ridge} stroke="#d6006c" strokeDasharray="4 4"
-              label={{ position: 'top', value: `ridge ≈ ${ridge.toFixed(0)}`, fill: '#d6006c', fontSize: 10 }} />
+            <Line type="monotone" dataKey="achievable" name="Roofline" stroke="var(--color-accent)" strokeWidth={3} dot={false} />
+            <ReferenceLine x={ridge} stroke="var(--chart-memory)" strokeDasharray="4 4"
+              label={{ position: 'top', value: `ridge ≈ ${ridge.toFixed(0)}`, fill: 'var(--chart-memory)', fontSize: 10 }} />
             <Scatter data={[{ intensity: opIntensity, achieved }]} dataKey="achieved"
-              fill={isMemBound ? '#c8963a' : '#2f8365'}
+              fill={isMemBound ? 'var(--chart-series-3)' : 'var(--chart-compute)'}
               name={`${opName}: ${isMemBound ? 'memory-bound' : 'compute-bound'}`}
               shape="circle" isAnimationActive={false} />
           </ComposedChart>

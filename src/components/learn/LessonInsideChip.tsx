@@ -24,10 +24,10 @@ export default function LessonInsideChip({ onComplete }: { onComplete: () => voi
   const arrayIntensity = n;
 
   const ops = useMemo(() => ([
-    { name: 'Dot product', intensity: 0.5, unit: 'VPU', color: '#c00a60' },
-    { name: 'Softmax / layernorm', intensity: 1.5, unit: 'VPU', color: '#c8963a' },
-    { name: 'Matmul, B=64', intensity: 64, unit: 'MXU', color: '#1186ac' },
-    { name: 'Matmul, B=1024', intensity: 1024, unit: 'MXU', color: '#7b4b90' },
+    { name: 'Dot product', intensity: 0.5, unit: 'VPU', color: 'var(--chart-memory)' },
+    { name: 'Softmax / layernorm', intensity: 1.5, unit: 'VPU', color: 'var(--chart-series-3)' },
+    { name: 'Matmul, B=64', intensity: 64, unit: 'MXU', color: 'var(--color-accent-600)' },
+    { name: 'Matmul, B=1024', intensity: 1024, unit: 'MXU', color: 'var(--chart-series-4)' },
   ]), []);
 
   return (
@@ -140,10 +140,10 @@ export default function LessonInsideChip({ onComplete }: { onComplete: () => voi
                 tickFormatter={(v: any) => (v < 1 ? v.toFixed(1) : v.toFixed(0))}
                 label={{ value: 'Intensity (FLOPs/B, log)', angle: -90, position: 'insideLeft', fontSize: 10 }} />
               <Tooltip formatter={(v: any, _n: any, p: any) => [`${Number(v).toFixed(1)} FLOPs/B`, `Runs on the ${p.payload.unit}`]} />
-              <ReferenceLine y={VPU_RIDGE} stroke="#c8963a" strokeDasharray="3 3"
-                label={{ position: 'top', value: `VPU ridge ${VPU_RIDGE.toFixed(0)}`, fill: '#c8963a', fontSize: 10 }} />
-              <ReferenceLine y={MXU_RIDGE} stroke="#d6006c" strokeDasharray="3 3"
-                label={{ position: 'top', value: `MXU ridge ${MXU_RIDGE.toFixed(0)}`, fill: '#d6006c', fontSize: 10 }} />
+              <ReferenceLine y={VPU_RIDGE} stroke="var(--chart-series-3)" strokeDasharray="3 3"
+                label={{ position: 'top', value: `VPU ridge ${VPU_RIDGE.toFixed(0)}`, fill: 'var(--chart-series-3)', fontSize: 10 }} />
+              <ReferenceLine y={MXU_RIDGE} stroke="var(--chart-memory)" strokeDasharray="3 3"
+                label={{ position: 'top', value: `MXU ridge ${MXU_RIDGE.toFixed(0)}`, fill: 'var(--chart-memory)', fontSize: 10 }} />
               <Bar dataKey="intensity" radius={[6, 6, 0, 0]}>
                 {ops.map((o) => <Cell key={o.name} fill={o.color} />)}
               </Bar>

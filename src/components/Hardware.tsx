@@ -142,9 +142,9 @@ export function SystolicArray({ n = 4, rows = 6 }: { n?: number; rows?: number }
             const fed = cycle >= r;
             return (
               <g key={`in-${r}`}>
-                <line x1={26} y1={y} x2={originX - 6} y2={y} stroke={fed ? C.sky : '#d7d3d3'} strokeWidth={2}
+                <line x1={26} y1={y} x2={originX - 6} y2={y} stroke={fed ? C.sky : 'var(--color-slate-300)'} strokeWidth={2}
                   strokeDasharray={fed ? undefined : '3 3'} />
-                <text x={12} y={y + 4} fontSize={11} fontWeight={700} fill={fed ? C.sky : '#d7d3d3'}>
+                <text x={12} y={y + 4} fontSize={11} fontWeight={700} fill={fed ? C.sky : 'var(--color-slate-300)'}>
                   x{r}
                 </text>
               </g>
@@ -157,18 +157,18 @@ export function SystolicArray({ n = 4, rows = 6 }: { n?: number; rows?: number }
               const st = cellState(r, c);
               const x = originX + c * (cellSize + gap);
               const y = originY + r * (cellSize + gap);
-              const fill = st === 'active' ? C.compute : st === 'done' ? '#eae7e7' : '#f8f4f4';
-              const stroke = st === 'active' ? C.compute : '#d7d3d3';
+              const fill = st === 'active' ? C.compute : st === 'done' ? 'var(--color-slate-200)' : 'var(--color-slate-100)';
+              const stroke = st === 'active' ? C.compute : 'var(--color-slate-300)';
               return (
                 <g key={`c-${r}-${c}`}>
                   <rect x={x} y={y} width={cellSize} height={cellSize} rx={10}
                     fill={fill} fillOpacity={st === 'active' ? 0.22 : 1} stroke={stroke} strokeWidth={st === 'active' ? 2.5 : 1} />
                   <text x={x + cellSize / 2} y={y + cellSize / 2 - 3} textAnchor="middle" fontSize={11}
-                    fontWeight={700} fill={st === 'active' ? '#17543f' : '#928e8e'}>
+                    fontWeight={700} fill={st === 'active' ? 'var(--chart-compute)' : 'var(--color-slate-400)'}>
                     w{r}{c}
                   </text>
                   <text x={x + cellSize / 2} y={y + cellSize / 2 + 12} textAnchor="middle" fontSize={9}
-                    fill={st === 'active' ? C.compute : '#d7d3d3'}>
+                    fill={st === 'active' ? C.compute : 'var(--color-slate-300)'}>
                     {st === 'active' ? 'MAC' : st === 'done' ? 'done' : 'idle'}
                   </text>
                 </g>
@@ -183,10 +183,10 @@ export function SystolicArray({ n = 4, rows = 6 }: { n?: number; rows?: number }
             const ready = cycle >= n - 1 + c;
             return (
               <g key={`out-${c}`}>
-                <line x1={x} y1={yTop} x2={x} y2={yTop + 26} stroke={ready ? C.violet : '#d7d3d3'} strokeWidth={2}
+                <line x1={x} y1={yTop} x2={x} y2={yTop + 26} stroke={ready ? C.violet : 'var(--color-slate-300)'} strokeWidth={2}
                   strokeDasharray={ready ? undefined : '3 3'} />
                 <text x={x} y={yTop + 42} textAnchor="middle" fontSize={11} fontWeight={700}
-                  fill={ready ? C.violet : '#d7d3d3'}>
+                  fill={ready ? C.violet : 'var(--color-slate-300)'}>
                   z{c}
                 </text>
               </g>

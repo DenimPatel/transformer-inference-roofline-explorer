@@ -143,7 +143,7 @@ export default function InfoPopover({
           )}
 
           {f && (
-            <div className="flex items-start gap-2 mb-3 rounded-lg bg-white border border-slate-200 px-2.5 py-2">
+            <div className="flex items-start gap-2 mb-3 rounded-lg bg-surface border border-slate-200 px-2.5 py-2">
               <span className="text-[var(--color-amber)] mt-0.5">
                 <Calculator style={{ width: 13, height: 13 }} />
               </span>

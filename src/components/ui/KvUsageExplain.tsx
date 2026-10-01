@@ -1,8 +1,9 @@
 import React from 'react';
 import { cn } from '../../lib/utils';
+import { tint } from '../../lib/theme';
 
-const COLOR_K = '#0088b0';
-const COLOR_V = '#2f8365';
+const COLOR_K = 'var(--color-accent)';
+const COLOR_V = 'var(--chart-compute)';
 
 // Round an element of a K/V vector for the mini display.
 function fmtCell(v: number): string {
@@ -17,7 +18,7 @@ function VecRow({ label, values, color }: { label: string; values: number[]; col
       <div className="flex gap-1">
         {values.map((v, i) => (
           <span key={i} className="rounded px-1 py-0.5 text-[9px] font-mono"
-            style={{ backgroundColor: `${color}16`, color }}>
+            style={{ backgroundColor: tint(color, 9), color }}>
             {fmtCell(v)}
           </span>
         ))}
@@ -105,7 +106,7 @@ export default function KvUsageExplain() {
           position so a later step can <em>score against every stored K</em> and <em>blend every stored V</em> without
           recomputing the prefix.
         </p>
-        <pre className="text-[11px] bg-slate-900 text-slate-100 rounded-lg p-3 overflow-x-auto font-mono leading-relaxed">
+        <pre className="text-[11px] code-block rounded-lg p-3 overflow-x-auto font-mono leading-relaxed">
 {`score = softmax(q · kᵢ / √d)   # K selects (match)
 out   = Σᵢ score[i] · vᵢ        # V supplies (content)`}
         </pre>

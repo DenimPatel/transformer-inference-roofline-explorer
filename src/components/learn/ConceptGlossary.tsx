@@ -34,7 +34,7 @@ export default function ConceptGlossary({ open, onClose }: ConceptGlossaryProps)
       aria-modal="true"
       aria-label="Concept glossary"
     >
-      <div className="absolute inset-0 bg-slate-900/30" onClick={onClose} />
+      <div className="absolute inset-0 bg-[var(--c-scrim)]" onClick={onClose} />
       <motion.div
         initial={{ opacity: 0, scale: 0.96, y: 12 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -103,7 +103,7 @@ export default function ConceptGlossary({ open, onClose }: ConceptGlossaryProps)
                           <p key={i} className="text-[11.5px] leading-relaxed text-slate-500">{b}</p>
                         ))}
                         {c.formula && (
-                          <div className="rounded-lg bg-white border border-slate-200 px-3 py-2">
+                          <div className="rounded-lg bg-surface border border-slate-200 px-3 py-2">
                             <code className="text-[11px] font-mono text-slate-700">{c.formula}</code>
                           </div>
                         )}

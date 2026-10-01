@@ -38,11 +38,27 @@ the prose quotes live numbers from it.
 
 ## Design
 
-The site is set in the **Broadsheet** design language shared with the companion
-site at [DenimPatel/AI](https://github.com/DenimPatel/AI): near-black Source Serif
-on paper white, cyan and magenta used sparingly as spot color, hierarchy from type
-scale and whitespace rather than boxes. The tokens live in `src/index.css`; chart
-literals that cannot read CSS variables come from `src/lib/theme.ts`.
+The site uses the **instrument** design system shared with the
+[interactive courses](https://denimpatel.github.io/interactive-courses/) site:
+Inter throughout, cool slate neutrals, one azure accent reserved for
+interaction, teal as the second series hue, flat hairline plates, and a light and
+a dark mode that are two sets of the same colour slots.
+
+- `src/index.css` owns every token. The `--t-*` slots are the only values that
+  flip between modes; the `--c-*` layer and the Tailwind `@theme` block are
+  written once on top of them, so the `slate-*`, `accent-*`, `emerald-*` etc.
+  utilities the components already use follow the theme with no per-component
+  dark variants.
+- `data-theme` on `<html>` is always a resolved `light` or `dark`. The inline
+  script in `index.html` writes it before first paint, and the nav's theme
+  button (`src/lib/useTheme.ts`) cycles System → Light → Dark, persisted under
+  `roofline:theme`.
+- Charts read colour from `src/lib/theme.ts`, whose values are CSS `var()`
+  references, so Recharts and SVG follow the mode without re-rendering. Use
+  `tint(color, pct)` rather than appending an alpha suffix to a colour. Compute
+  is teal and memory is crimson, fixed across modes.
+- Filled controls use `bg-accent-solid` (not `bg-accent`) so white text keeps its
+  contrast in dark mode.
 
 ## Run Locally
 

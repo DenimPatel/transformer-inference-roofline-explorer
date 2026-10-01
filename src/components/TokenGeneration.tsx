@@ -63,7 +63,7 @@ export default function TokenGenerationTab() {
       </section>
 
       {/* ---- Section nav ---- */}
-      <nav className="sticky top-0 z-30 -mx-2 px-2 py-3 mb-8 bg-[#f3f2f2] border-b border-slate-200 rounded-2xl">
+      <nav className="sticky top-0 z-30 -mx-2 px-2 py-3 mb-8 bg-[var(--c-bg)] border-b border-slate-200 rounded-2xl">
         <div className="flex gap-1.5 overflow-x-auto custom-scrollbar py-1">
           {SECTIONS.map((s) => (
             <a key={s.id} href={`#${s.id}`}
@@ -101,7 +101,7 @@ export default function TokenGenerationTab() {
             <code> vocab &times; n_embd</code>) and <code>wpe</code> (position embedding, shape
             <code> block_size &times; n_embd</code>). In <code>microgpt.py</code>:
           </p>
-          <pre className="text-xs bg-slate-900 text-slate-100 rounded-lg p-4 overflow-x-auto font-mono leading-relaxed">
+          <pre className="text-xs code-block rounded-lg p-4 overflow-x-auto font-mono leading-relaxed">
 {`tok_emb = state_dict['wte'][token_id]   # token id -> vector
 pos_emb = state_dict['wpe'][pos_id]     # position id -> vector
 x = [t + p for t, p in zip(tok_emb, pos_emb)]  # add them

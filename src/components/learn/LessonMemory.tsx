@@ -27,10 +27,10 @@ export default function LessonMemory({ onComplete }: { onComplete: () => void })
   }, []);
 
   const ops = [
-    { name: 'Dot product (vector)', intensity: 0.5, color: '#c00a60' },
-    { name: 'Attention (gate)', intensity: 1, color: '#c8963a' },
-    { name: 'Tiled matmul (tile=128)', intensity: 64, color: '#1186ac' },
-    { name: 'Matmul, B=1024', intensity: 1024, color: '#7b4b90' },
+    { name: 'Dot product (vector)', intensity: 0.5, color: 'var(--chart-memory)' },
+    { name: 'Attention (gate)', intensity: 1, color: 'var(--chart-series-3)' },
+    { name: 'Tiled matmul (tile=128)', intensity: 64, color: 'var(--color-accent-600)' },
+    { name: 'Matmul, B=1024', intensity: 1024, color: 'var(--chart-series-4)' },
   ];
 
   return (
@@ -136,8 +136,8 @@ export default function LessonMemory({ onComplete }: { onComplete: () => void })
               <XAxis dataKey="name" tick={{ fontSize: 10 }} />
               <YAxis scale="log" domain={[0.3, 4000]} type="number" tickFormatter={(v: any) => (v < 1 ? v.toFixed(1) : v.toFixed(0))} label={{ value: 'Intensity (FLOPs/B, log)', angle: -90, position: 'insideLeft', fontSize: 10 }} />
               <Tooltip formatter={(v: any) => [`${Number(v).toFixed(1)} FLOPs/B`, 'Intensity']} />
-              <ReferenceLine y={VMEM_INTENSITY} stroke="#2f8365" strokeDasharray="3 3" label={{ position: 'top', value: 'VMEM ~20', fill: '#2f8365', fontSize: 10 }} />
-              <ReferenceLine y={HBM_RIDGE} stroke="#d6006c" strokeDasharray="3 3" label={{ position: 'top', value: `HBM ${HBM_RIDGE}`, fill: '#d6006c', fontSize: 10 }} />
+              <ReferenceLine y={VMEM_INTENSITY} stroke="var(--chart-compute)" strokeDasharray="3 3" label={{ position: 'top', value: 'VMEM ~20', fill: 'var(--chart-compute)', fontSize: 10 }} />
+              <ReferenceLine y={HBM_RIDGE} stroke="var(--chart-memory)" strokeDasharray="3 3" label={{ position: 'top', value: `HBM ${HBM_RIDGE}`, fill: 'var(--chart-memory)', fontSize: 10 }} />
               <Bar dataKey="intensity" radius={[6, 6, 0, 0]}>
                 {ops.map((o) => (
                   <Cell key={o.name} fill={o.color} />
@@ -155,9 +155,9 @@ export default function LessonMemory({ onComplete }: { onComplete: () => void })
               <XAxis dataKey="tile" scale="log" type="number" domain={['dataMin', 'dataMax']} tickFormatter={(v) => `${v}`} label={{ value: 'Tile size (log)', position: 'bottom', fontSize: 10 }} />
               <YAxis label={{ value: 'Effective intensity', angle: -90, position: 'insideLeft', fontSize: 10 }} />
               <Tooltip formatter={(v: any) => [`${Number(v).toFixed(0)}`, 'Intensity']} labelFormatter={(v: any) => `tile ${v}`} />
-              <ReferenceLine y={HBM_RIDGE} stroke="#d6006c" strokeDasharray="3 3" label={{ position: 'top', value: 'HBM ridge', fill: '#d6006c', fontSize: 10 }} />
-              <ReferenceLine x={tile} stroke="#605d5d" />
-              <Line type="monotone" dataKey="intensity" stroke="#0088b0" strokeWidth={3} dot={false} />
+              <ReferenceLine y={HBM_RIDGE} stroke="var(--chart-memory)" strokeDasharray="3 3" label={{ position: 'top', value: 'HBM ridge', fill: 'var(--chart-memory)', fontSize: 10 }} />
+              <ReferenceLine x={tile} stroke="var(--color-slate-600)" />
+              <Line type="monotone" dataKey="intensity" stroke="var(--color-accent)" strokeWidth={3} dot={false} />
             </LineChart>
           </ResponsiveContainer>
         </div>

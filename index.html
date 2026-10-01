@@ -3,16 +3,36 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#f3f2f2" />
+    <meta name="theme-color" content="#f2f5fa" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#090c11" media="(prefers-color-scheme: dark)" />
+    <meta name="color-scheme" content="light dark" />
     <meta name="description" content="An interactive, learning-first visualizer for Transformer inference roofline analysis — arithmetic intensity, batch size, latency, and cost tradeoffs." />
     <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap"
-    />
+    <link rel="preload" href="%BASE_URL%fonts/inter-var-latin.woff2" as="font" type="font/woff2" crossorigin />
     <title>Roofline Explorer · Transformer Inference</title>
+    <!-- No-flash boot. Runs before first paint and writes the RESOLVED mode
+         ('light' | 'dark') to <html data-theme>; the stylesheet is written
+         against exactly those two. ES5 on purpose: it is inlined and must not
+         be able to throw on an old browser. The same key is read by
+         src/lib/useTheme.ts. -->
+    <script>
+      (function () {
+        try {
+          var pref = 'system';
+          try {
+            var v = window.localStorage.getItem('roofline:theme');
+            if (v === 'light' || v === 'dark' || v === 'system') pref = v;
+          } catch (e) {}
+          var osDark = false;
+          try { osDark = !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches); } catch (e) {}
+          var dark = pref === 'dark' || (pref === 'system' && osDark);
+          var root = document.documentElement;
+          root.setAttribute('data-theme', dark ? 'dark' : 'light');
+          root.setAttribute('data-pref-theme', pref);
+          root.style.colorScheme = dark ? 'dark' : 'light';
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -40,7 +40,7 @@ export default function SegmentedControl<T extends string>({
             {active && (
               <motion.span
                 layoutId="segmented-pill"
-                className="absolute inset-0 rounded-lg bg-white shadow border border-slate-200/70"
+                className="absolute inset-0 rounded-lg bg-surface shadow border border-slate-200/70"
                 transition={{ type: 'spring', stiffness: 380, damping: 32 }}
               />
             )}

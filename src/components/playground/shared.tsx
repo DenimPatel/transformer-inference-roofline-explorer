@@ -73,7 +73,7 @@ export function KvSizeGauge({ positions, promptPositions, maxPositions, nEmbd, n
       </div>
       <div className="h-2.5 rounded-full bg-slate-200 overflow-hidden flex">
         <div className="h-full" style={{ width: `${pctPrompt}%`, background: C.accent }} />
-        <div className="h-full" style={{ width: `${pctGen}%`, background: '#99e0ff' }} />
+        <div className="h-full" style={{ width: `${pctGen}%`, background: 'var(--color-accent-300)' }} />
       </div>
       <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1.5 text-[10px] text-slate-400">
         <span className="flex items-center gap-1">
@@ -81,7 +81,7 @@ export function KvSizeGauge({ positions, promptPositions, maxPositions, nEmbd, n
           prefill {Math.min(positions, promptPositions)} pos · {fmtNum(prefillValues)} values
         </span>
         <span className="flex items-center gap-1">
-          <span className="inline-block w-2 h-2 rounded-sm align-middle" style={{ background: '#99e0ff' }} />
+          <span className="inline-block w-2 h-2 rounded-sm align-middle" style={{ background: 'var(--color-accent-300)' }} />
           generated {genPositions} pos · {fmtNum(genValues)} values
         </span>
         <span className="flex items-center gap-1">

@@ -43,7 +43,7 @@ const CostTooltip = ({ active, payload, label }: any) => {
   );
 };
 
-const AXIS = { stroke: '#d7d3d3', tick: { fill: '#7d7979', fontSize: 11 } } as const;
+const AXIS = { stroke: 'var(--color-slate-300)', tick: { fill: 'var(--color-slate-500)', fontSize: 11 } } as const;
 
 /**
  * Latency and cost against batch size, for the reader's own configuration.
@@ -68,19 +68,19 @@ export default function CostCharts() {
           <div className="h-[340px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={chartData} margin={{ top: 10, right: 24, left: 0, bottom: 16 }}>
-                <CartesianGrid strokeDasharray="4 4" stroke="#eae7e7" vertical={false} />
+                <CartesianGrid strokeDasharray="4 4" stroke="var(--color-slate-200)" vertical={false} />
                 <XAxis dataKey="batchSize" scale="log" domain={['dataMin', 'dataMax']} type="number"
                   tickFormatter={(v) => (v >= 1000 ? `${v / 1000}k` : v)} {...AXIS}
-                  label={{ value: 'Batch Size (log)', position: 'insideBottom', offset: -12, fill: '#7d7979', fontSize: 11 }} />
+                  label={{ value: 'Batch Size (log)', position: 'insideBottom', offset: -12, fill: 'var(--color-slate-500)', fontSize: 11 }} />
                 <YAxis {...AXIS} scale="log" domain={['dataMin', 'dataMax']} tickFormatter={(v) => v.toFixed(1)}
-                  label={{ value: 'Latency (ms)', angle: -90, position: 'insideLeft', fill: '#7d7979', fontSize: 11 }} />
+                  label={{ value: 'Latency (ms)', angle: -90, position: 'insideLeft', fill: 'var(--color-slate-500)', fontSize: 11 }} />
                 <Tooltip content={<LatencyTooltip />} />
                 <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }} />
-                <Line type="monotone" dataKey="tCompute" name="Compute Time" stroke="#2f8365" strokeWidth={2} strokeDasharray="5 5" dot={false} />
-                <Line type="monotone" dataKey="tMemory" name="Memory Time" stroke="#c8963a" strokeWidth={2} strokeDasharray="5 5" dot={false} />
-                <Line type="monotone" dataKey="latency" name="Total Latency" stroke="#2d2b2b" strokeWidth={3} dot={false} />
-                <ReferenceLine x={currentStat.batchSize} stroke="#928e8e" strokeWidth={2}
-                  label={{ position: 'top', value: 'Current', fill: '#7d7979', fontSize: 10 }} />
+                <Line type="monotone" dataKey="tCompute" name="Compute Time" stroke="var(--chart-compute)" strokeWidth={2} strokeDasharray="5 5" dot={false} />
+                <Line type="monotone" dataKey="tMemory" name="Memory Time" stroke="var(--chart-series-3)" strokeWidth={2} strokeDasharray="5 5" dot={false} />
+                <Line type="monotone" dataKey="latency" name="Total Latency" stroke="var(--color-slate-800)" strokeWidth={3} dot={false} />
+                <ReferenceLine x={currentStat.batchSize} stroke="var(--color-slate-400)" strokeWidth={2}
+                  label={{ position: 'top', value: 'Current', fill: 'var(--color-slate-500)', fontSize: 10 }} />
               </ComposedChart>
             </ResponsiveContainer>
           </div>
@@ -101,18 +101,18 @@ export default function CostCharts() {
           <div className="h-[340px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={chartData} margin={{ top: 10, right: 24, left: 0, bottom: 16 }}>
-                <CartesianGrid strokeDasharray="4 4" stroke="#eae7e7" vertical={false} />
+                <CartesianGrid strokeDasharray="4 4" stroke="var(--color-slate-200)" vertical={false} />
                 <XAxis dataKey="batchSize" scale="log" domain={['dataMin', 'dataMax']} type="number"
                   tickFormatter={(v) => (v >= 1000 ? `${v / 1000}k` : v)} {...AXIS}
-                  label={{ value: 'Batch Size (log)', position: 'insideBottom', offset: -12, fill: '#7d7979', fontSize: 11 }} />
+                  label={{ value: 'Batch Size (log)', position: 'insideBottom', offset: -12, fill: 'var(--color-slate-500)', fontSize: 11 }} />
                 <YAxis {...AXIS} tickFormatter={(v) => '$' + Number(v).toFixed(2)}
-                  label={{ value: 'Cost (USD/1M tkns)', angle: -90, position: 'insideLeft', fill: '#7d7979', fontSize: 11 }} />
+                  label={{ value: 'Cost (USD/1M tkns)', angle: -90, position: 'insideLeft', fill: 'var(--color-slate-500)', fontSize: 11 }} />
                 <Tooltip content={<CostTooltip />} />
                 <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }} />
-                <Line type="monotone" dataKey="costElec1M" name="Power Cost" stroke="#c8963a" strokeWidth={2} strokeDasharray="5 5" dot={false} />
-                <Line type="monotone" dataKey="costHardware1M" name="Hardware CapEx" stroke="#7d7979" strokeWidth={2} strokeDasharray="5 5" dot={false} />
-                <Line type="monotone" dataKey="totalCost1M" name="Total TCO" stroke="#2f8365" strokeWidth={3} dot={false} />
-                <ReferenceLine x={currentStat.batchSize} stroke="#928e8e" strokeWidth={2} />
+                <Line type="monotone" dataKey="costElec1M" name="Power Cost" stroke="var(--chart-series-3)" strokeWidth={2} strokeDasharray="5 5" dot={false} />
+                <Line type="monotone" dataKey="costHardware1M" name="Hardware CapEx" stroke="var(--color-slate-500)" strokeWidth={2} strokeDasharray="5 5" dot={false} />
+                <Line type="monotone" dataKey="totalCost1M" name="Total TCO" stroke="var(--chart-compute)" strokeWidth={3} dot={false} />
+                <ReferenceLine x={currentStat.batchSize} stroke="var(--color-slate-400)" strokeWidth={2} />
               </ComposedChart>
             </ResponsiveContainer>
           </div>

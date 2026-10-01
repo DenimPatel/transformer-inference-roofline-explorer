@@ -83,7 +83,7 @@ export default function LessonSharding({ onComplete }: { onComplete: () => void 
               type="button"
               onClick={() => setStrategy(s)}
               className={cn('rounded-xl px-3 py-1.5 text-xs font-semibold transition-colors', strategy === s ? 'text-white' : 'glass-chip text-slate-600 hover:bg-slate-100')}
-              style={strategy === s ? { background: 'var(--color-accent)' } : undefined}
+              style={strategy === s ? { background: 'var(--c-accent-solid)' } : undefined}
             >
               {STRATS[s].name}
             </button>
@@ -136,10 +136,10 @@ export default function LessonSharding({ onComplete }: { onComplete: () => void 
               <XAxis dataKey="name" tick={{ fontSize: 10 }} />
               <YAxis scale="log" domain={[10, 80000]} type="number" tickFormatter={(v) => v.toLocaleString()} label={{ value: 'Boundary (log)', angle: -90, position: 'insideLeft', fontSize: 10 }} />
               <Tooltip formatter={(v: any) => [Number(v).toLocaleString(), 'Boundary']} />
-              <Bar dataKey="threshold" fill="#cbeeff" radius={[6, 6, 0, 0]}>
-                <Cell fill="#0088b0" />
-                <Cell fill="#006786" />
-                <Cell fill="#c8963a" />
+              <Bar dataKey="threshold" fill="var(--color-accent-200)" radius={[6, 6, 0, 0]}>
+                <Cell fill="var(--color-accent)" />
+                <Cell fill="var(--color-accent-700)" />
+                <Cell fill="var(--chart-series-3)" />
               </Bar>
             </ComposedChart>
           </ResponsiveContainer>

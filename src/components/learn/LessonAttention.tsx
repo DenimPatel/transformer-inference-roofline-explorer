@@ -90,9 +90,9 @@ export default function LessonAttention({ onComplete }: { onComplete: () => void
               <XAxis dataKey="seq" scale="log" type="number" domain={['dataMin', 'dataMax']} tickFormatter={(v) => (v >= 1000 ? `${v / 1000}k` : v)} label={{ value: 'Sequence length (log)', position: 'bottom', fontSize: 10 }} />
               <YAxis scale="log" type="number" domain={[0.5, 'dataMax']} tickFormatter={(v) => (v < 1 ? v.toFixed(1) : v.toFixed(0))} label={{ value: 'Intensity (FLOPs/B, log)', angle: -90, position: 'insideLeft', fontSize: 10 }} />
               <Tooltip formatter={(v: any, n: any) => [`${Number(v).toFixed(2)}`, n]} labelFormatter={(v: any) => `S=${v}`} />
-              <ReferenceLine y={RIDGE} stroke="#d6006c" strokeDasharray="3 3" label={{ position: 'top', value: 'Ridge', fill: '#d6006c', fontSize: 10 }} />
-              <Line type="monotone" dataKey="prefill" name="Prefill (≈ S/2)" stroke="#2f8365" strokeWidth={3} dot={false} />
-              <Line type="monotone" dataKey="gen" name="Generation (≈1)" stroke="#c8963a" strokeWidth={3} dot={false} />
+              <ReferenceLine y={RIDGE} stroke="var(--chart-memory)" strokeDasharray="3 3" label={{ position: 'top', value: 'Ridge', fill: 'var(--chart-memory)', fontSize: 10 }} />
+              <Line type="monotone" dataKey="prefill" name="Prefill (≈ S/2)" stroke="var(--chart-compute)" strokeWidth={3} dot={false} />
+              <Line type="monotone" dataKey="gen" name="Generation (≈1)" stroke="var(--chart-series-3)" strokeWidth={3} dot={false} />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
@@ -111,17 +111,17 @@ export default function LessonAttention({ onComplete }: { onComplete: () => void
             <AreaChart data={flopsCurve} margin={{ top: 10, right: 20, left: -10, bottom: 10 }}>
               <defs>
                 <linearGradient id="attnFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#006786" stopOpacity={0.4} />
-                  <stop offset="95%" stopColor="#006786" stopOpacity={0.05} />
+                  <stop offset="5%" stopColor="var(--color-accent-700)" stopOpacity={0.4} />
+                  <stop offset="95%" stopColor="var(--color-accent-700)" stopOpacity={0.05} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.4} />
               <XAxis dataKey="seq" scale="log" type="number" domain={['dataMin', 'dataMax']} tickFormatter={(v) => (v >= 1000 ? `${v / 1000}k` : v)} label={{ value: 'Sequence length (log)', position: 'bottom', fontSize: 10 }} />
               <YAxis tickFormatter={(v) => Number(v).toFixed(1)} label={{ value: 'Attention / matmul FLOPs', angle: -90, position: 'insideLeft', fontSize: 10 }} />
               <Tooltip formatter={(v: any) => [`${Number(v).toFixed(2)}×`, 'Attention vs matmul']} labelFormatter={(v: any) => `S=${Number(v).toLocaleString()}`} />
-              <ReferenceLine y={1} stroke="#2f8365" strokeDasharray="3 3" label={{ position: 'top', value: 'attention = matmul (T = 8D)', fill: '#2f8365', fontSize: 10 }} />
-              <ReferenceLine x={crossover} stroke="#d6006c" strokeDasharray="3 3" label={{ position: 'top', value: `${crossover.toLocaleString()}`, fill: '#d6006c', fontSize: 10 }} />
-              <Area type="monotone" dataKey="ratio" name="Attn/Matmul" stroke="#006786" strokeWidth={3} fill="url(#attnFill)" />
+              <ReferenceLine y={1} stroke="var(--chart-compute)" strokeDasharray="3 3" label={{ position: 'top', value: 'attention = matmul (T = 8D)', fill: 'var(--chart-compute)', fontSize: 10 }} />
+              <ReferenceLine x={crossover} stroke="var(--chart-memory)" strokeDasharray="3 3" label={{ position: 'top', value: `${crossover.toLocaleString()}`, fill: 'var(--chart-memory)', fontSize: 10 }} />
+              <Area type="monotone" dataKey="ratio" name="Attn/Matmul" stroke="var(--color-accent-700)" strokeWidth={3} fill="url(#attnFill)" />
             </AreaChart>
           </ResponsiveContainer>
         </div>

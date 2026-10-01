@@ -58,7 +58,7 @@ export default function LessonKVCache({ onComplete }: { onComplete: () => void }
                     key={o.v}
                     type="button"
                     onClick={() => setKvFactor(o.v)}
-                    className={`flex-1 text-xs py-1.5 rounded-lg transition-colors ${kvFactor === o.v ? 'bg-white shadow text-slate-800 font-bold' : 'text-slate-500'}`}
+                    className={`flex-1 text-xs py-1.5 rounded-lg transition-colors ${kvFactor === o.v ? 'bg-surface shadow text-slate-800 font-bold' : 'text-slate-500'}`}
                   >
                     {o.l}
                   </button>
@@ -70,8 +70,8 @@ export default function LessonKVCache({ onComplete }: { onComplete: () => void }
           <div className="glass-strong rounded-2xl p-4 space-y-3">
             <div className="text-xs text-slate-500">HBM footprint vs 80 GB H100</div>
             <div className="space-y-2">
-              <Bar label="Parameters (7B @ bf16)" bytes={PARAMS_BYTES} color="#0088b0" />
-              <Bar label="KV cache" bytes={kvBytes} color="#c8963a" />
+              <Bar label="Parameters (7B @ bf16)" bytes={PARAMS_BYTES} color="var(--color-accent)" />
+              <Bar label="KV cache" bytes={kvBytes} color="var(--chart-series-3)" />
             </div>
             <div className="text-xs text-slate-500">
               Total:{' '}

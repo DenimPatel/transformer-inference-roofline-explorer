@@ -732,12 +732,12 @@ function OverlapBoundsChart() {
           <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="overlapFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#1186ac" stopOpacity={0.4} />
-                <stop offset="95%" stopColor="#1186ac" stopOpacity={0.05} />
+                <stop offset="5%" stopColor="var(--color-accent-600)" stopOpacity={0.4} />
+                <stop offset="95%" stopColor="var(--color-accent-600)" stopOpacity={0.05} />
               </linearGradient>
               <linearGradient id="upperFill2" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#d6006c" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#d6006c" stopOpacity={0.05} />
+                <stop offset="5%" stopColor="var(--chart-memory)" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="var(--chart-memory)" stopOpacity={0.05} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.4} />
@@ -746,8 +746,8 @@ function OverlapBoundsChart() {
             <YAxis />
             <Tooltip content={<ChartTip label="T_math/T_comms" />} />
             <Area type="monotone" dataKey="noOverlap" name="Upper (no overlap)" stroke={C.ridge} strokeWidth={2.5} fill="url(#upperFill2)" />
-            <Area type="monotone" dataKey="perfectOverlap" name="Lower (perfect overlap)" stroke="#006786" strokeWidth={2.5} fill="url(#overlapFill)" />
-            <ReferenceLine x={1} stroke="#605d5d" strokeDasharray="4 4" />
+            <Area type="monotone" dataKey="perfectOverlap" name="Lower (perfect overlap)" stroke="var(--color-accent-700)" strokeWidth={2.5} fill="url(#overlapFill)" />
+            <ReferenceLine x={1} stroke="var(--color-slate-600)" strokeDasharray="4 4" />
           </AreaChart>
         </ResponsiveContainer>
       </div>
@@ -818,12 +818,12 @@ function RooflineChart({
       <ComposedChart data={data} margin={{ top: 20, right: 30, left: 10, bottom: 20 }}>
       <defs>
         <linearGradient id="bandwidthRoof" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="5%" stopColor="#ff458e" stopOpacity={0.28} />
-          <stop offset="95%" stopColor="#ff458e" stopOpacity={0.02} />
+          <stop offset="5%" stopColor="var(--chart-memory)" stopOpacity={0.28} />
+          <stop offset="95%" stopColor="var(--chart-memory)" stopOpacity={0.02} />
         </linearGradient>
         <linearGradient id="computeRoof" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="5%" stopColor="#2f8365" stopOpacity={0.28} />
-          <stop offset="95%" stopColor="#2f8365" stopOpacity={0.02} />
+          <stop offset="5%" stopColor="var(--chart-compute)" stopOpacity={0.28} />
+          <stop offset="95%" stopColor="var(--chart-compute)" stopOpacity={0.02} />
         </linearGradient>
       </defs>
       <CartesianGrid strokeDasharray="3 3" opacity={0.35} />
@@ -841,13 +841,13 @@ function RooflineChart({
       {(showOps || peakBw2) && <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '12px' }} />}
 
       {/* Bandwidth-bound at every bandwidth on offer (red). */}
-      <ReferenceArea {...({ x1: minI, x2: loRidge, fill: '#ff458e', fillOpacity: peakBw2 ? 0.16 : 0.07, strokeOpacity: 0 } as any)} />
+      <ReferenceArea {...({ x1: minI, x2: loRidge, fill: 'var(--chart-memory)', fillOpacity: peakBw2 ? 0.16 : 0.07, strokeOpacity: 0 } as any)} />
       {/* Bandwidth-bound only at the slower bandwidth (amber) — buying bandwidth helps here. */}
       {ridge2 !== undefined && (
-        <ReferenceArea {...({ x1: loRidge, x2: hiRidge, fill: '#c8963a', fillOpacity: 0.18, strokeOpacity: 0 } as any)} />
+        <ReferenceArea {...({ x1: loRidge, x2: hiRidge, fill: 'var(--chart-series-3)', fillOpacity: 0.18, strokeOpacity: 0 } as any)} />
       )}
       {/* Compute-bound at every bandwidth (green). */}
-      <ReferenceArea {...({ x1: hiRidge, x2: maxI, fill: '#2f8365', fillOpacity: peakBw2 ? 0.16 : 0.07, strokeOpacity: 0 } as any)} />
+      <ReferenceArea {...({ x1: hiRidge, x2: maxI, fill: 'var(--chart-compute)', fillOpacity: peakBw2 ? 0.16 : 0.07, strokeOpacity: 0 } as any)} />
 
       <ReferenceLine x={ridge} stroke={C.ridge} strokeDasharray="5 5" strokeWidth={1.5}
         label={{ position: 'top', value: `ridge ≈ ${fmtNum(ridge)}`, fill: C.ridge, fontSize: 11, fontWeight: 700 }} />
@@ -960,7 +960,7 @@ function ArithmeticIntensitySection({ hardwareIntensity }: { hardwareIntensity: 
               <Line type="monotone" dataKey="intensity" name="Exact" stroke={C.sky} strokeWidth={3} dot={false} />
               <ReferenceLine y={hardwareIntensity} stroke={C.ridge} strokeDasharray="3 3"
                 label={{ position: 'top', value: 'Ridge', fill: C.ridge, fontSize: 10, fontWeight: 700 }} />
-              <ReferenceLine x={B} stroke="#605d5d" strokeWidth={1.5} />
+              <ReferenceLine x={B} stroke="var(--color-slate-600)" strokeWidth={1.5} />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
@@ -1024,7 +1024,7 @@ function MatmulInteractiveSection({ hardwareIntensity }: { hardwareIntensity: nu
               <ReferenceLine y={hardwareIntensity} stroke={C.ridge} strokeDasharray="3 3"
                 label={{ position: 'top', value: 'Ridge', fill: C.ridge, fontSize: 10, fontWeight: 700 }} />
               <Line type="monotone" dataKey="intensity" name="Intensity" stroke={C.accent} strokeWidth={3} dot={false} />
-              <ReferenceLine x={B} stroke="#605d5d" strokeWidth={1.5} />
+              <ReferenceLine x={B} stroke="var(--color-slate-600)" strokeWidth={1.5} />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
@@ -1140,13 +1140,13 @@ function AttentionIntensitySection({ hardwareIntensity }: { hardwareIntensity: n
             <Tooltip content={<ChartTip />} />
             <ReferenceLine y={hardwareIntensity} stroke={C.ridge} strokeDasharray="4 4"
               label={{ position: 'top', value: `ridge ${fmtNum(hardwareIntensity)}`, fill: C.ridge, fontSize: 10 }} />
-            <ReferenceLine x={crossover} stroke="#605d5d" strokeDasharray="4 4"
+            <ReferenceLine x={crossover} stroke="var(--color-slate-600)" strokeDasharray="4 4"
               label={{ position: 'top', value: 'crossover ≈ 2·ridge', fill: C.slate, fontSize: 10 }} />
             <Area type="monotone" dataKey="generation" name="Generation (T=1)" stroke={C.amber} strokeWidth={2.5}
               fill="url(#attnGen)" dot={false} />
             <Area type="monotone" dataKey="prefill" name="Prefill (S=T)" stroke={C.compute} strokeWidth={2.5}
               fill="url(#attnPrefill)" dot={false} />
-            <ReferenceLine x={context} stroke="#605d5d" strokeWidth={1.5} />
+            <ReferenceLine x={context} stroke="var(--color-slate-600)" strokeWidth={1.5} />
           </ComposedChart>
         </ResponsiveContainer>
       </div>
@@ -1207,7 +1207,7 @@ function KVCacheSection({ hardwareIntensity, hw }: any) {
               {[{ b: 2, l: 'bf16/fp16' }, { b: 1, l: 'int8/fp8' }, { b: 0.5, l: 'fp4' }].map((o) => (
                 <button key={o.b} onClick={() => setBpv(o.b)}
                   className={cn('glass rounded-md py-1.5 text-[11px] font-semibold transition-colors',
-                    bpv === o.b ? 'bg-accent text-white border-accent' : 'text-slate-600 hover:border-accent/40')}>
+                    bpv === o.b ? 'bg-accent-solid text-white border-accent' : 'text-slate-600 hover:border-accent/40')}>
                   {o.l}
                 </button>
               ))}
@@ -1429,7 +1429,7 @@ function NetworkRooflineInteractiveSection({ hw }: any) {
               {tiers.map((t) => (
                 <button key={t.id} onClick={() => setTier(t.id)}
                   className={cn('glass rounded-md py-1.5 px-1 text-[11px] font-semibold transition-colors',
-                    tier === t.id ? 'bg-accent text-white border-accent' : 'text-slate-600 hover:border-accent/40')}>
+                    tier === t.id ? 'bg-accent-solid text-white border-accent' : 'text-slate-600 hover:border-accent/40')}>
                   {t.label}
                 </button>
               ))}
@@ -1490,7 +1490,7 @@ function NetworkRooflineInteractiveSection({ hw }: any) {
               <ReferenceLine x={criticalD} stroke={C.ridge} strokeDasharray="4 4"
                 label={{ position: 'top', value: `D>${fmtNum(criticalD)}`, fill: C.ridge, fontSize: 10 }} />
               <Line type="monotone" dataKey="achievable" name="2-chip throughput" stroke={C.violet} strokeWidth={3} dot={false} />
-              <ReferenceLine x={D} stroke="#605d5d" strokeWidth={1.5} />
+              <ReferenceLine x={D} stroke="var(--color-slate-600)" strokeWidth={1.5} />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
@@ -1533,7 +1533,7 @@ function AttentionFlopsSection() {
             {models.map((m) => (
               <button key={m.label} onClick={() => setDim(m.d)}
                 className={cn('w-full glass rounded-lg p-2.5 text-left text-sm transition-colors',
-                  dim === m.d ? 'bg-accent text-white border-accent' : 'text-slate-600 hover:border-accent/40')}>
+                  dim === m.d ? 'bg-accent-solid text-white border-accent' : 'text-slate-600 hover:border-accent/40')}>
                 <span className="font-semibold">{m.label}</span>
                 <span className={cn('block font-mono text-xs', dim === m.d ? 'text-white/70' : 'text-slate-400')}>
                   crossover ≈ {fmtNum(8 * m.d, 0)} tokens ({fmtNum((8 * m.d) / 1000, 0)}k)
@@ -1568,7 +1568,7 @@ function AttentionFlopsSection() {
               <YAxis tickFormatter={(v: any) => `${Math.round(v * 100)}%`} domain={[0, 1]}
                 label={{ value: '% of layer FLOPs', angle: -90, position: 'insideLeft', fontSize: 10, fill: C.slate }} />
               <Tooltip content={<ChartTip />} />
-              <ReferenceLine y={0.5} stroke="#605d5d" strokeDasharray="4 4"
+              <ReferenceLine y={0.5} stroke="var(--color-slate-600)" strokeDasharray="4 4"
                 label={{ position: 'top', value: 'attention = 50%', fill: C.slate, fontSize: 10 }} />
               <ReferenceLine x={crossover} stroke={C.ridge} strokeDasharray="4 4"
                 label={{ position: 'top', value: 'T = 8D', fill: C.ridge, fontSize: 10 }} />
@@ -1747,7 +1747,7 @@ function MemoryHierarchySection({ hw, hardwareIntensity, onChipRatio, onChipRidg
                 <ReferenceLine y={hardwareIntensity} stroke={C.ridge} strokeDasharray="4 4"
                   label={{ position: 'top', value: 'HBM ridge', fill: C.ridge, fontSize: 10 }} />
                 <Line type="monotone" dataKey="intensity" name="Tiled intensity" stroke={C.sky} strokeWidth={3} dot={false} />
-                <ReferenceLine x={tile} stroke="#605d5d" strokeWidth={1.5} />
+                <ReferenceLine x={tile} stroke="var(--color-slate-600)" strokeWidth={1.5} />
               </ComposedChart>
             </ResponsiveContainer>
           </div>

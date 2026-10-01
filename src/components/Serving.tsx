@@ -203,7 +203,7 @@ export function ServingFit() {
           {HARDWARE_PROFILES.filter((h) => GPU_IDS.includes(h.id)).map((h) => (
             <button key={h.id} type="button" onClick={() => setHwId(h.id)}
               className={cn('rounded-xl px-4 py-2 text-sm font-semibold transition-colors border',
-                hwId === h.id ? 'bg-accent text-white border-accent' : 'bg-white text-slate-600 border-slate-200 hover:border-accent/50')}>
+                hwId === h.id ? 'bg-accent-solid text-white border-accent' : 'bg-surface text-slate-600 border-slate-200 hover:border-accent/50')}>
               {h.id} <span className="text-[10px] opacity-80">({h.arch})</span>
             </button>
           ))}
@@ -261,7 +261,7 @@ function FitSection({ hw, model, precision, setPrecision }: any) {
           {PRECISIONS.map((p) => (
             <button key={p.bytes} type="button" onClick={() => setPrecision(p.bytes)}
               className={cn('glass rounded-md py-1.5 text-[11px] font-semibold transition-colors',
-                precision === p.bytes ? 'bg-accent text-white' : 'text-slate-600 hover:border-accent/40')}>
+                precision === p.bytes ? 'bg-accent-solid text-white' : 'text-slate-600 hover:border-accent/40')}>
               {p.label}
             </button>
           ))}

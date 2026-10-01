@@ -1,7 +1,7 @@
 import React from 'react';
 import { cn } from '../../lib/utils';
 import { MicroGPT, DEFAULT_CONFIG } from '../../lib/microgpt';
-import { CHART as C } from '../../lib/theme';
+import { CHART as C, tint } from '../../lib/theme';
 import { ArrowRight } from 'lucide-react';
 
 /**
@@ -49,7 +49,7 @@ export function VectorRow({ label, values, color }: { label: string; values: num
       <div className="flex flex-wrap gap-1">
         {values.map((v, i) => (
           <div key={i} className="rounded-md px-1.5 py-1 text-[10px] font-mono"
-            style={{ backgroundColor: `${color}14`, color: `${color}` }}>
+            style={{ backgroundColor: tint(color, 8), color }}>
             {v.toFixed(2)}
           </div>
         ))}
@@ -92,7 +92,7 @@ export function ForwardDiagram() {
       {steps.map((s, i) => (
         <React.Fragment key={s.label}>
           <div className="rounded-lg px-3 py-2 text-center min-w-[92px]"
-            style={{ backgroundColor: `${s.color}12`, border: `1px solid ${s.color}40` }}>
+            style={{ backgroundColor: tint(s.color, 7), border: `1px solid ${tint(s.color, 25)}` }}>
             <div className="text-xs font-bold" style={{ color: s.color }}>{s.label}</div>
             <div className="text-[10px] font-mono text-slate-500">{s.w}</div>
           </div>
@@ -111,7 +111,7 @@ export function PrefillVisual() {
         {tokens.map((t, i) => (
           <div key={i}
             className="rounded-lg px-2.5 py-1.5 text-xs font-bold text-white"
-            style={{ background: i === 0 ? '#7b4b90' : 'var(--color-accent)' }}>
+            style={{ background: i === 0 ? 'var(--chart-series-4)' : 'var(--color-accent)' }}>
             {t}
           </div>
         ))}

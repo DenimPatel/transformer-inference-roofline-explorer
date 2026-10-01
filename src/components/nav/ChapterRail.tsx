@@ -30,7 +30,7 @@ export default function ChapterRail({
         <div className="mt-2 h-1 bg-slate-200 overflow-hidden">
           <div
             className="h-full transition-[width] duration-500"
-            style={{ width: `${pct}%`, background: 'var(--color-accent)' }}
+            style={{ width: `${pct}%`, background: 'var(--c-accent-solid)' }}
           />
         </div>
         <p className="mt-1 text-[11px] text-slate-400">{done} of {FLAT_SECTIONS.length} read</p>
