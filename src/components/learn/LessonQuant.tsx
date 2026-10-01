@@ -66,8 +66,8 @@ export default function LessonQuant({ onComplete }: { onComplete: () => void }) 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {data.map((d) => (
             <div key={d.id} className="glass rounded-xl px-3 py-2 flex items-center justify-between gap-2">
-              <span className="text-[12px] text-slate-600">{d.name}</span>
-              <span className={cn('text-[11px] font-bold', d.infinite ? 'text-rose-500' : isComputeAt(d.bCrit) ? 'text-emerald-600' : 'text-amber-600')}>
+              <span className="text-[0.75rem] text-slate-600">{d.name}</span>
+              <span className={cn('text-[0.6875rem] font-bold', d.infinite ? 'text-rose-500' : isComputeAt(d.bCrit) ? 'text-emerald-600' : 'text-amber-600')}>
                 {d.infinite ? 'always memory-bound' : B >= d.bCrit ? 'compute-bound' : 'memory-bound'}
               </span>
             </div>

@@ -9,7 +9,7 @@ export default function DoesItFit({ onComplete }: { onComplete: () => void }) {
   useEffect(() => { onComplete(); }, [onComplete]);
   return (
     <>
-      <p className="text-base text-slate-600 leading-relaxed max-w-[62ch]">
+      <p className="text-base text-slate-600 leading-relaxed max-w-[var(--pref-measure)]">
         Compute and bandwidth are rates: run short of either and you are simply slower. Capacity
         is not. This section takes one real model on one real accelerator and asks the question
         that has to be answered before any of the previous four parts matter — does it fit?

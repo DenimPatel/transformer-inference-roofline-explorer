@@ -303,6 +303,26 @@
   --radius-plate: 12px;
 
   --chrome-nav-h: 3.25rem;
+
+  /* Reader preferences. Written onto <html> by src/lib/prefs.ts and by the
+     inline boot script; the defaults are what a visitor with nothing stored
+     gets, i.e. the site as it looked before preferences existed. */
+  --pref-text-scale: 1;
+  --pref-measure: 62ch;
+  --pref-line-height: 1.6;
+  --pref-space: 1;
+  --pref-motion-scale: 1;
+  /* 1.6 * 1.015625 = 1.625, Tailwind's own `leading-relaxed`. */
+  --read-line: calc(var(--pref-line-height) * 1.015625);
+
+  /* PERCENT, not `16px * scale`: a bare 16px would overwrite a reader's own
+     browser default size. */
+  font-size: calc(100% * var(--pref-text-scale));
+}
+
+/* No-JavaScript fallback: with no data-theme at all, the OS decides. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) { color-scheme: dark; }
 }
 
 /* 4. Tailwind theme. `static` emits every token, because components also
@@ -429,6 +449,11 @@
   --shadow-lg: var(--c-elev-3);
   --shadow-xl: var(--c-elev-3);
 
+  /* Density: Tailwind's whole spacing scale (p-*, gap-*, m-*, space-*) is a
+     multiple of this one length. */
+  --spacing: calc(0.25rem * var(--pref-space, 1));
+  --leading-relaxed: var(--read-line);
+
   --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -438,16 +463,18 @@
   * { border-color: var(--c-border); }
 
   html {
-    scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
     scroll-padding-top: 5rem;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    html:not([data-pref-motion='reduced']) { scroll-behavior: smooth; }
   }
 
   body {
     margin: 0;
     font-family: var(--font-sans);
-    font-size: 15px;
-    line-height: 1.6;
+    font-size: 0.9375rem;
+    line-height: var(--pref-line-height);
     color: var(--c-fg);
     background: var(--c-bg);
     text-wrap: pretty;
@@ -729,3 +756,131 @@
 html.theme-fade, html.theme-fade *, html.theme-fade *::before, html.theme-fade *::after {
   transition: background-color 0.3s var(--ease-out), border-color 0.3s var(--ease-out), color 0.3s var(--ease-out), fill 0.3s var(--ease-out), stroke 0.3s var(--ease-out) !important;
 }
+
+/* An explicit Reduced choice (or System + an OS that asks for less): a still
+   page. Same effect as the media query above, reachable from the panel. */
+html[data-pref-motion='reduced'],
+html[data-pref-motion='reduced'] *,
+html[data-pref-motion='reduced'] *::before,
+html[data-pref-motion='reduced'] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Chart grid lines: the ruler behind every plot, removable. */
+:root[data-chart-grid='off'] .recharts-cartesian-grid { display: none; }
+
+/* Focus mode: centre the text column and dim the side panels until they are
+   hovered or focused. It reduces chrome and never removes it. */
+:root[data-focus-mode='on'] .focus-main { max-width: 60rem; margin-inline: auto; }
+:root[data-focus-mode='on'] .focus-dim { opacity: 0.5; transition: opacity 0.15s var(--ease-out); }
+:root[data-focus-mode='on'] .focus-dim:hover,
+:root[data-focus-mode='on'] .focus-dim:focus-within { opacity: 1; }
+
+/* ==========================================================================
+   Settings dialog (a real <dialog>; the top layer gives scrim, focus
+   containment and Escape)
+   ========================================================================== */
+.prefs {
+  width: min(26rem, calc(100vw - 2rem));
+  max-width: none;
+  max-height: calc(100vh - 4rem);
+  max-height: calc(100dvh - 4rem);
+  padding: 0;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-plate);
+  background: var(--c-surface);
+  color: var(--c-fg);
+  font-family: var(--font-sans);
+  overflow: clip;
+  box-shadow: var(--c-elev-3), inset 0 1px 0 rgb(255 255 255 / 0.06);
+  animation: prefs-in 0.12s ease-out;
+}
+.prefs[open] { inset: 0; margin: auto; }
+.prefs::backdrop { background: var(--c-scrim); }
+.prefs:focus, .prefs:focus-visible { outline: none; }
+@keyframes prefs-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+
+.prefs__sheet {
+  display: flex; flex-direction: column; min-height: 0; border-radius: inherit; overflow: hidden;
+  max-height: calc(100vh - 4rem - 2px);
+  max-height: calc(100dvh - 4rem - 2px);
+}
+.prefs__head, .prefs__foot {
+  flex: 0 0 auto; display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.75rem 1rem; background: var(--c-surface);
+}
+.prefs__head { border-bottom: 1px solid var(--c-border); }
+.prefs__foot { border-top: 1px solid var(--c-border); }
+.prefs__head-icon { display: inline-flex; color: var(--c-fg-subtle); }
+.prefs__title { margin: 0; font-size: 0.8125rem; font-weight: 600; line-height: 1.45; }
+.prefs__close {
+  margin-left: auto; display: inline-flex; align-items: center; justify-content: center;
+  width: 1.75rem; height: 1.75rem; padding: 0; cursor: pointer;
+  color: var(--c-fg-muted); background: transparent;
+  border: 1px solid var(--c-border); border-radius: var(--radius-control);
+}
+.prefs__close:hover { background: var(--c-surface-2); color: var(--c-fg); }
+.prefs__body {
+  flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: 1rem;
+  padding: 1rem; overflow-y: auto; overscroll-behavior: contain;
+}
+.prefs__group { display: block; min-width: 0; margin: 0; padding: 0; border: none; }
+.prefs__label {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem;
+  width: 100%; padding: 0; font-size: 0.8125rem; font-weight: 600; line-height: 1.45;
+}
+.prefs__label--row { justify-content: flex-start; }
+.prefs__readout { flex: 0 0 auto; color: var(--c-fg-subtle); font-size: 0.6875rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.prefs__desc { margin: 0.25rem 0 0; color: var(--c-fg-muted); font-size: 0.875rem; line-height: 1.5; }
+.prefs__note {
+  margin: 0.5rem 0 0; padding: 0.5rem 0.75rem; border: 1px solid var(--c-border);
+  border-radius: var(--radius-control); background: var(--c-surface-2);
+  color: var(--c-fg-muted); font-size: 0.875rem; line-height: 1.5;
+}
+.prefs__note strong { color: var(--c-fg); }
+.prefs__segment { display: flex; align-items: stretch; gap: 0.25rem; margin-top: 0.5rem; }
+.prefs__radio, .prefs__check {
+  position: absolute; width: 1px; height: 1px; margin: 0; padding: 0; border: 0;
+  overflow: hidden; clip: rect(0, 0, 0, 0); clip-path: inset(50%); white-space: nowrap;
+}
+.prefs__cell {
+  display: flex; align-items: center; justify-content: center; flex: 1 1 0; min-width: 0;
+  padding: 0.5rem 0.25rem; border: 1px solid var(--c-border); border-radius: var(--radius-control);
+  background: var(--c-surface); color: var(--c-fg-muted);
+  font-size: 0.8125rem; font-weight: 500; line-height: 1.45; text-align: center;
+  cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.12s, border-color 0.12s, color 0.12s;
+}
+.prefs__cell:hover { background: var(--c-surface-2); color: var(--c-fg); }
+.prefs__radio:checked + .prefs__cell {
+  background: rgb(var(--t-accent-ch) / 0.1); border-color: rgb(var(--t-accent-ch) / 0.45);
+  color: var(--c-accent-ink); font-weight: 600;
+}
+.prefs__radio:focus-visible + .prefs__cell,
+.prefs__check:focus-visible + .prefs__switch-track { outline: 2px solid var(--c-accent); outline-offset: 2px; }
+.prefs__switches { display: flex; flex-direction: column; gap: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--c-border); }
+.prefs__switch { display: flex; align-items: flex-start; gap: 0.75rem; margin: -0.25rem; padding: 0.25rem; border-radius: var(--radius-control); cursor: pointer; }
+.prefs__switch-track {
+  position: relative; flex: 0 0 auto; width: 2rem; height: 1.25rem; margin-top: 0.15rem;
+  border: 1px solid var(--c-border-strong); border-radius: 999px; background: var(--c-surface-2);
+  transition: background-color 0.12s, border-color 0.12s;
+}
+.prefs__switch:hover .prefs__switch-track { border-color: var(--c-fg-subtle); }
+.prefs__switch-thumb {
+  position: absolute; top: 1px; left: 1px; width: calc(1.25rem - 4px); height: calc(1.25rem - 4px);
+  border-radius: 999px; background: var(--c-fg-muted); transition: transform 0.12s, background-color 0.12s;
+}
+.prefs__check:checked + .prefs__switch-track { background: var(--c-accent-solid); border-color: var(--c-accent-solid); }
+.prefs__check:checked + .prefs__switch-track .prefs__switch-thumb { background: #fff; transform: translateX(0.75rem); }
+.prefs__switch-text { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+.prefs__count { margin: 0; color: var(--c-fg-subtle); font-size: 0.6875rem; letter-spacing: 0.06em; text-transform: uppercase; font-variant-numeric: tabular-nums; }
+.prefs__reset {
+  margin-left: auto; padding: 0.25rem 0.75rem; border: 1px solid var(--c-border-strong);
+  border-radius: var(--radius-control); background: transparent; color: var(--c-fg);
+  font-family: inherit; font-size: 0.8125rem; font-weight: 600; cursor: pointer;
+}
+.prefs__reset:hover:not(:disabled) { background: var(--c-surface-2); }
+.prefs__reset:disabled { cursor: not-allowed; opacity: 0.5; }

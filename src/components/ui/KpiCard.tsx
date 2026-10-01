@@ -35,7 +35,7 @@ export default function KpiCard({
       className="glass-card glass-card-hover p-5 flex flex-col justify-between items-start relative"
     >
       <div className="flex justify-between w-full items-start mb-2 gap-2">
-        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 min-w-0">
+        <div className="text-[0.625rem] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 min-w-0">
           {icon && <span className="text-[var(--color-accent)] shrink-0">{icon}</span>}
           <span className="truncate">{label}</span>
         </div>
@@ -54,7 +54,7 @@ export default function KpiCard({
         </motion.div>
         {unit && <div className="text-sm text-slate-400">{unit}</div>}
       </div>
-      {subValue && <div className="text-[10px] text-slate-400 mt-1 uppercase tracking-wider">{subValue}</div>}
+      {subValue && <div className="text-[0.625rem] text-slate-400 mt-1 uppercase tracking-wider">{subValue}</div>}
     </motion.div>
   );
 }

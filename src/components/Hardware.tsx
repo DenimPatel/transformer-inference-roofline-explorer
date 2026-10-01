@@ -61,11 +61,11 @@ function SectionCard({ id, icon: IconCmp, color, number, title, children }: any)
 function HeroKpi({ icon: I, label, value, sub }: any) {
   return (
     <div className="glass rounded-xl p-3 text-left">
-      <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-1">
+      <div className="flex items-center gap-1.5 text-[0.6875rem] font-semibold uppercase tracking-wide text-slate-400 mb-1">
         <I className="w-3.5 h-3.5" /> {label}
       </div>
       <div className="font-mono text-lg font-bold text-slate-900 leading-none">{value}</div>
-      <div className="text-[11px] text-slate-400 mt-1 truncate">{sub}</div>
+      <div className="text-[0.6875rem] text-slate-400 mt-1 truncate">{sub}</div>
     </div>
   );
 }
@@ -250,7 +250,7 @@ function MemoryTiers({ hw }: { hw: HardwareProfile }) {
       <div className="overflow-x-auto custom-scrollbar">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-[11px] uppercase tracking-wide text-slate-400 border-b border-slate-200">
+            <tr className="text-[0.6875rem] uppercase tracking-wide text-slate-400 border-b border-slate-200">
               <th className="py-2 pr-3 text-left">Tier</th>
               <th className="py-2 pr-3 text-right">Size</th>
               <th className="py-2 pr-3 text-right">Bandwidth</th>
@@ -262,7 +262,7 @@ function MemoryTiers({ hw }: { hw: HardwareProfile }) {
               <tr key={t.name} className="border-b border-slate-100 align-top">
                 <td className="py-2 pr-3">
                   <div className="font-semibold text-slate-800">{t.name}</div>
-                  <div className="text-[11px] text-slate-400 leading-snug max-w-[22rem]">{t.note}</div>
+                  <div className="text-[0.6875rem] text-slate-400 leading-snug max-w-[22rem]">{t.note}</div>
                 </td>
                 <td className="py-2 pr-3 text-right font-mono text-slate-600">{t.size}</td>
                 <td className="py-2 pr-3 text-right font-mono text-slate-600">
@@ -361,7 +361,7 @@ export function HwTpu() {
                 <span className="w-2.5 h-2.5 rounded-full" style={{ background: u.color }} />
                 <span className="font-bold text-slate-900">{u.unit}</span>
               </div>
-              <div className="text-[11px] uppercase tracking-wide text-slate-400 mb-2">{u.full}</div>
+              <div className="text-[0.6875rem] uppercase tracking-wide text-slate-400 mb-2">{u.full}</div>
               <p className="text-sm text-slate-600 leading-relaxed">{u.body}</p>
             </div>
           ))}
@@ -448,7 +448,7 @@ export function HwGpu() {
         <div className="overflow-x-auto custom-scrollbar mb-6">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-[11px] uppercase tracking-wide text-slate-400 border-b border-slate-200">
+              <tr className="text-[0.6875rem] uppercase tracking-wide text-slate-400 border-b border-slate-200">
                 <th className="py-2 pr-3 text-left">GPU term</th>
                 <th className="py-2 pr-3 text-left">TPU equivalent</th>
                 <th className="py-2 pr-3 text-right">H100</th>
@@ -555,7 +555,7 @@ export function HwNetwork() {
               { l: 'Scale-out link', v: hw.scaleOutBwGBs ? `${fmtNum(hw.scaleOutBwGBs, 2)} GB/s` : '—' },
             ].map((x) => (
               <div key={x.l} className="glass rounded-lg p-3">
-                <div className="text-[11px] uppercase tracking-wide text-slate-400">{x.l}</div>
+                <div className="text-[0.6875rem] uppercase tracking-wide text-slate-400">{x.l}</div>
                 <div className="font-mono font-bold text-slate-900 mt-1 text-sm">{x.v}</div>
               </div>
             ))}

@@ -80,7 +80,7 @@ export default function Orientation({ onComplete }: { onComplete: () => void }) 
         ))}
       </div>
 
-      <p className="text-base text-slate-600 leading-relaxed max-w-[62ch] pt-2">
+      <p className="text-base text-slate-600 leading-relaxed max-w-[var(--pref-measure)] pt-2">
         A chip gives you those three budgets. A model spends them in a fixed proportion.
         Almost everything interesting about inference — why the first token is fast and the
         rest are slow, why batching helps up to a point, why a bigger context is expensive,

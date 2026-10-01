@@ -60,7 +60,7 @@ export default function LessonAttention({ onComplete }: { onComplete: () => void
         <SliderControl label="Sequence length (S)" value={seq} min={128} max={65536} step={128} onChange={setSeq} unit="tkns" logScale conceptId="attention-intensity" />
         <SliderControl label="Model dim (D)" value={D} min={1024} max={16384} step={256} onChange={setD} unit="" conceptId="attention-flops" />
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] text-slate-500">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[0.6875rem] text-slate-500">
           <div className="glass rounded-xl px-3 py-2">
             <div className="text-slate-400">Prefill intensity</div>
             <div className="font-mono font-bold text-slate-800">{prefillI.toFixed(0)}</div>
@@ -97,7 +97,7 @@ export default function LessonAttention({ onComplete }: { onComplete: () => void
           </ResponsiveContainer>
         </div>
         </Figure>
-        <div className="flex flex-wrap gap-2 mt-3 text-[11px] text-slate-500">
+        <div className="flex flex-wrap gap-2 mt-3 text-[0.6875rem] text-slate-500">
           <span className="glass-chip px-2.5 py-1">At S={seq.toLocaleString()}: prefill intensity {prefillI.toFixed(0)} {prefillI >= RIDGE ? '(compute-bound ✓)' : '(still below ridge)'}</span>
           <span className="glass-chip px-2.5 py-1">Generation intensity ≈ {genI.toFixed(2)} — always bandwidth-bound</span>
         </div>
@@ -126,7 +126,7 @@ export default function LessonAttention({ onComplete }: { onComplete: () => void
           </ResponsiveContainer>
         </div>
         </Figure>
-        <p className="text-[13px] text-slate-600 mt-3">
+        <p className="text-[0.8125rem] text-slate-600 mt-3">
           For D ≈ {D.toLocaleString()} the crossover is near {crossover.toLocaleString()} tokens. Below that, MLP matmuls dominate FLOPs; attention is a
           memory problem (KV cache) even when it is not a FLOPs problem.
         </p>

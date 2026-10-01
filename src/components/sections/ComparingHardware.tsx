@@ -14,7 +14,7 @@ export default function ComparingHardware({ onComplete }: { onComplete: () => vo
 
   return (
     <>
-      <p className="text-base text-slate-600 leading-relaxed max-w-[62ch]">
+      <p className="text-base text-slate-600 leading-relaxed max-w-[var(--pref-measure)]">
         Each accelerator below is evaluated against the model and economics you set in the
         configuration panel. A chip wins here not by having the largest headline FLOPs number
         but by having the ratio that suits this model at this batch size — which is the

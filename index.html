@@ -11,25 +11,56 @@
     <link rel="preload" href="%BASE_URL%fonts/inter-var-latin.woff2" as="font" type="font/woff2" crossorigin />
     <title>Roofline Explorer · Transformer Inference</title>
     <!-- No-flash boot. Runs before first paint and writes the RESOLVED mode
-         ('light' | 'dark') to <html data-theme>; the stylesheet is written
-         against exactly those two. ES5 on purpose: it is inlined and must not
-         be able to throw on an old browser. The same key is read by
-         src/lib/useTheme.ts. -->
+         ('light' | 'dark') to <html data-theme>, plus the reader's other
+         preferences. ES5 on purpose: it is inlined and must not be able to
+         throw on an old browser. It duplicates `apply()` in src/lib/prefs.ts;
+         keep the value tables in step. -->
     <script>
       (function () {
         try {
-          var pref = 'system';
+          var P = { theme: 'system', text: 100, measure: 'normal', leading: 'normal',
+                    density: 'normal', motion: 'system', chartGrid: true, focusMode: false };
+          var OK = { theme: ['system', 'light', 'dark'], text: [90, 100, 115, 130],
+                     measure: ['narrow', 'normal', 'wide'], leading: ['tight', 'normal', 'relaxed'],
+                     density: ['compact', 'normal', 'spacious'], motion: ['system', 'reduced', 'full'],
+                     chartGrid: [true, false], focusMode: [true, false] };
+          var TEXT = { 90: 0.9, 100: 1, 115: 1.15, 130: 1.3 };
+          var MEASURE = { narrow: '54ch', normal: '62ch', wide: '76ch' };
+          var LEADING = { tight: '1.4', normal: '1.6', relaxed: '1.8' };
+          var SPACE = { compact: '0.85', normal: '1', spacious: '1.15' };
+          function has(a, v) { for (var i = 0; i < a.length; i++) if (a[i] === v) return true; return false; }
           try {
-            var v = window.localStorage.getItem('roofline:theme');
-            if (v === 'light' || v === 'dark' || v === 'system') pref = v;
+            var raw = window.localStorage.getItem('roofline:prefs');
+            if (raw) {
+              var parsed = JSON.parse(raw);
+              var src = parsed && parsed.prefs ? parsed.prefs : parsed;
+              if (src && typeof src === 'object') {
+                for (var k in P) if (has(OK[k], src[k])) P[k] = src[k];
+              }
+            } else {
+              var t = window.localStorage.getItem('roofline:theme');
+              if (t === 'light' || t === 'dark' || t === 'system') P.theme = t;
+            }
           } catch (e) {}
-          var osDark = false;
-          try { osDark = !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches); } catch (e) {}
-          var dark = pref === 'dark' || (pref === 'system' && osDark);
-          var root = document.documentElement;
-          root.setAttribute('data-theme', dark ? 'dark' : 'light');
-          root.setAttribute('data-pref-theme', pref);
-          root.style.colorScheme = dark ? 'dark' : 'light';
+          var osDark = false, osStill = false;
+          try {
+            osDark = !!window.matchMedia('(prefers-color-scheme: dark)').matches;
+            osStill = !!window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          } catch (e) {}
+          var dark = P.theme === 'dark' || (P.theme === 'system' && osDark);
+          var still = P.motion === 'reduced' || (P.motion === 'system' && osStill);
+          var r = document.documentElement;
+          r.setAttribute('data-theme', dark ? 'dark' : 'light');
+          r.setAttribute('data-pref-theme', P.theme);
+          r.setAttribute('data-focus-mode', P.focusMode ? 'on' : 'off');
+          r.setAttribute('data-chart-grid', P.chartGrid ? 'on' : 'off');
+          if (still) r.setAttribute('data-pref-motion', 'reduced');
+          r.style.colorScheme = dark ? 'dark' : 'light';
+          r.style.setProperty('--pref-text-scale', String(TEXT[P.text]));
+          r.style.setProperty('--pref-measure', MEASURE[P.measure]);
+          r.style.setProperty('--pref-line-height', LEADING[P.leading]);
+          r.style.setProperty('--pref-space', SPACE[P.density]);
+          r.style.setProperty('--pref-motion-scale', still ? '0' : '1');
         } catch (e) {}
       })();
     </script>

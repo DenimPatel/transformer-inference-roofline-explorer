@@ -170,11 +170,11 @@ export function DeepFramework() {
               note: 'Data parallelism across pods. Two orders of magnitude slower.' },
           ].map((t) => (
             <div key={t.tier} className="glass rounded-xl p-4">
-              <div className="text-[11px] uppercase tracking-wide text-slate-400">{t.tier}</div>
+              <div className="text-[0.6875rem] uppercase tracking-wide text-slate-400">{t.tier}</div>
               <div className="font-semibold text-slate-800 text-sm mt-0.5">{t.link}</div>
               <div className="font-mono text-lg font-bold text-slate-900 mt-2">{t.bw}</div>
               <div className="text-xs text-slate-500">ridge ≈ {t.ridge} FLOPs/byte</div>
-              <div className="text-[11px] text-slate-400 mt-2 leading-snug">{t.note}</div>
+              <div className="text-[0.6875rem] text-slate-400 mt-2 leading-snug">{t.note}</div>
             </div>
           ))}
         </div>
@@ -382,7 +382,7 @@ export function DeepSecondRidge() {
               <div key={r.op} className="glass rounded-lg p-3">
                 <div className="font-semibold text-slate-700">{r.op}</div>
                 <div className="font-mono text-slate-500">I ≈ {r.i}</div>
-                <div className="text-[11px] text-slate-400 mt-1">{r.verdict}</div>
+                <div className="text-[0.6875rem] text-slate-400 mt-1">{r.verdict}</div>
               </div>
             ))}
           </div>
@@ -699,11 +699,11 @@ function SectionCard({ id, icon: IconCmp, color, number, title, tags, children }
 function HeroKpi({ icon: I, label, value, sub }: any) {
   return (
     <div className="glass rounded-xl p-3 text-left">
-      <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-1">
+      <div className="flex items-center gap-1.5 text-[0.6875rem] font-semibold uppercase tracking-wide text-slate-400 mb-1">
         <I className="w-3.5 h-3.5" /> {label}
       </div>
       <div className="font-mono text-lg font-bold text-slate-900 leading-none">{value}</div>
-      <div className="text-[11px] text-slate-400 mt-1 truncate">{sub}</div>
+      <div className="text-[0.6875rem] text-slate-400 mt-1 truncate">{sub}</div>
     </div>
   );
 }
@@ -1008,7 +1008,7 @@ function MatmulInteractiveSection({ hardwareIntensity }: { hardwareIntensity: nu
             <div className="flex flex-wrap items-center gap-2 mt-2">
               <BoundBadge compute={currentIntensity > hardwareIntensity} />
             </div>
-            <div className="text-[11px] text-slate-400 mt-2">
+            <div className="text-[0.6875rem] text-slate-400 mt-2">
               Tiled (on-chip reuse): I ≈ <span className="font-mono">{tiledIntensity.toFixed(0)}</span> — re-loading tiles from
               HBM lowers intensity below the naive <i>≈B</i> rule even for the same batch.
             </div>
@@ -1206,7 +1206,7 @@ function KVCacheSection({ hardwareIntensity, hw }: any) {
             <div className="grid grid-cols-3 gap-1.5">
               {[{ b: 2, l: 'bf16/fp16' }, { b: 1, l: 'int8/fp8' }, { b: 0.5, l: 'fp4' }].map((o) => (
                 <button key={o.b} onClick={() => setBpv(o.b)}
-                  className={cn('glass rounded-md py-1.5 text-[11px] font-semibold transition-colors',
+                  className={cn('glass rounded-md py-1.5 text-[0.6875rem] font-semibold transition-colors',
                     bpv === o.b ? 'bg-accent-solid text-white border-accent' : 'text-slate-600 hover:border-accent/40')}>
                   {o.l}
                 </button>
@@ -1428,13 +1428,13 @@ function NetworkRooflineInteractiveSection({ hw }: any) {
             <div className="grid grid-cols-3 gap-1.5">
               {tiers.map((t) => (
                 <button key={t.id} onClick={() => setTier(t.id)}
-                  className={cn('glass rounded-md py-1.5 px-1 text-[11px] font-semibold transition-colors',
+                  className={cn('glass rounded-md py-1.5 px-1 text-[0.6875rem] font-semibold transition-colors',
                     tier === t.id ? 'bg-accent-solid text-white border-accent' : 'text-slate-600 hover:border-accent/40')}>
                   {t.label}
                 </button>
               ))}
             </div>
-            <p className="text-[11px] text-slate-400 mt-2">
+            <p className="text-[0.6875rem] text-slate-400 mt-2">
               {active.sub} · <span className="font-mono">{fmtNum(networkBwGbps)} Gbps</span> per chip
               {hw.linkBwGBs ? '' : ' (book default — this chip does not publish link bandwidth)'}
             </p>
@@ -1444,12 +1444,12 @@ function NetworkRooflineInteractiveSection({ hw }: any) {
             <div className="glass rounded-lg p-3">
               <div className="text-slate-400 text-xs">Inter-chip intensity</div>
               <div className="font-mono font-bold text-slate-900 text-lg">{currentIntensity.toFixed(0)}</div>
-              <div className="text-[10px] text-slate-400">= D/2</div>
+              <div className="text-[0.625rem] text-slate-400">= D/2</div>
             </div>
             <div className="glass rounded-lg p-3">
               <div className="text-slate-400 text-xs">Compute-bound when</div>
               <div className="font-mono font-bold text-slate-900 text-lg">D &gt; {fmtNum(criticalD)}</div>
-              <div className="text-[10px] text-slate-400">independent of B</div>
+              <div className="text-[0.625rem] text-slate-400">independent of B</div>
             </div>
           </div>
 
@@ -1467,12 +1467,12 @@ function NetworkRooflineInteractiveSection({ hw }: any) {
           <div className="glass rounded-lg p-4 flex items-center justify-between">
             <div className="text-center flex-1 space-y-1">
               <div className="p-3 bg-violet-100 text-violet-800 rounded-lg font-bold text-sm">Chip 1 · half of D</div>
-              <div className="font-mono text-[11px] text-violet-400 animate-pulse">↻ {fmtBytes(netBwBytes)}/s partial sums</div>
+              <div className="font-mono text-[0.6875rem] text-violet-400 animate-pulse">↻ {fmtBytes(netBwBytes)}/s partial sums</div>
             </div>
             <div className="px-2 text-slate-300 font-black">⇄</div>
             <div className="text-center flex-1 space-y-1">
               <div className="p-3 bg-violet-100 text-violet-800 rounded-lg font-bold text-sm">Chip 2 · half of D</div>
-              <div className="font-mono text-[11px] text-violet-400 animate-pulse">↻ {fmtBytes(netBwBytes)}/s partial sums</div>
+              <div className="font-mono text-[0.6875rem] text-violet-400 animate-pulse">↻ {fmtBytes(netBwBytes)}/s partial sums</div>
             </div>
           </div>
         </div>
@@ -1832,7 +1832,7 @@ function MoeSection() {
             <div className="flex flex-wrap gap-1.5 mt-2">
               {presets.map((p) => (
                 <button key={p.label} onClick={() => setExpertPercent(Math.round(Math.log2(p.ratio) * 10))}
-                  className="glass rounded-md px-2 py-1 text-[11px] font-semibold text-slate-600 hover:border-accent/40 transition-colors">
+                  className="glass rounded-md px-2 py-1 text-[0.6875rem] font-semibold text-slate-600 hover:border-accent/40 transition-colors">
                   {p.label}
                 </button>
               ))}
@@ -1959,7 +1959,7 @@ function WorkedProblemsSection({ peakFlops, peakBw, hardwareIntensity }: any) {
         </div>
         <Answer id="q3">
           <p>Both curves saturate at the hardware peak (~{(bf16Flops / 1e12).toFixed(0)} TFLOP/s on the textbook TPU), but the bigger model crosses the ridge at a smaller batch. Small matmuls need ~2&times; the batch to become compute-bound.</p>
-          <p className="text-[10px] text-slate-400">Small batches are memory-bound, and the crossover is set by the hardware ridge (≈{fmtNum(hardwareIntensity)} here).</p>
+          <p className="text-[0.625rem] text-slate-400">Small batches are memory-bound, and the crossover is set by the hardware ridge (≈{fmtNum(hardwareIntensity)} here).</p>
         </Answer>
       </Q>
 
@@ -1977,7 +1977,7 @@ function WorkedProblemsSection({ peakFlops, peakBw, hardwareIntensity }: any) {
         </Answer>
       </Q>
 
-      <div className="pt-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+      <div className="pt-2 text-[0.6875rem] font-semibold uppercase tracking-wider text-slate-400">
         Network rooflines — from the TPU &amp; GPU chapters
       </div>
 

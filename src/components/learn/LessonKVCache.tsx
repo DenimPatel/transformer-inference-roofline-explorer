@@ -78,7 +78,7 @@ export default function LessonKVCache({ onComplete }: { onComplete: () => void }
               <span className="font-mono font-bold text-slate-700">{(total / 1e9).toFixed(1)} GB</span> ·{' '}
               {((total / H80) * 100).toFixed(0)}% of an H100
             </div>
-            <p className="text-[11px] text-slate-400">
+            <p className="text-[0.6875rem] text-slate-400">
               KV now uses {(kvBytes / 1e9).toFixed(1)} GB — {kvFactor < 1 ? `shrunken ${(1 / kvFactor).toFixed(0)}× by head sharing` : 'full MHA size'}.
             </p>
           </div>
@@ -120,7 +120,7 @@ function Bar({ label, bytes, color }: { label: string; bytes: number; color: str
   const pct = seg(bytes);
   return (
     <div>
-      <div className="flex justify-between text-[11px] mb-1">
+      <div className="flex justify-between text-[0.6875rem] mb-1">
         <span className="text-slate-600">{label}</span>
         <span className="font-mono text-slate-500">{(bytes / 1e9).toFixed(1)} GB</span>
       </div>

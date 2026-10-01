@@ -135,7 +135,7 @@ export default function LessonCost({ onComplete }: { onComplete: () => void }) {
 function Stat({ label, value, unit }: { label: string; value: string; unit: string }) {
   return (
     <div className="glass rounded-xl px-4 py-3">
-      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{label}</div>
+      <div className="text-[0.625rem] font-bold text-slate-400 uppercase tracking-wider">{label}</div>
       <div className="text-lg font-mono font-bold text-slate-800 mt-0.5">
         {value} <span className="text-xs font-normal text-slate-400">{unit}</span>
       </div>

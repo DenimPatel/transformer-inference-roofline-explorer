@@ -111,7 +111,7 @@ export default function LessonIntensity({ onComplete }: { onComplete: () => void
               <div className={cn('text-sm font-bold mt-1', bound.includes('Compute') ? 'text-emerald-600' : 'text-amber-600')}>
                 {bound.includes('Compute') ? '✅ Compute-bound' : '⚠️ Memory-bound'}
               </div>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[0.6875rem] text-slate-400">
                 Critical batch ≈ {RIDGE} tokens. Cross it and you stop wasting FLOPs.
               </p>
             </GlassCard>

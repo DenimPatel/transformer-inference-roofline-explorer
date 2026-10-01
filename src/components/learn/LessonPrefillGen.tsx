@@ -59,9 +59,9 @@ export default function LessonPrefillGen({ onComplete }: { onComplete: () => voi
               <h4 className="font-bold text-slate-700">Prefill (compute-bound)</h4>
             </div>
             <p className="text-xs text-slate-500 mb-3">Processes all prompt tokens at once. Weight re-use → high intensity.</p>
-            <span className="inline-block px-2 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-700 mb-3">✔ Compute-bound</span>
+            <span className="inline-block px-2 py-1 rounded-full text-[0.6875rem] font-bold bg-emerald-100 text-emerald-700 mb-3">✔ Compute-bound</span>
             <FlowBlocks color="var(--color-accent)" count={BLOCKS} />
-            <p className="text-[11px] text-slate-400 mt-3">Attention intensity ∝ T/2 — way above the ridge.</p>
+            <p className="text-[0.6875rem] text-slate-400 mt-3">Attention intensity ∝ T/2 — way above the ridge.</p>
           </div>
 
           <div className="glass rounded-2xl p-4">
@@ -70,9 +70,9 @@ export default function LessonPrefillGen({ onComplete }: { onComplete: () => voi
               <h4 className="font-bold text-slate-700">Generation (memory-bound)</h4>
             </div>
             <p className="text-xs text-slate-500 mb-3">One token per step; streams all weights + KV cache each time.</p>
-            <span className="inline-block px-2 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-700 mb-3">⚠️ Memory-bound</span>
+            <span className="inline-block px-2 py-1 rounded-full text-[0.6875rem] font-bold bg-amber-100 text-amber-700 mb-3">⚠️ Memory-bound</span>
             <FlowBlocks color="var(--chart-series-3)" count={BLOCKS} />
-            <p className="text-[11px] text-slate-400 mt-3">Attention intensity ≈ ST/(S+T) ≈ 1 — constant & below the ridge.</p>
+            <p className="text-[0.6875rem] text-slate-400 mt-3">Attention intensity ≈ ST/(S+T) ≈ 1 — constant & below the ridge.</p>
           </div>
         </div>
 

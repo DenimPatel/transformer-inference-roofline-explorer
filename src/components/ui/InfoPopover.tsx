@@ -130,12 +130,12 @@ export default function InfoPopover({
             </button>
           </div>
 
-          <p className="text-[12.5px] leading-relaxed text-slate-600 mb-3">{s}</p>
+          <p className="text-[0.7812rem] leading-relaxed text-slate-600 mb-3">{s}</p>
 
           {b && b.length > 0 && (
             <div className="space-y-2 mb-3">
               {b.map((para, i) => (
-                <p key={i} className="text-[11.5px] leading-relaxed text-slate-500">
+                <p key={i} className="text-[0.7188rem] leading-relaxed text-slate-500">
                   {para}
                 </p>
               ))}
@@ -147,12 +147,12 @@ export default function InfoPopover({
               <span className="text-[var(--color-amber)] mt-0.5">
                 <Calculator style={{ width: 13, height: 13 }} />
               </span>
-              <code className="text-[11px] font-mono text-slate-700 leading-snug">{f}</code>
+              <code className="text-[0.6875rem] font-mono text-slate-700 leading-snug">{f}</code>
             </div>
           )}
 
           {sr && (
-            <div className="text-[10px] text-slate-400 leading-snug border-t border-slate-200/70 pt-2">
+            <div className="text-[0.625rem] text-slate-400 leading-snug border-t border-slate-200/70 pt-2">
               Source: <span className="font-mono text-slate-500">{sr}</span>
             </div>
           )}

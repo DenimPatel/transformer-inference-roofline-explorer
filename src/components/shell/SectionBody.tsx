@@ -20,7 +20,7 @@ export default function SectionBody({ sourceRef, children }: SectionBodyProps) {
   return (
     <div className="space-y-4 pb-6">
       {sourceRef && (
-        <p className="text-[11px] text-slate-400 border-l-2 border-slate-200 pl-2">{sourceRef}</p>
+        <p className="text-[0.6875rem] text-slate-400 border-l-2 border-slate-200 pl-2">{sourceRef}</p>
       )}
       {children}
     </div>

@@ -68,7 +68,7 @@ export default function LessonMemory({ onComplete }: { onComplete: () => void })
             For an <i>(m,k)·(k,n)</i> matmul with tiles <i>bm × bk</i> and <i>bk × bn</i>, write{' '}
             <i>tm = m/bm</i>, <i>tn = n/bn</i>, <i>tk = k/bk</i>:
           </p>
-          <div className="glass rounded-lg p-3 font-mono text-[11px] text-slate-700 space-y-1 overflow-x-auto">
+          <div className="glass rounded-lg p-3 font-mono text-[0.6875rem] text-slate-700 space-y-1 overflow-x-auto">
             <div>FLOPs = 2 · tm · tn · tk · bm · bn · bk</div>
             <div>Bytes = 2 · tm · tn · ( tk · (bm·bk + bk·bn) + bm·bn )</div>
             <div className="text-slate-400">drop the output term, cancel tm·tn·tk and bk:</div>
@@ -96,15 +96,15 @@ export default function LessonMemory({ onComplete }: { onComplete: () => void })
 
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           <div className="glass rounded-xl px-3 py-2">
-            <div className="text-[11px] text-slate-400">Tiled intensity</div>
+            <div className="text-[0.6875rem] text-slate-400">Tiled intensity</div>
             <div className="font-mono font-bold text-slate-800">{tileIntensity.toFixed(0)} FLOPs/B</div>
           </div>
           <div className="glass rounded-xl px-3 py-2">
-            <div className="text-[11px] text-slate-400">HBM ridge</div>
+            <div className="text-[0.6875rem] text-slate-400">HBM ridge</div>
             <div className="font-mono font-bold text-slate-800">{HBM_RIDGE}</div>
           </div>
           <div className="glass rounded-xl px-3 py-2">
-            <div className="text-[11px] text-slate-400">On-chip threshold</div>
+            <div className="text-[0.6875rem] text-slate-400">On-chip threshold</div>
             <div className="font-mono font-bold text-slate-800">~{VMEM_INTENSITY}</div>
           </div>
         </div>
@@ -115,7 +115,7 @@ export default function LessonMemory({ onComplete }: { onComplete: () => void })
             : 'This tile is below the HBM ridge — it must be re-loaded from HBM, wasting bandwidth. A bigger tile (or keeping data in VMEM) fixes this.'}
         </div>
 
-        <div className="flex flex-wrap gap-2 text-[11px] text-slate-500">
+        <div className="flex flex-wrap gap-2 text-[0.6875rem] text-slate-500">
           {[
             'Dot product: intensity ≈ 1/2 — effectively always bandwidth-bound',
             'Vector (softmax/relu) ops run on a much slower unit with a lower ridge',

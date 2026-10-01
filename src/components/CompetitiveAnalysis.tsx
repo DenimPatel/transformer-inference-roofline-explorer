@@ -89,7 +89,7 @@ function ChartCard({ title, subtitle, conceptId, tags, rationale, wide, children
         </div>
         {subtitle && <p className="text-sm text-slate-500 mt-0.5">{subtitle}</p>}
         {rationale && (
-          <p className="mt-2 text-[12px] leading-relaxed text-slate-600 bg-surface border border-slate-200 rounded-lg px-3 py-2">
+          <p className="mt-2 text-[0.75rem] leading-relaxed text-slate-600 bg-surface border border-slate-200 rounded-lg px-3 py-2">
             <Lightbulb className="inline -mt-0.5 mr-1.5 text-[var(--color-amber)]" style={{ width: 13, height: 13 }} />
             {rationale}
           </p>
@@ -279,7 +279,7 @@ export default function CompetitiveAnalysis({ units, rowInputs, selectedProfiles
               <button
                 type="button"
                 onClick={() => setBatch(240)}
-                className="glass-chip px-2.5 py-1 text-[10.5px] font-medium text-slate-600 hover:bg-slate-100"
+                className="glass-chip px-2.5 py-1 text-[0.6562rem] font-medium text-slate-600 hover:bg-slate-100"
               >
                 Jump to B_crit ≈ ridge
               </button>
@@ -320,7 +320,7 @@ export default function CompetitiveAnalysis({ units, rowInputs, selectedProfiles
             <SliderControl label="Current Batch (tokens)" value={batch} min={1} max={32768} step={1} onChange={setBatch} unit="tok" logScale conceptId="critical-batch" />
           </div>
         </div>
-        <p className="text-[13px] text-slate-500 mb-3">
+        <p className="text-[0.8125rem] text-slate-500 mb-3">
           At this batch, <strong>{bestCost.id}</strong> is cheapest ({fmtUsd(bestCost.cost)}/1M tokens). The winner changes as you slide the batch — that is the latency-throughput tradeoff working.
         </p>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
@@ -586,7 +586,7 @@ export default function CompetitiveAnalysis({ units, rowInputs, selectedProfiles
       </div>
 
       {/* Decision framework */}
-      <div className="glass rounded-2xl p-5 text-[13px] text-slate-600 leading-relaxed">
+      <div className="glass rounded-2xl p-5 text-[0.8125rem] text-slate-600 leading-relaxed">
         <h3 className="font-bold mb-3 flex items-center gap-2 text-slate-800">
           <Scale className="w-4 h-4 text-[var(--color-accent)]" /> How to actually choose: filter by regime first, then by cost
           <span className="ml-auto flex gap-2"><ConceptTag id="roofline" /><ConceptTag id="tco" /><ConceptTag id="prefill" /><ConceptTag id="generation" /></span>

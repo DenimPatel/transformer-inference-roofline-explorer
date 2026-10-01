@@ -1,20 +1,20 @@
 import { Sun, Moon, Monitor } from 'lucide-react';
-import { useTheme, type ThemePref } from '../../lib/useTheme';
+import { cycleTheme, usePrefs, type Theme } from '../../lib/prefs';
 
-const NEXT: Record<ThemePref, ThemePref> = { system: 'light', light: 'dark', dark: 'system' };
+const NEXT: Record<Theme, Theme> = { system: 'light', light: 'dark', dark: 'system' };
 const ICON = { system: Monitor, light: Sun, dark: Moon } as const;
 
 /** One button cycling System -> Light -> Dark, announcing the choice it holds. */
 export default function ThemeToggle() {
-  const { pref, cycle } = useTheme();
-  const Icon = ICON[pref];
+  const { theme } = usePrefs();
+  const Icon = ICON[theme];
   return (
     <button
       type="button"
-      onClick={cycle}
+      onClick={cycleTheme}
       className="nav-icon-btn"
-      aria-label={`Theme: ${pref}. Switch to ${NEXT[pref]}.`}
-      title={`Theme: ${pref} — switch to ${NEXT[pref]}`}
+      aria-label={`Theme: ${theme}. Switch to ${NEXT[theme]}.`}
+      title={`Theme: ${theme} — switch to ${NEXT[theme]}`}
     >
       <Icon style={{ width: 16, height: 16 }} aria-hidden="true" />
     </button>

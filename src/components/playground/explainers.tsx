@@ -24,7 +24,7 @@ export function TokenizerDemo() {
             <span className={cn('font-mono text-sm font-bold', id === modelStatic.BOS ? 'text-violet-600' : 'text-slate-800')}>
               {id === modelStatic.BOS ? '⟨BOS⟩' : modelStatic.labelForToken(id)}
             </span>
-            <span className="text-[10px] text-slate-400 font-mono">id {id}</span>
+            <span className="text-[0.625rem] text-slate-400 font-mono">id {id}</span>
           </div>
         ))}
       </div>
@@ -48,7 +48,7 @@ export function VectorRow({ label, values, color }: { label: string; values: num
       <div className="text-xs font-semibold text-slate-600 mb-1 font-mono">{label}</div>
       <div className="flex flex-wrap gap-1">
         {values.map((v, i) => (
-          <div key={i} className="rounded-md px-1.5 py-1 text-[10px] font-mono"
+          <div key={i} className="rounded-md px-1.5 py-1 text-[0.625rem] font-mono"
             style={{ backgroundColor: tint(color, 8), color }}>
             {v.toFixed(2)}
           </div>
@@ -69,7 +69,7 @@ export function EmbeddingDemo() {
       <VectorRow label={`wte["t"] (id ${tokenId})`} values={tok} color={C.accent} />
       <VectorRow label={`wpe[${pos}]`} values={posEmb} color={C.sky} />
       <VectorRow label="x = tok + pos" values={tok.map((v, i) => v + posEmb[i])} color={C.compute} />
-      <p className="text-[11px] text-slate-400">
+      <p className="text-[0.6875rem] text-slate-400">
         Each column is one of the {dims} embedding dimensions (rounded to 2 decimals for display).
       </p>
     </div>
@@ -94,7 +94,7 @@ export function ForwardDiagram() {
           <div className="rounded-lg px-3 py-2 text-center min-w-[92px]"
             style={{ backgroundColor: tint(s.color, 7), border: `1px solid ${tint(s.color, 25)}` }}>
             <div className="text-xs font-bold" style={{ color: s.color }}>{s.label}</div>
-            <div className="text-[10px] font-mono text-slate-500">{s.w}</div>
+            <div className="text-[0.625rem] font-mono text-slate-500">{s.w}</div>
           </div>
           {i < steps.length - 1 && <ArrowRight className="w-4 h-4 text-slate-300 shrink-0" />}
         </React.Fragment>
@@ -121,7 +121,7 @@ export function PrefillVisual() {
         All <strong>{tokens.length}</strong> prompt positions run at once (parallel, compute-bound) and each
         appends its K/V:
       </p>
-      <div className="space-y-1 font-mono text-[11px] text-slate-500">
+      <div className="space-y-1 font-mono text-[0.6875rem] text-slate-500">
         <div>layer0.keys  &larr; k[BOS]  k[t]  k[h]  k[e]  k[ ]  k[c]  k[a]  k[t]</div>
         <div>layer0.values &larr; v[BOS]  v[t]  v[h]  v[e]  v[ ]  v[c]  v[a]  v[t]</div>
       </div>
@@ -141,10 +141,10 @@ export function CausalAttentionGrid() {
     <div className="glass rounded-xl p-5">
       <div className="grid gap-1" style={{ gridTemplateColumns: `auto repeat(${N}, 24px)` }}>
         <div />
-        {cells[0].map((_, c) => (<div key={c} className="text-center text-[10px] text-slate-400 font-mono">{c}</div>))}
+        {cells[0].map((_, c) => (<div key={c} className="text-center text-[0.625rem] text-slate-400 font-mono">{c}</div>))}
         {cells.map((row, r) => (
           <React.Fragment key={r}>
-            <div className="text-[10px] text-slate-400 font-mono pr-1 leading-none flex items-center">q{r}</div>
+            <div className="text-[0.625rem] text-slate-400 font-mono pr-1 leading-none flex items-center">q{r}</div>
             {row.map((on, c) => (
               <div key={c}
                 className={cn('h-6 w-6 rounded', on ? (c === r ? 'bg-[var(--color-accent)]' : 'bg-[var(--color-accent)]/30') : 'bg-slate-200/50')}
@@ -153,7 +153,7 @@ export function CausalAttentionGrid() {
           </React.Fragment>
         ))}
       </div>
-      <p className="text-[11px] text-slate-400 mt-3">
+      <p className="text-[0.6875rem] text-slate-400 mt-3">
         Rows = query positions, columns = key positions. A cell is filled only when the query index ≥ the key
         index — the causal mask guarantees no token peeks into the future.
       </p>

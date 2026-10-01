@@ -58,14 +58,14 @@ export default function LessonInsideChip({ onComplete }: { onComplete: () => voi
 
         <div className="grid sm:grid-cols-2 gap-3">
           <div className="glass rounded-xl p-4">
-            <div className="text-[11px] uppercase tracking-wide text-slate-400">Matrix unit (MXU)</div>
+            <div className="text-[0.6875rem] uppercase tracking-wide text-slate-400">Matrix unit (MXU)</div>
             <div className="font-mono font-bold text-slate-900 text-lg mt-1">{(MXU_FLOPS / 1e12).toFixed(0)} TFLOP/s</div>
             <div className="text-xs text-slate-500 mt-1">
               ridge = <span className="font-mono font-bold text-rose-600">{MXU_RIDGE.toFixed(0)}</span> FLOPs/byte
             </div>
           </div>
           <div className="glass rounded-xl p-4">
-            <div className="text-[11px] uppercase tracking-wide text-slate-400">Vector unit (VPU)</div>
+            <div className="text-[0.6875rem] uppercase tracking-wide text-slate-400">Vector unit (VPU)</div>
             <div className="font-mono font-bold text-slate-900 text-lg mt-1">{(VPU_FLOPS / 1e12).toFixed(0)} TFLOP/s</div>
             <div className="text-xs text-slate-500 mt-1">
               ridge = <span className="font-mono font-bold text-amber-600">{VPU_RIDGE.toFixed(1)}</span> FLOPs/byte
@@ -103,15 +103,15 @@ export default function LessonInsideChip({ onComplete }: { onComplete: () => voi
         />
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           <div className="glass rounded-xl px-3 py-2">
-            <div className="text-[11px] text-slate-400">MACs per cycle</div>
+            <div className="text-[0.6875rem] text-slate-400">MACs per cycle</div>
             <div className="font-mono font-bold text-slate-800">{(n * n).toLocaleString()}</div>
           </div>
           <div className="glass rounded-xl px-3 py-2">
-            <div className="text-[11px] text-slate-400">New values loaded</div>
+            <div className="text-[0.6875rem] text-slate-400">New values loaded</div>
             <div className="font-mono font-bold text-slate-800">{n}</div>
           </div>
           <div className="glass rounded-xl px-3 py-2">
-            <div className="text-[11px] text-slate-400">Structural intensity</div>
+            <div className="text-[0.6875rem] text-slate-400">Structural intensity</div>
             <div className="font-mono font-bold text-slate-800">≈ {arrayIntensity}</div>
           </div>
         </div>

@@ -10,7 +10,7 @@ export default function SecondRidge({ onComplete }: { onComplete: () => void }) 
   useEffect(() => { onComplete(); }, [onComplete]);
   return (
     <>
-      <p className="text-base text-slate-600 leading-relaxed max-w-[62ch]">
+      <p className="text-base text-slate-600 leading-relaxed max-w-[var(--pref-measure)]">
         Everything so far has measured operations against the matrix unit&rsquo;s peak. But a
         transformer is not only matmuls: softmax, layer norm, activation functions and the
         residual adds all run on a different, much smaller unit. Measured against{' '}

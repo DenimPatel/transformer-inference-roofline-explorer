@@ -166,7 +166,7 @@ export default function TrainPanel({ model, trained, onTrained, onUntrained }: {
               Load full names.txt (32k)
             </span>
           </button>
-          <span className="text-[11px] text-slate-400">{docs.length} documents ready</span>
+          <span className="text-[0.6875rem] text-slate-400">{docs.length} documents ready</span>
         </div>
         {error && <p className="text-xs text-rose-500 font-semibold">{error}</p>}
       </div>
@@ -196,14 +196,14 @@ export default function TrainPanel({ model, trained, onTrained, onUntrained }: {
               </div>
             </Figure>
           )}
-          {trained && <p className="text-[11px] text-slate-400 mt-1">Adam ran for the full run — weights now produce corpus-like tokens.</p>}
+          {trained && <p className="text-[0.6875rem] text-slate-400 mt-1">Adam ran for the full run — weights now produce corpus-like tokens.</p>}
         </div>
 
         <div className="glass rounded-xl p-4">
           <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
             Hallucinated names <span className="normal-case font-normal">· inference on the trained model</span>
           </h4>
-          <p className="text-[11px] text-slate-400 mb-3">
+          <p className="text-[0.6875rem] text-slate-400 mb-3">
             Autoregressive sampling (temperature ~0.6), mirroring the reference&rsquo;s inference loop. Click
             <strong> Sample names</strong> after training.
           </p>

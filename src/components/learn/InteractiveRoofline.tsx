@@ -196,7 +196,7 @@ export default function InteractiveRoofline({
           {isMemBound ? 'Memory-bound (below ridge)' : 'Compute-bound (at/over ridge)'}
         </span>
         {onIntensityChange && (
-          <span className="ml-auto text-[11px] text-slate-400 self-center">Drag the point ⟷</span>
+          <span className="ml-auto text-[0.6875rem] text-slate-400 self-center">Drag the point ⟷</span>
         )}
       </div>
     </div>

@@ -51,8 +51,17 @@ a dark mode that are two sets of the same colour slots.
   dark variants.
 - `data-theme` on `<html>` is always a resolved `light` or `dark`. The inline
   script in `index.html` writes it before first paint, and the nav's theme
-  button (`src/lib/useTheme.ts`) cycles System → Light → Dark, persisted under
-  `roofline:theme`.
+  button cycles System → Light → Dark.
+- **Reading and display settings** (the sliders icon in the nav) are the same
+  set the courses site offers: appearance, text size (90–130%), reading width,
+  line spacing, density, motion, chart grid lines and focus mode. They live in
+  one validated localStorage envelope (`roofline:prefs`), handled by
+  `src/lib/prefs.ts` and resolved to `data-*` attributes and `--pref-*` custom
+  properties on `<html>`; `src/components/nav/PrefsPanel.tsx` is a native
+  `<dialog>` with real radio groups. The inline boot script duplicates the
+  value tables in `prefs.ts`, so keep the two in step. Sizes are `rem` so text
+  size reaches everything, density scales Tailwind's `--spacing`, and prose
+  width uses `max-w-[var(--pref-measure)]`.
 - Charts read colour from `src/lib/theme.ts`, whose values are CSS `var()`
   references, so Recharts and SVG follow the mode without re-rendering. Use
   `tint(color, pct)` rather than appending an alpha suffix to a colour. Compute
