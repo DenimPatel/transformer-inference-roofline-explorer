@@ -24,10 +24,10 @@ export function VecStack({ k, v, colorK, colorV }: { k: number[]; v: number[]; c
   return (
     <div className="flex flex-col gap-0.5">
       <div className="flex items-center gap-0.5">
-        <span className="text-[7px] font-bold text-[var(--color-accent)]">K</span>{render(k, colorK)}
+        <span className="text-[0.4375rem] font-bold text-[var(--color-accent)]">K</span>{render(k, colorK)}
       </div>
       <div className="flex items-center gap-0.5">
-        <span className="text-[7px] font-bold text-emerald-500">V</span>{render(v, colorV)}
+        <span className="text-[0.4375rem] font-bold text-emerald-500">V</span>{render(v, colorV)}
       </div>
     </div>
   );
@@ -60,11 +60,11 @@ export function KvSizeGauge({ positions, promptPositions, maxPositions, nEmbd, n
 
   return (
     <div>
-      <div className="flex items-center justify-between text-[11px] mb-1.5">
+      <div className="flex items-center justify-between text-[0.6875rem] mb-1.5">
         <span className="font-semibold text-slate-700">KV cache shape</span>
         <span className="font-mono font-bold text-slate-900 text-xs">{fmtNum(totalValues)} values stored</span>
       </div>
-      <div className="rounded-lg bg-slate-50 px-3 py-2 font-mono text-[11px] text-slate-600 mb-2 flex flex-wrap gap-x-2">
+      <div className="rounded-lg bg-slate-50 px-3 py-2 font-mono text-[0.6875rem] text-slate-600 mb-2 flex flex-wrap gap-x-2">
         <span>K+V</span>
         <span>[n_layer={nLayer}]</span>
         <span>[n_pos={positions}]</span>
@@ -73,15 +73,15 @@ export function KvSizeGauge({ positions, promptPositions, maxPositions, nEmbd, n
       </div>
       <div className="h-2.5 rounded-full bg-slate-200 overflow-hidden flex">
         <div className="h-full" style={{ width: `${pctPrompt}%`, background: C.accent }} />
-        <div className="h-full" style={{ width: `${pctGen}%`, background: '#99e0ff' }} />
+        <div className="h-full" style={{ width: `${pctGen}%`, background: 'var(--color-accent-300)' }} />
       </div>
-      <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1.5 text-[10px] text-slate-400">
+      <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1.5 text-[0.625rem] text-slate-400">
         <span className="flex items-center gap-1">
           <span className="inline-block w-2 h-2 rounded-sm align-middle" style={{ background: C.accent }} />
           prefill {Math.min(positions, promptPositions)} pos · {fmtNum(prefillValues)} values
         </span>
         <span className="flex items-center gap-1">
-          <span className="inline-block w-2 h-2 rounded-sm align-middle" style={{ background: '#99e0ff' }} />
+          <span className="inline-block w-2 h-2 rounded-sm align-middle" style={{ background: 'var(--color-accent-300)' }} />
           generated {genPositions} pos · {fmtNum(genValues)} values
         </span>
         <span className="flex items-center gap-1">

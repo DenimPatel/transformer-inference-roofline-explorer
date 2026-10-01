@@ -34,7 +34,7 @@ export default function TokenGenerationTab() {
     <div className="pb-16 max-w-6xl mx-auto mt-6 px-4">
       {/* ---- Hero ---- */}
       <section className="text-center mb-10">
-        <div className="inline-flex items-center gap-2 glass-chip px-3 py-1 text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-4">
+        <div className="inline-flex items-center gap-2 glass-chip px-3 py-1 text-[0.6875rem] font-semibold text-slate-500 uppercase tracking-wider mb-4">
           <BookOpen className="w-3.5 h-3.5 text-accent" /> The full generation pipeline
         </div>
         <h1 className="text-4xl sm:text-5xl font-extrabold text-slate-900 tracking-tight mb-4">
@@ -63,11 +63,11 @@ export default function TokenGenerationTab() {
       </section>
 
       {/* ---- Section nav ---- */}
-      <nav className="sticky top-0 z-30 -mx-2 px-2 py-3 mb-8 bg-[#f3f2f2] border-b border-slate-200 rounded-2xl">
+      <nav className="sticky top-0 z-30 -mx-2 px-2 py-3 mb-8 bg-[var(--c-bg)] border-b border-slate-200 rounded-2xl">
         <div className="flex gap-1.5 overflow-x-auto custom-scrollbar py-1">
           {SECTIONS.map((s) => (
             <a key={s.id} href={`#${s.id}`}
-              className="shrink-0 inline-flex items-center gap-1.5 glass-chip px-3 py-1.5 text-[11px] font-semibold text-slate-600 hover:text-accent hover:border-accent/40 transition-colors">
+              className="shrink-0 inline-flex items-center gap-1.5 glass-chip px-3 py-1.5 text-[0.6875rem] font-semibold text-slate-600 hover:text-accent hover:border-accent/40 transition-colors">
               <s.icon className="w-3.5 h-3.5" /> {s.label}
             </a>
           ))}
@@ -101,7 +101,7 @@ export default function TokenGenerationTab() {
             <code> vocab &times; n_embd</code>) and <code>wpe</code> (position embedding, shape
             <code> block_size &times; n_embd</code>). In <code>microgpt.py</code>:
           </p>
-          <pre className="text-xs bg-slate-900 text-slate-100 rounded-lg p-4 overflow-x-auto font-mono leading-relaxed">
+          <pre className="text-xs code-block rounded-lg p-4 overflow-x-auto font-mono leading-relaxed">
 {`tok_emb = state_dict['wte'][token_id]   # token id -> vector
 pos_emb = state_dict['wpe'][pos_id]     # position id -> vector
 x = [t + p for t, p in zip(tok_emb, pos_emb)]  # add them
@@ -290,11 +290,11 @@ function SectionCard({ id, icon: IconCmp, color, number, title, children }: any)
 function HeroKpi({ icon: I, label, value, sub }: any) {
   return (
     <div className="glass rounded-xl p-3 text-left">
-      <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-1">
+      <div className="flex items-center gap-1.5 text-[0.6875rem] font-semibold uppercase tracking-wide text-slate-400 mb-1">
         <I className="w-3.5 h-3.5" /> {label}
       </div>
       <div className="font-mono text-lg font-bold text-slate-900 leading-none">{value}</div>
-      <div className="text-[11px] text-slate-400 mt-1 truncate">{sub}</div>
+      <div className="text-[0.6875rem] text-slate-400 mt-1 truncate">{sub}</div>
     </div>
   );
 }

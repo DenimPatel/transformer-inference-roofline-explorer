@@ -2,380 +2,747 @@
 
 /* ==========================================================================
    Roofline Explorer — site stylesheet
-   Design language: "Broadsheet" — newsprint set for the web. Near-black
-   serif on paper white, with cyan / magenta used sparingly as spot color.
-   Hierarchy comes from type scale and whitespace, not boxes or rules.
-   Shared with the companion site at github.com/DenimPatel/AI.
+   Design language: the "instrument" system, shared with the interactive
+   courses site (denimpatel.github.io/interactive-courses). Cool slate
+   neutrals, one azure accent reserved for interaction, teal as the second
+   series hue, Inter throughout, flat hairline plates, and a light and a
+   dark mode that are two sets of the same slots.
+
+   Layout of this file
+     1. typeface
+     2. palette slots (--t-*)  — the only values that flip between modes
+     3. semantic layer (--c-*) — written once, resolves against the mode
+     4. Tailwind @theme       — the utilities the components already use are
+                                re-pointed at the palette, so no component
+                                had to change its class names
+     5. base + components     — chrome, surfaces, controls, charts
+   `data-theme` on <html> is the source of truth and always holds a resolved
+   'light' | 'dark'; the inline boot script in index.html writes it before
+   first paint so a reader who chose Dark never sees a light frame.
    ========================================================================== */
 
-@theme {
-  --font-sans: "Source Serif 4", Georgia, ui-serif, system-ui, serif;
-  --font-serif: "Source Serif 4", Georgia, ui-serif, serif;
-  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+/* 1. Typeface — self-hosted latin subset of the variable weight axis. */
+@font-face {
+  font-family: 'Inter Variable';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/inter-var-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Inter Fallback';
+  src: local('Helvetica Neue'), local('Arial'), local('Liberation Sans');
+  size-adjust: 107%;
+  ascent-override: 90%;
+  descent-override: 22.5%;
+  line-gap-override: 0%;
+}
 
-  /* — ink & paper — */
-  --color-ink: #201e1d;
-  --color-paper: #f3f2f2;
-  --color-surface: #eae9e9;
-  --color-divider: color-mix(in srgb, #201e1d 16%, transparent);
+/* 2. Palette slots */
+:root {
+  color-scheme: light;
 
-  /* — spot color: cyan (primary) / magenta (secondary) — */
-  --color-accent: #0088b0;
-  --color-accent-soft: #62c5ee;
-  --color-accent-2: #d6006c;
+  --t-bg-ch: 242 245 250;
+  --t-surface-ch: 255 255 255;
+  --t-surface-2-ch: 237 240 244;
+  --t-border-ch: 217 222 230;
+  --t-border-strong-ch: 185 193 205;
+  --t-grid-ch: 227 231 237;
+  --t-fg-ch: 12 17 24;
+  --t-fg-muted-ch: 63 72 84;
+  --t-fg-subtle-ch: 99 108 122;
 
-  --color-accent-100: #e9f8ff;
-  --color-accent-200: #cbeeff;
-  --color-accent-300: #99e0ff;
-  --color-accent-400: #62c5ee;
-  --color-accent-500: #38a6cf;
-  --color-accent-600: #1186ac;
-  --color-accent-700: #006786;
-  --color-accent-800: #004961;
-  --color-accent-900: #0a303e;
+  /* Accent: azure. Reserved for interaction. */
+  --t-accent-ch: 0 105 214;
+  --t-accent-ink-ch: 0 74 168;
+  --t-accent-fg-ch: 255 255 255;
+  /* The fill behind white text. Same as the accent in light; in dark the
+     accent turns pale for legibility on ink, so a filled button needs its own
+     deeper slot to keep white text above 4.5:1. */
+  --t-accent-solid-ch: 0 105 214;
 
-  --color-accent-2-100: #fff1f4;
-  --color-accent-2-200: #ffdee6;
-  --color-accent-2-300: #ffc0d0;
-  --color-accent-2-400: #ff90b1;
-  --color-accent-2-500: #ff458e;
-  --color-accent-2-600: #d82071;
-  --color-accent-2-700: #aa0b56;
-  --color-accent-2-800: #790e3d;
-  --color-accent-2-900: #4b1528;
+  /* Second series hue: teal. */
+  --t-accent-2-ch: 13 148 136;
+  --t-accent-2-ink-ch: 10 103 95;
 
-  /* — the "slate" ramp is remapped to newsprint warm greys, so every
-       text-slate-* / bg-slate-* / border-slate-* utility in the app picks up
-       the broadsheet palette without touching a single component. — */
-  --color-slate-50: #faf8f8;
-  --color-slate-100: #f8f4f4;
-  --color-slate-200: #eae7e7;
-  --color-slate-300: #d7d3d3;
-  --color-slate-400: #928e8e;
-  --color-slate-500: #7d7979;
-  --color-slate-600: #605d5d;
-  --color-slate-700: #444141;
-  --color-slate-800: #2d2b2b;
-  --color-slate-900: #201e1d;
-  --color-slate-950: #151313;
+  --t-ok-ch: 21 128 61;
+  --t-warn-ch: 180 83 9;
+  --t-bad-ch: 190 18 60;
+  --t-code-bg-ch: 237 240 244;
 
-  /* — semantic hues, desaturated to newsprint level — */
-  --color-emerald-50: #eef6f2;
-  --color-emerald-100: #d8ece4;
-  --color-emerald-200: #b0d9c9;
-  --color-emerald-300: #7cbea6;
-  --color-emerald-400: #4f9f83;
-  --color-emerald-500: #2f8365;
-  --color-emerald-600: #1f6b51;
-  --color-emerald-700: #17543f;
-  --color-emerald-800: #133f30;
-  --color-emerald-900: #102b22;
+  --t-shadow-ink-ch: 12 17 24;
+  --t-scrim-ch: 12 17 24;
+  --t-scrim-a: 0.5;
 
-  --color-rose-50: #fff1f4;
-  --color-rose-100: #ffdee6;
-  --color-rose-200: #ffc0d0;
-  --color-rose-300: #ff90b1;
-  --color-rose-400: #ff458e;
-  --color-rose-500: #d82071;
-  --color-rose-600: #c00a60;
-  --color-rose-700: #aa0b56;
-  --color-rose-800: #790e3d;
-  --color-rose-900: #4b1528;
+  /* Neutral ramp (aliased to Tailwind's slate below). Inverted in dark, so
+     "100" is always a subtle wash and "900" is always the text colour. */
+  --t-neutral-50-ch: var(--t-bg-ch);
+  --t-neutral-100-ch: var(--t-surface-2-ch);
+  --t-neutral-200-ch: var(--t-border-ch);
+  --t-neutral-300-ch: 196 203 214;
+  --t-neutral-400-ch: var(--t-fg-subtle-ch);
+  --t-neutral-500-ch: 81 90 103;
+  --t-neutral-600-ch: var(--t-fg-muted-ch);
+  --t-neutral-700-ch: 45 54 66;
+  --t-neutral-800-ch: 32 39 49;
+  --t-neutral-900-ch: var(--t-fg-ch);
+  --t-neutral-950-ch: 5 8 12;
 
-  --color-amber-50: #fbf5e8;
-  --color-amber-100: #f6e9cb;
-  --color-amber-200: #ecd398;
-  --color-amber-300: #dcb45f;
-  --color-amber-400: #c8963a;
-  --color-amber-500: #ab7c22;
-  --color-amber-600: #8d6417;
-  --color-amber-700: #6f4e14;
-  --color-amber-800: #543b12;
-  --color-amber-900: #3a2a10;
+  /* Accent ramps */
+  --t-accent-100-ch: 226 240 253;
+  --t-accent-200-ch: 186 219 250;
+  --t-accent-300-ch: 124 189 246;
+  --t-accent-400-ch: 42 137 224;
+  --t-accent-500-ch: var(--t-accent-ch);
+  --t-accent-600-ch: 0 88 187;
+  --t-accent-700-ch: var(--t-accent-ink-ch);
+  --t-accent-800-ch: 0 58 128;
+  --t-accent-900-ch: 0 38 87;
 
-  --color-violet-50: #f6f1f8;
-  --color-violet-100: #ebdff0;
-  --color-violet-200: #d7bfe1;
-  --color-violet-300: #b892c9;
-  --color-violet-400: #9767ac;
-  --color-violet-500: #7b4b90;
-  --color-violet-600: #653a77;
-  --color-violet-700: #512f5f;
-  --color-violet-800: #3d2448;
-  --color-violet-900: #2a1a32;
+  --t-accent-2-100-ch: 218 244 240;
+  --t-accent-2-200-ch: 176 233 225;
+  --t-accent-2-300-ch: 94 199 187;
+  --t-accent-2-400-ch: 32 168 154;
+  --t-accent-2-500-ch: var(--t-accent-2-ch);
+  --t-accent-2-600-ch: 11 125 115;
+  --t-accent-2-700-ch: var(--t-accent-2-ink-ch);
+  --t-accent-2-800-ch: 7 76 71;
+  --t-accent-2-900-ch: 4 46 43;
 
-  --color-sky-400: #62c5ee;
-  --color-sky-500: #38a6cf;
-  --color-sky-600: #1186ac;
-  --color-blue-400: #62c5ee;
-  --color-blue-500: #38a6cf;
-  --color-blue-600: #1186ac;
+  /* Semantic hue ramps (status tints and their ink) */
+  --t-emerald-50-ch: 236 253 245;
+  --t-emerald-100-ch: 209 250 229;
+  --t-emerald-200-ch: 167 243 208;
+  --t-emerald-300-ch: 110 231 183;
+  --t-emerald-400-ch: 52 211 153;
+  --t-emerald-500-ch: 5 150 105;
+  --t-emerald-600-ch: 4 120 87;
+  --t-emerald-700-ch: 6 95 70;
+  --t-emerald-800-ch: 6 78 59;
+  --t-emerald-900-ch: 4 60 45;
+  --t-rose-50-ch: 255 241 242;
+  --t-rose-100-ch: 255 228 230;
+  --t-rose-200-ch: 254 205 211;
+  --t-rose-300-ch: 253 164 175;
+  --t-rose-400-ch: 251 113 133;
+  --t-rose-500-ch: 225 29 72;
+  --t-rose-600-ch: 190 18 60;
+  --t-rose-700-ch: 159 18 57;
+  --t-rose-800-ch: 136 19 55;
+  --t-rose-900-ch: 100 14 40;
+  --t-amber-50-ch: 255 251 235;
+  --t-amber-100-ch: 254 243 199;
+  --t-amber-200-ch: 253 230 138;
+  --t-amber-300-ch: 252 211 77;
+  --t-amber-400-ch: 251 191 36;
+  --t-amber-500-ch: 217 119 6;
+  --t-amber-600-ch: 180 83 9;
+  --t-amber-700-ch: 146 64 14;
+  --t-amber-800-ch: 120 53 15;
+  --t-amber-900-ch: 90 40 10;
+  --t-violet-50-ch: 245 243 255;
+  --t-violet-100-ch: 237 233 254;
+  --t-violet-200-ch: 221 214 254;
+  --t-violet-300-ch: 196 181 253;
+  --t-violet-400-ch: 167 139 250;
+  --t-violet-500-ch: 124 58 237;
+  --t-violet-600-ch: 109 40 217;
+  --t-violet-700-ch: 91 33 182;
+  --t-violet-800-ch: 76 29 149;
+  --t-violet-900-ch: 58 22 115;
 
-  /* — corners: newsprint is set with rules, not pills — */
-  --radius-xs: 1px;
-  --radius-sm: 1px;
-  --radius-md: 2px;
-  --radius-lg: 2px;
-  --radius-xl: 3px;
-  --radius-2xl: 4px;
-  --radius-3xl: 4px;
-  --radius-4xl: 4px;
+  /* Elevation: a contact layer plus an ambient layer, one scale. */
+  --t-elev-1: 0 1px 2px rgb(var(--t-shadow-ink-ch) / 0.07), 0 2px 6px -2px rgb(var(--t-shadow-ink-ch) / 0.1);
+  --t-elev-2: 0 1px 2px rgb(var(--t-shadow-ink-ch) / 0.08), 0 6px 16px -6px rgb(var(--t-shadow-ink-ch) / 0.15);
+  --t-elev-3: 0 2px 6px rgb(var(--t-shadow-ink-ch) / 0.1), 0 16px 32px -12px rgb(var(--t-shadow-ink-ch) / 0.22);
+}
 
-  --shadow-sm-paper: 0 1px 2px color-mix(in srgb, #2d2b2b 14%, transparent);
-  --shadow-md-paper: 0 3px 10px color-mix(in srgb, #2d2b2b 16%, transparent);
-  --shadow-lg-paper: 0 12px 32px color-mix(in srgb, #2d2b2b 22%, transparent);
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --t-bg-ch: 9 12 17;
+  --t-surface-ch: 17 21 28;
+  --t-surface-2-ch: 30 36 46;
+  --t-border-ch: 39 46 58;
+  --t-border-strong-ch: 61 71 87;
+  --t-grid-ch: 31 37 50;
+  --t-fg-ch: 237 242 248;
+  --t-fg-muted-ch: 168 179 194;
+  --t-fg-subtle-ch: 134 146 162;
+
+  --t-accent-ch: 77 163 255;
+  --t-accent-ink-ch: 147 197 253;
+  --t-accent-fg-ch: 8 17 28;
+  --t-accent-solid-ch: 0 105 214;
+  --t-accent-2-ch: 94 199 187;
+  --t-accent-2-ink-ch: 150 219 209;
+
+  --t-ok-ch: 74 222 128;
+  --t-warn-ch: 251 191 36;
+  --t-bad-ch: 251 113 133;
+  --t-code-bg-ch: 30 36 46;
+
+  --t-shadow-ink-ch: 0 0 0;
+  --t-scrim-ch: 0 0 0;
+  --t-scrim-a: 0.62;
+
+  --t-neutral-300-ch: 52 61 75;
+  --t-neutral-500-ch: 150 162 177;
+  --t-neutral-700-ch: 196 206 218;
+  --t-neutral-800-ch: 208 217 228;
+  --t-neutral-950-ch: 247 250 253;
+
+  --t-accent-100-ch: 17 38 63;
+  --t-accent-200-ch: 22 51 85;
+  --t-accent-300-ch: 30 71 120;
+  --t-accent-400-ch: 52 122 190;
+  --t-accent-600-ch: 110 184 255;
+  --t-accent-800-ch: 176 214 252;
+  --t-accent-900-ch: 219 234 254;
+
+  --t-accent-2-100-ch: 12 43 41;
+  --t-accent-2-200-ch: 15 60 57;
+  --t-accent-2-300-ch: 24 87 82;
+  --t-accent-2-400-ch: 40 140 130;
+  --t-accent-2-600-ch: 122 211 201;
+  --t-accent-2-800-ch: 183 235 229;
+  --t-accent-2-900-ch: 222 246 243;
+
+  --t-emerald-50-ch: 4 60 45;
+  --t-emerald-100-ch: 6 78 59;
+  --t-emerald-200-ch: 6 95 70;
+  --t-emerald-300-ch: 4 120 87;
+  --t-emerald-400-ch: 5 150 105;
+  --t-emerald-500-ch: 5 150 105;
+  --t-emerald-600-ch: 110 231 183;
+  --t-emerald-700-ch: 167 243 208;
+  --t-emerald-800-ch: 209 250 229;
+  --t-emerald-900-ch: 236 253 245;
+  --t-rose-50-ch: 100 14 40;
+  --t-rose-100-ch: 136 19 55;
+  --t-rose-200-ch: 159 18 57;
+  --t-rose-300-ch: 190 18 60;
+  --t-rose-400-ch: 225 29 72;
+  --t-rose-500-ch: 225 29 72;
+  --t-rose-600-ch: 253 164 175;
+  --t-rose-700-ch: 254 205 211;
+  --t-rose-800-ch: 255 228 230;
+  --t-rose-900-ch: 255 241 242;
+  --t-amber-50-ch: 90 40 10;
+  --t-amber-100-ch: 120 53 15;
+  --t-amber-200-ch: 146 64 14;
+  --t-amber-300-ch: 180 83 9;
+  --t-amber-400-ch: 217 119 6;
+  --t-amber-500-ch: 217 119 6;
+  --t-amber-600-ch: 252 211 77;
+  --t-amber-700-ch: 253 230 138;
+  --t-amber-800-ch: 254 243 199;
+  --t-amber-900-ch: 255 251 235;
+  --t-violet-50-ch: 58 22 115;
+  --t-violet-100-ch: 76 29 149;
+  --t-violet-200-ch: 91 33 182;
+  --t-violet-300-ch: 109 40 217;
+  --t-violet-400-ch: 124 58 237;
+  --t-violet-500-ch: 124 58 237;
+  --t-violet-600-ch: 196 181 253;
+  --t-violet-700-ch: 221 214 254;
+  --t-violet-800-ch: 237 233 254;
+  --t-violet-900-ch: 245 243 255;
+
+  --t-elev-1: 0 1px 2px rgb(var(--t-shadow-ink-ch) / 0.4), 0 2px 6px -2px rgb(var(--t-shadow-ink-ch) / 0.28);
+  --t-elev-2: 0 1px 2px rgb(var(--t-shadow-ink-ch) / 0.44), 0 8px 20px -8px rgb(var(--t-shadow-ink-ch) / 0.5);
+  --t-elev-3: 0 2px 8px rgb(var(--t-shadow-ink-ch) / 0.48), 0 20px 44px -16px rgb(var(--t-shadow-ink-ch) / 0.64);
+}
+
+/* 3. Semantic layer */
+:root {
+  --c-bg: rgb(var(--t-bg-ch));
+  --c-surface: rgb(var(--t-surface-ch));
+  --c-surface-2: rgb(var(--t-surface-2-ch));
+  --c-border: rgb(var(--t-border-ch));
+  --c-border-strong: rgb(var(--t-border-strong-ch));
+  --c-grid: rgb(var(--t-grid-ch));
+  --c-fg: rgb(var(--t-fg-ch));
+  --c-fg-muted: rgb(var(--t-fg-muted-ch));
+  --c-fg-subtle: rgb(var(--t-fg-subtle-ch));
+  --c-accent: rgb(var(--t-accent-ch));
+  --c-accent-ink: rgb(var(--t-accent-ink-ch));
+  --c-accent-fg: rgb(var(--t-accent-fg-ch));
+  --c-accent-solid: rgb(var(--t-accent-solid-ch));
+  --c-accent-2: rgb(var(--t-accent-2-ch));
+  --c-accent-2-ink: rgb(var(--t-accent-2-ink-ch));
+  --c-ok: rgb(var(--t-ok-ch));
+  --c-warn: rgb(var(--t-warn-ch));
+  --c-bad: rgb(var(--t-bad-ch));
+  --c-code-bg: rgb(var(--t-code-bg-ch));
+  --c-scrim: rgb(var(--t-scrim-ch) / var(--t-scrim-a));
+  --c-elev-1: var(--t-elev-1);
+  --c-elev-2: var(--t-elev-2);
+  --c-elev-3: var(--t-elev-3);
+
+  /* Chart roles. The categorical series colours are fixed rather than
+     mode-flipped — a series that changed colour with the theme would be a
+     different series — and each clears 3:1 against a card in both modes.
+     Compute is teal and memory is crimson, so the two sides of the roofline
+     stay separable by hue and by luminance. */
+  --chart-series-1: rgb(3 105 161);
+  --chart-series-2: rgb(13 148 136);
+  --chart-series-3: rgb(180 83 9);
+  --chart-series-4: rgb(124 58 237);
+  --chart-series-5: rgb(201 19 64);
+  --chart-series-6: rgb(77 124 15);
+  --chart-series-7: rgb(14 116 144);
+  --chart-compute: var(--chart-series-2);
+  --chart-memory: var(--chart-series-5);
+
+  --radius-control: 8px;
+  --radius-card: 10px;
+  --radius-plate: 12px;
+
+  --chrome-nav-h: 3.25rem;
+
+  /* Reader preferences. Written onto <html> by src/lib/prefs.ts and by the
+     inline boot script; the defaults are what a visitor with nothing stored
+     gets, i.e. the site as it looked before preferences existed. */
+  --pref-text-scale: 1;
+  --pref-measure: 62ch;
+  --pref-line-height: 1.6;
+  --pref-space: 1;
+  --pref-motion-scale: 1;
+  /* 1.6 * 1.015625 = 1.625, Tailwind's own `leading-relaxed`. */
+  --read-line: calc(var(--pref-line-height) * 1.015625);
+
+  /* PERCENT, not `16px * scale`: a bare 16px would overwrite a reader's own
+     browser default size. */
+  font-size: calc(100% * var(--pref-text-scale));
+}
+
+/* No-JavaScript fallback: with no data-theme at all, the OS decides. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) { color-scheme: dark; }
+}
+
+/* 4. Tailwind theme. `static` emits every token, because components also
+      read them as plain var(--color-*) from inline styles. */
+@theme static {
+  --font-sans: 'Inter Variable', Inter, 'Inter Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-serif: var(--font-sans);
+  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+
+  --color-bg: var(--c-bg);
+  --color-ink: var(--c-fg);
+  --color-paper: var(--c-bg);
+  --color-surface: var(--c-surface);
+  --color-surface-2: var(--c-surface-2);
+  --color-divider: var(--c-border);
+  --color-border: var(--c-border);
+  --color-border-strong: var(--c-border-strong);
+
+  --color-accent: var(--c-accent);
+  --color-accent-solid: var(--c-accent-solid);
+  --color-accent-fg: var(--c-accent-fg);
+  --color-accent-2: var(--c-accent-2);
+  --color-ok: var(--c-ok);
+  --color-warn: var(--c-warn);
+  --color-bad: var(--c-bad);
+
+  --color-accent-100: rgb(var(--t-accent-100-ch));
+  --color-accent-200: rgb(var(--t-accent-200-ch));
+  --color-accent-300: rgb(var(--t-accent-300-ch));
+  --color-accent-400: rgb(var(--t-accent-400-ch));
+  --color-accent-500: rgb(var(--t-accent-500-ch));
+  --color-accent-600: rgb(var(--t-accent-600-ch));
+  --color-accent-700: rgb(var(--t-accent-700-ch));
+  --color-accent-800: rgb(var(--t-accent-800-ch));
+  --color-accent-900: rgb(var(--t-accent-900-ch));
+
+  --color-accent-2-100: rgb(var(--t-accent-2-100-ch));
+  --color-accent-2-200: rgb(var(--t-accent-2-200-ch));
+  --color-accent-2-300: rgb(var(--t-accent-2-300-ch));
+  --color-accent-2-400: rgb(var(--t-accent-2-400-ch));
+  --color-accent-2-500: rgb(var(--t-accent-2-500-ch));
+  --color-accent-2-600: rgb(var(--t-accent-2-600-ch));
+  --color-accent-2-700: rgb(var(--t-accent-2-700-ch));
+  --color-accent-2-800: rgb(var(--t-accent-2-800-ch));
+  --color-accent-2-900: rgb(var(--t-accent-2-900-ch));
+
+  /* The "slate" ramp is the neutral ramp, so every text-slate-* / bg-slate-*
+     / border-slate-* utility in the app follows the theme untouched. */
+  --color-slate-50: rgb(var(--t-neutral-50-ch));
+  --color-slate-100: rgb(var(--t-neutral-100-ch));
+  --color-slate-200: rgb(var(--t-neutral-200-ch));
+  --color-slate-300: rgb(var(--t-neutral-300-ch));
+  --color-slate-400: rgb(var(--t-neutral-400-ch));
+  --color-slate-500: rgb(var(--t-neutral-500-ch));
+  --color-slate-600: rgb(var(--t-neutral-600-ch));
+  --color-slate-700: rgb(var(--t-neutral-700-ch));
+  --color-slate-800: rgb(var(--t-neutral-800-ch));
+  --color-slate-900: rgb(var(--t-neutral-900-ch));
+  --color-slate-950: rgb(var(--t-neutral-950-ch));
+
+  /* Status hues, tints deep and ink pale in dark. */
+  --color-emerald-50: rgb(var(--t-emerald-50-ch));
+  --color-emerald-100: rgb(var(--t-emerald-100-ch));
+  --color-emerald-200: rgb(var(--t-emerald-200-ch));
+  --color-emerald-300: rgb(var(--t-emerald-300-ch));
+  --color-emerald-400: rgb(var(--t-emerald-400-ch));
+  --color-emerald-500: rgb(var(--t-emerald-500-ch));
+  --color-emerald-600: rgb(var(--t-emerald-600-ch));
+  --color-emerald-700: rgb(var(--t-emerald-700-ch));
+  --color-emerald-800: rgb(var(--t-emerald-800-ch));
+  --color-emerald-900: rgb(var(--t-emerald-900-ch));
+  --color-rose-50: rgb(var(--t-rose-50-ch));
+  --color-rose-100: rgb(var(--t-rose-100-ch));
+  --color-rose-200: rgb(var(--t-rose-200-ch));
+  --color-rose-300: rgb(var(--t-rose-300-ch));
+  --color-rose-400: rgb(var(--t-rose-400-ch));
+  --color-rose-500: rgb(var(--t-rose-500-ch));
+  --color-rose-600: rgb(var(--t-rose-600-ch));
+  --color-rose-700: rgb(var(--t-rose-700-ch));
+  --color-rose-800: rgb(var(--t-rose-800-ch));
+  --color-rose-900: rgb(var(--t-rose-900-ch));
+  --color-amber-50: rgb(var(--t-amber-50-ch));
+  --color-amber-100: rgb(var(--t-amber-100-ch));
+  --color-amber-200: rgb(var(--t-amber-200-ch));
+  --color-amber-300: rgb(var(--t-amber-300-ch));
+  --color-amber-400: rgb(var(--t-amber-400-ch));
+  --color-amber-500: rgb(var(--t-amber-500-ch));
+  --color-amber-600: rgb(var(--t-amber-600-ch));
+  --color-amber-700: rgb(var(--t-amber-700-ch));
+  --color-amber-800: rgb(var(--t-amber-800-ch));
+  --color-amber-900: rgb(var(--t-amber-900-ch));
+  --color-violet-50: rgb(var(--t-violet-50-ch));
+  --color-violet-100: rgb(var(--t-violet-100-ch));
+  --color-violet-200: rgb(var(--t-violet-200-ch));
+  --color-violet-300: rgb(var(--t-violet-300-ch));
+  --color-violet-400: rgb(var(--t-violet-400-ch));
+  --color-violet-500: rgb(var(--t-violet-500-ch));
+  --color-violet-600: rgb(var(--t-violet-600-ch));
+  --color-violet-700: rgb(var(--t-violet-700-ch));
+  --color-violet-800: rgb(var(--t-violet-800-ch));
+  --color-violet-900: rgb(var(--t-violet-900-ch));
+
+  /* Sky / blue are the accent family. */
+  --color-sky-400: var(--color-accent-400);
+  --color-sky-500: var(--color-accent-500);
+  --color-sky-600: var(--color-accent-600);
+  --color-blue-400: var(--color-accent-400);
+  --color-blue-500: var(--color-accent-500);
+  --color-blue-600: var(--color-accent-600);
+
+  /* Corners: 8 control / 10 card / 12 plate. */
+  --radius-xs: 3px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
+  --radius-2xl: 12px;
+  --radius-3xl: 14px;
+  --radius-4xl: 16px;
+
+  --shadow-xs: var(--c-elev-1);
+  --shadow-sm: var(--c-elev-1);
+  --shadow-md: var(--c-elev-2);
+  --shadow-lg: var(--c-elev-3);
+  --shadow-xl: var(--c-elev-3);
+
+  /* Density: Tailwind's whole spacing scale (p-*, gap-*, m-*, space-*) is a
+     multiple of this one length. */
+  --spacing: calc(0.25rem * var(--pref-space, 1));
+  --leading-relaxed: var(--read-line);
 
   --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* 5. Base */
 @layer base {
-  * {
-    border-color: var(--color-divider);
-  }
+  * { border-color: var(--c-border); }
 
   html {
-    scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
+    scroll-padding-top: 5rem;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    html:not([data-pref-motion='reduced']) { scroll-behavior: smooth; }
   }
 
   body {
     margin: 0;
     font-family: var(--font-sans);
-    font-size: 15px;
-    line-height: 1.55;
-    color: var(--color-ink);
-    background: var(--color-paper);
+    font-size: 0.9375rem;
+    line-height: var(--pref-line-height);
+    color: var(--c-fg);
+    background: var(--c-bg);
     text-wrap: pretty;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
 
-  /* — type scale (mirrors the companion site) — */
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-serif);
+    font-family: var(--font-sans);
     font-weight: 600;
-    line-height: 1.12;
-    letter-spacing: -0.015em;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
   }
 
-  ::selection { background: color-mix(in srgb, var(--color-accent) 30%, transparent); }
+  ::selection { background: rgb(var(--t-accent-ch) / 0.25); }
 }
 
 @layer components {
-  /* ---- Paper ground (replaces the former aurora backdrop) ---- */
+  /* ---- Page ground. A flat canvas: no paper, no texture, no glow. ---- */
   .aurora {
     position: fixed;
     inset: 0;
     z-index: -2;
-    background: var(--color-paper);
+    background: var(--c-bg);
   }
 
-  /* ---- Broadsheet surfaces (kept under the legacy .glass* names) ---- */
+  /* ---- Plates. The legacy `glass*` names are kept so components do not
+          change, but they are flat opaque surfaces with a hairline: an
+          instrument panel is read, not looked through. ---- */
   .glass {
     position: relative;
-    background: var(--color-surface);
-    border: 1px solid var(--color-divider);
+    background: var(--c-surface-2);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-card);
   }
   .glass-strong {
-    background: var(--color-paper);
-    border-color: var(--color-divider);
+    background: var(--c-surface);
+    border-color: var(--c-border);
   }
   .info-popover {
-    background: #ffffff;
-    border: 1px solid var(--color-divider);
-    box-shadow: var(--shadow-md-paper);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--c-elev-3);
   }
   .glass-card {
-    background: #ffffff;
-    border: 1px solid var(--color-divider);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-sm-paper);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--c-elev-1);
   }
-
-  /* ---- Hover: a shift of rule color, not a lift ---- */
   .glass-card-hover {
-    transition: border-color 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out);
+    transition: border-color 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out);
   }
   .glass-card-hover:hover {
-    border-color: color-mix(in srgb, var(--color-accent) 55%, transparent);
-    box-shadow: var(--shadow-md-paper);
+    border-color: rgb(var(--t-accent-ch) / 0.55);
+    box-shadow: var(--c-elev-2);
   }
-  /* the shimmer sweep has no place in newsprint; the class is kept as a no-op
-     so <GlassCard shimmer> callers keep compiling */
   .shimmer::after { content: none; }
 
-  /* ---- Chips / tags ---- */
   .glass-chip {
-    background: var(--color-surface);
-    border: 1px solid var(--color-divider);
-    border-radius: var(--radius-md);
+    background: var(--c-surface-2);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-control);
   }
 
-  /* ---- Form controls ---- */
   .glass-input {
-    background: #ffffff;
-    border: 1px solid var(--color-divider);
-    border-radius: var(--radius-md);
-    color: var(--color-ink);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border-strong);
+    border-radius: var(--radius-control);
+    color: var(--c-fg);
     font-family: var(--font-sans);
-    transition: border-color 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
+    transition: border-color 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out);
   }
   .glass-input:focus {
     outline: none;
-    border-color: var(--color-accent);
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 25%, transparent);
+    border-color: var(--c-accent);
+    box-shadow: 0 0 0 3px rgb(var(--t-accent-ch) / 0.22);
   }
 
   .glass-slider {
     -webkit-appearance: none;
     appearance: none;
     height: 4px;
-    border-radius: 0;
-    background: linear-gradient(90deg, var(--color-accent), var(--color-accent-400));
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--c-accent), var(--color-accent-400));
     outline: none;
     cursor: pointer;
   }
   .glass-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 14px;
-    height: 14px;
-    border-radius: 9999px;
-    background: var(--color-paper);
-    border: 2px solid var(--color-accent-700);
+    width: 16px;
+    height: 16px;
+    border-radius: 999px;
+    background: var(--c-surface);
+    border: 2px solid var(--c-accent);
+    box-shadow: var(--c-elev-1);
     transition: transform 0.15s var(--ease-out);
   }
   .glass-slider::-webkit-slider-thumb:hover { transform: scale(1.15); }
   .glass-slider::-moz-range-thumb {
     width: 14px;
     height: 14px;
-    border-radius: 9999px;
-    background: var(--color-paper);
-    border: 2px solid var(--color-accent-700);
+    border-radius: 999px;
+    background: var(--c-surface);
+    border: 2px solid var(--c-accent);
   }
 
-  /* ---- Tooltip ---- */
   .glass-tooltip {
-    background: #ffffff;
-    border: 1px solid var(--color-divider);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-md-paper);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-control);
+    box-shadow: var(--c-elev-3);
   }
 
-  /* ==========================================================================
-     Masthead furniture — kickers, rules and the stats strip, carried over from
-     the companion site so the two read as one publication.
-     ========================================================================== */
+  .code-block {
+    background: var(--c-code-bg);
+    color: var(--c-fg);
+    border: 1px solid var(--c-border);
+  }
+
+  /* ---- Furniture: kickers, stats strip ---- */
   .section-kicker {
     display: block;
-    font-size: 13px;
-    letter-spacing: 0.08em;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: color-mix(in srgb, var(--color-ink) 70%, transparent);
+    color: var(--c-fg-subtle);
     margin-bottom: 10px;
   }
-  .section-kicker--accent { color: var(--color-accent-700); }
+  .section-kicker--accent { color: var(--c-accent-ink); }
 
   .hero { padding: clamp(40px, 7vw, 80px) 0 40px; }
   .hero h1 {
-    font-family: var(--font-serif);
     font-weight: 600;
-    font-size: clamp(36px, 5.5vw, 68px);
-    line-height: 1.08;
-    letter-spacing: -0.02em;
+    font-size: clamp(34px, 5vw, 56px);
+    line-height: 1.05;
+    letter-spacing: -0.035em;
     margin: 0;
   }
-  .hero p {
-    font-size: 17px;
-    line-height: 1.6;
-    max-width: 58ch;
-    margin: 24px 0 0;
-    opacity: 0.85;
-  }
+  .hero p { font-size: 17px; line-height: 1.6; max-width: 58ch; margin: 24px 0 0; color: var(--c-fg-muted); }
   .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 28px; }
 
-  .stats {
-    height: 5px;
-    border-top: 2px solid var(--color-ink);
-    border-bottom: 1px solid var(--color-ink);
-  }
   .stats-row {
     display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px 28px;
-    margin: 0; padding: 10px 0; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase;
-    color: color-mix(in srgb, var(--color-ink) 70%, transparent);
-    font-feature-settings: 'pnum' 1;
+    margin: 0; padding: 10px 0; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--c-fg-subtle);
   }
-  .stats-rule { height: 1px; border-top: 1px solid var(--color-ink); }
   .stats-grid {
     display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 10px 40px; padding: 20px 0 8px;
   }
-  .stat { display: flex; align-items: baseline; gap: 8px; margin: 0; font-size: 15.5px; }
-  .stat-fill {
-    flex: 1; min-width: 20px; align-self: flex-end; margin-bottom: 0.34em;
-    border-bottom: 1px dotted color-mix(in srgb, var(--color-ink) 45%, transparent);
-  }
-  .stat-value { font-family: var(--font-serif); font-weight: 600; font-size: 17px; }
-  .stat-value--accent { color: var(--color-accent-700); }
+  .stat { display: flex; align-items: baseline; gap: 8px; margin: 0; font-size: 15px; }
+  .stat-fill { flex: 1; min-width: 20px; align-self: flex-end; margin-bottom: 0.34em; border-bottom: 1px dotted var(--c-border-strong); }
+  .stat-value { font-weight: 600; font-size: 17px; font-variant-numeric: tabular-nums; }
+  .stat-value--accent { color: var(--c-accent-ink); }
 
-  /* — nav rail — */
-  .nav-brand {
-    font-family: var(--font-serif);
+  /* ---- Top bar: an opaque surface plate, hairline underneath ---- */
+  .site-bar {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    min-height: var(--chrome-nav-h);
+    background: var(--c-surface);
+    border-bottom: 1px solid var(--c-border);
+  }
+  .skip-link {
+    position: absolute;
+    left: 12px;
+    top: -48px;
+    z-index: 100;
+    padding: 8px 14px;
+    border-radius: var(--radius-control);
+    background: var(--c-accent-solid);
+    color: #fff;
     font-weight: 600;
-    font-size: 18px;
-    color: var(--color-ink);
+    font-size: 14px;
     text-decoration: none;
+    transition: top 0.15s var(--ease-out);
+  }
+  .skip-link:focus { top: 8px; }
+
+  .nav-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: -0.02em;
+    color: var(--c-fg);
+    text-decoration: none;
+  }
+  .nav-brand-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    flex: 0 0 auto;
+    background: var(--c-accent);
+    box-shadow: 0 0 0 4px rgb(var(--t-accent-ch) / 0.16);
+  }
+  .nav-brand-sub {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--c-fg-subtle);
   }
   .nav-link {
     font-size: 14px;
-    color: color-mix(in srgb, var(--color-ink) 72%, transparent);
+    font-weight: 500;
+    color: var(--c-fg-muted);
     text-decoration: none;
     border-bottom: 2px solid transparent;
     transition: color 0.15s var(--ease-out), border-color 0.15s var(--ease-out);
   }
-  .nav-link:hover { color: var(--color-accent); }
-  .nav-link[aria-current='page'] {
-    color: var(--color-ink);
-    border-bottom-color: var(--color-ink);
-  }
+  .nav-link:hover { color: var(--c-accent-ink); }
+  .nav-link[aria-current='page'] { color: var(--c-fg); border-bottom-color: var(--c-accent); }
 
-  /* — buttons — */
+  .nav-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: var(--radius-control);
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--c-fg-muted);
+    cursor: pointer;
+    transition: background 0.15s var(--ease-out), color 0.15s var(--ease-out), border-color 0.15s var(--ease-out);
+  }
+  .nav-icon-btn:hover { background: var(--c-surface-2); color: var(--c-fg); border-color: var(--c-border); }
+
+  /* ---- Buttons ---- */
   .btn-ghost {
     display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-    font-family: var(--font-serif); font-weight: 600; font-size: 14px;
-    color: var(--color-accent); background: transparent; border: 0;
-    padding: 6px 8px; border-radius: var(--radius-md); cursor: pointer;
+    font-weight: 600; font-size: 14px;
+    color: var(--c-accent-ink); background: transparent; border: 0;
+    padding: 6px 10px; border-radius: var(--radius-control); cursor: pointer;
+    transition: background 0.15s var(--ease-out);
   }
-  .btn-ghost:hover {
-    background: color-mix(in srgb, var(--color-accent) 10%, transparent);
-    color: var(--color-accent-700);
-  }
+  .btn-ghost:hover { background: rgb(var(--t-accent-ch) / 0.1); }
 
-  /* ---- Scrollbar ---- */
   .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
   .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: color-mix(in srgb, var(--color-ink) 25%, transparent);
-    border-radius: 9999px;
+  .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--c-border-strong); border-radius: 999px; }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--c-fg-subtle); }
+
+  /* ---- Recharts: chart chrome follows the tokens ---- */
+  .recharts-cartesian-axis-tick-value { font-size: 11px; fill: var(--c-fg-subtle); }
+  .recharts-cartesian-axis-label { fill: var(--c-fg-subtle); }
+  .recharts-legend-item-text { color: var(--c-fg-muted) !important; }
+  .recharts-cartesian-grid line { stroke: var(--c-grid); }
+  .recharts-default-tooltip {
+    background: var(--c-surface) !important;
+    border: 1px solid var(--c-border) !important;
+    border-radius: var(--radius-control);
   }
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--color-ink) 40%, transparent); }
+  .recharts-tooltip-cursor { stroke: var(--c-border-strong); }
 
-  /* ---- Recharts theming nudges ---- */
-  .recharts-cartesian-axis-tick-value { font-size: 11px; fill: #605d5d; }
-  .recharts-cartesian-axis-label { fill: #605d5d; }
-  .recharts-legend-item-text { color: #605d5d !important; }
-  .recharts-cartesian-grid line { stroke: color-mix(in srgb, #201e1d 10%, transparent); }
-
-  /* Focus visible rings */
   :focus-visible {
-    outline: 2px solid var(--color-accent);
+    outline: 2px solid var(--c-accent);
     outline-offset: 2px;
-    border-radius: 0;
   }
 }
 
-/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
@@ -384,3 +751,136 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* A short cross-fade when the mode flips, so the change reads as one event. */
+html.theme-fade, html.theme-fade *, html.theme-fade *::before, html.theme-fade *::after {
+  transition: background-color 0.3s var(--ease-out), border-color 0.3s var(--ease-out), color 0.3s var(--ease-out), fill 0.3s var(--ease-out), stroke 0.3s var(--ease-out) !important;
+}
+
+/* An explicit Reduced choice (or System + an OS that asks for less): a still
+   page. Same effect as the media query above, reachable from the panel. */
+html[data-pref-motion='reduced'],
+html[data-pref-motion='reduced'] *,
+html[data-pref-motion='reduced'] *::before,
+html[data-pref-motion='reduced'] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Chart grid lines: the ruler behind every plot, removable. */
+:root[data-chart-grid='off'] .recharts-cartesian-grid { display: none; }
+
+/* Focus mode: centre the text column and dim the side panels until they are
+   hovered or focused. It reduces chrome and never removes it. */
+:root[data-focus-mode='on'] .focus-main { max-width: 60rem; margin-inline: auto; }
+:root[data-focus-mode='on'] .focus-dim { opacity: 0.5; transition: opacity 0.15s var(--ease-out); }
+:root[data-focus-mode='on'] .focus-dim:hover,
+:root[data-focus-mode='on'] .focus-dim:focus-within { opacity: 1; }
+
+/* ==========================================================================
+   Settings dialog (a real <dialog>; the top layer gives scrim, focus
+   containment and Escape)
+   ========================================================================== */
+.prefs {
+  width: min(26rem, calc(100vw - 2rem));
+  max-width: none;
+  max-height: calc(100vh - 4rem);
+  max-height: calc(100dvh - 4rem);
+  padding: 0;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-plate);
+  background: var(--c-surface);
+  color: var(--c-fg);
+  font-family: var(--font-sans);
+  overflow: clip;
+  box-shadow: var(--c-elev-3), inset 0 1px 0 rgb(255 255 255 / 0.06);
+  animation: prefs-in 0.12s ease-out;
+}
+.prefs[open] { inset: 0; margin: auto; }
+.prefs::backdrop { background: var(--c-scrim); }
+.prefs:focus, .prefs:focus-visible { outline: none; }
+@keyframes prefs-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+
+.prefs__sheet {
+  display: flex; flex-direction: column; min-height: 0; border-radius: inherit; overflow: hidden;
+  max-height: calc(100vh - 4rem - 2px);
+  max-height: calc(100dvh - 4rem - 2px);
+}
+.prefs__head, .prefs__foot {
+  flex: 0 0 auto; display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.75rem 1rem; background: var(--c-surface);
+}
+.prefs__head { border-bottom: 1px solid var(--c-border); }
+.prefs__foot { border-top: 1px solid var(--c-border); }
+.prefs__head-icon { display: inline-flex; color: var(--c-fg-subtle); }
+.prefs__title { margin: 0; font-size: 0.8125rem; font-weight: 600; line-height: 1.45; }
+.prefs__close {
+  margin-left: auto; display: inline-flex; align-items: center; justify-content: center;
+  width: 1.75rem; height: 1.75rem; padding: 0; cursor: pointer;
+  color: var(--c-fg-muted); background: transparent;
+  border: 1px solid var(--c-border); border-radius: var(--radius-control);
+}
+.prefs__close:hover { background: var(--c-surface-2); color: var(--c-fg); }
+.prefs__body {
+  flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: 1rem;
+  padding: 1rem; overflow-y: auto; overscroll-behavior: contain;
+}
+.prefs__group { display: block; min-width: 0; margin: 0; padding: 0; border: none; }
+.prefs__label {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem;
+  width: 100%; padding: 0; font-size: 0.8125rem; font-weight: 600; line-height: 1.45;
+}
+.prefs__label--row { justify-content: flex-start; }
+.prefs__readout { flex: 0 0 auto; color: var(--c-fg-subtle); font-size: 0.6875rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.prefs__desc { margin: 0.25rem 0 0; color: var(--c-fg-muted); font-size: 0.875rem; line-height: 1.5; }
+.prefs__note {
+  margin: 0.5rem 0 0; padding: 0.5rem 0.75rem; border: 1px solid var(--c-border);
+  border-radius: var(--radius-control); background: var(--c-surface-2);
+  color: var(--c-fg-muted); font-size: 0.875rem; line-height: 1.5;
+}
+.prefs__note strong { color: var(--c-fg); }
+.prefs__segment { display: flex; align-items: stretch; gap: 0.25rem; margin-top: 0.5rem; }
+.prefs__radio, .prefs__check {
+  position: absolute; width: 1px; height: 1px; margin: 0; padding: 0; border: 0;
+  overflow: hidden; clip: rect(0, 0, 0, 0); clip-path: inset(50%); white-space: nowrap;
+}
+.prefs__cell {
+  display: flex; align-items: center; justify-content: center; flex: 1 1 0; min-width: 0;
+  padding: 0.5rem 0.25rem; border: 1px solid var(--c-border); border-radius: var(--radius-control);
+  background: var(--c-surface); color: var(--c-fg-muted);
+  font-size: 0.8125rem; font-weight: 500; line-height: 1.45; text-align: center;
+  cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.12s, border-color 0.12s, color 0.12s;
+}
+.prefs__cell:hover { background: var(--c-surface-2); color: var(--c-fg); }
+.prefs__radio:checked + .prefs__cell {
+  background: rgb(var(--t-accent-ch) / 0.1); border-color: rgb(var(--t-accent-ch) / 0.45);
+  color: var(--c-accent-ink); font-weight: 600;
+}
+.prefs__radio:focus-visible + .prefs__cell,
+.prefs__check:focus-visible + .prefs__switch-track { outline: 2px solid var(--c-accent); outline-offset: 2px; }
+.prefs__switches { display: flex; flex-direction: column; gap: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--c-border); }
+.prefs__switch { display: flex; align-items: flex-start; gap: 0.75rem; margin: -0.25rem; padding: 0.25rem; border-radius: var(--radius-control); cursor: pointer; }
+.prefs__switch-track {
+  position: relative; flex: 0 0 auto; width: 2rem; height: 1.25rem; margin-top: 0.15rem;
+  border: 1px solid var(--c-border-strong); border-radius: 999px; background: var(--c-surface-2);
+  transition: background-color 0.12s, border-color 0.12s;
+}
+.prefs__switch:hover .prefs__switch-track { border-color: var(--c-fg-subtle); }
+.prefs__switch-thumb {
+  position: absolute; top: 1px; left: 1px; width: calc(1.25rem - 4px); height: calc(1.25rem - 4px);
+  border-radius: 999px; background: var(--c-fg-muted); transition: transform 0.12s, background-color 0.12s;
+}
+.prefs__check:checked + .prefs__switch-track { background: var(--c-accent-solid); border-color: var(--c-accent-solid); }
+.prefs__check:checked + .prefs__switch-track .prefs__switch-thumb { background: #fff; transform: translateX(0.75rem); }
+.prefs__switch-text { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+.prefs__count { margin: 0; color: var(--c-fg-subtle); font-size: 0.6875rem; letter-spacing: 0.06em; text-transform: uppercase; font-variant-numeric: tabular-nums; }
+.prefs__reset {
+  margin-left: auto; padding: 0.25rem 0.75rem; border: 1px solid var(--c-border-strong);
+  border-radius: var(--radius-control); background: transparent; color: var(--c-fg);
+  font-family: inherit; font-size: 0.8125rem; font-weight: 600; cursor: pointer;
+}
+.prefs__reset:hover:not(:disabled) { background: var(--c-surface-2); }
+.prefs__reset:disabled { cursor: not-allowed; opacity: 0.5; }

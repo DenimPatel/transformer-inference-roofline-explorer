@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { AnimatePresence, motion } from 'motion/react';
-import { ArrowLeft, ArrowRight, HelpCircle, SlidersHorizontal, X, List } from 'lucide-react';
+import { AnimatePresence, MotionConfig, motion } from 'motion/react';
+import { ArrowLeft, ArrowRight, HelpCircle, Settings2, SlidersHorizontal, X, List } from 'lucide-react';
 import {
   CURRICULUM, FIRST_SECTION_ID, findSection, neighbours, sectionNumber,
 } from '../lib/curriculum';
@@ -9,6 +9,9 @@ import { loadProgress, saveProgress } from '../lib/progress';
 import { ConfigProvider } from '../state/ConfigContext';
 import ChapterRail from './nav/ChapterRail';
 import ConfigPanel from './nav/ConfigPanel';
+import ThemeToggle from './nav/ThemeToggle';
+import PrefsPanel from './nav/PrefsPanel';
+import { useStill } from '../lib/prefs';
 import Section from './shell/Section';
 import ConceptGlossary from './learn/ConceptGlossary';
 import Playground from './playground/Playground';
@@ -34,6 +37,8 @@ function Shell() {
   const [glossaryOpen, setGlossaryOpen] = useState(false);
   const [contentsOpen, setContentsOpen] = useState(false);
   const [configOpen, setConfigOpen] = useState(false);
+  const [prefsOpen, setPrefsOpen] = useState(false);
+  const still = useStill();
 
   useEffect(() => { saveProgress(completed); }, [completed]);
 
@@ -66,22 +71,24 @@ function Shell() {
   const showConfig = !HIDES_CONFIG.has(route);
 
   return (
-    <div className="min-h-screen text-slate-900 font-sans flex flex-col selection:bg-[var(--color-accent)]/20">
+    <MotionConfig reducedMotion={still ? 'always' : 'user'}>
+    <div className="min-h-screen text-slate-900 font-sans flex flex-col ">
       <div className="aurora" aria-hidden="true" />
+      <PrefsPanel open={prefsOpen} onClose={() => setPrefsOpen(false)} />
       <ConceptGlossary open={glossaryOpen} onClose={() => setGlossaryOpen(false)} />
 
-      <header className="sticky top-0 z-40 glass-strong px-4 sm:px-6 py-2.5 flex items-center gap-4 justify-between shrink-0 border-b border-[var(--color-divider)]">
-        <div className="flex items-baseline gap-3 min-w-0">
+      <a className="skip-link" href="#main">Skip to main content</a>
+      <header className="site-bar px-4 sm:px-6 py-2 flex items-center gap-4 justify-between shrink-0">
+        <div className="flex items-center gap-3 min-w-0">
           <button type="button" onClick={() => go(FIRST_SECTION_ID)}
-            className="nav-brand text-lg sm:text-xl truncate cursor-pointer bg-transparent">
-            Roofline&nbsp;/
+            className="nav-brand truncate cursor-pointer bg-transparent border-0 p-0">
+            <span className="nav-brand-dot" aria-hidden="true" />
+            Roofline
+            <span className="nav-brand-sub hidden lg:inline" aria-hidden="true">Transformer inference</span>
           </button>
-          <p className="text-[11px] uppercase tracking-[0.08em] text-slate-500 hidden lg:block truncate">
-            Transformer inference economics
-          </p>
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           <button type="button" onClick={() => setContentsOpen((o) => !o)}
             className="btn-ghost xl:hidden text-xs">
             <List style={{ width: 14, height: 14 }} /> Contents
@@ -97,12 +104,17 @@ function Shell() {
             <HelpCircle style={{ width: 14, height: 14 }} />
             <span className="hidden sm:inline">Concepts</span>
           </button>
+          <ThemeToggle />
+          <button type="button" className="nav-icon-btn" onClick={() => setPrefsOpen(true)}
+            aria-label="Reading and display settings" title="Reading and display settings" aria-haspopup="dialog">
+            <Settings2 style={{ width: 16, height: 16 }} aria-hidden="true" />
+          </button>
         </div>
       </header>
 
       <div className="w-full max-w-[1600px] mx-auto flex-1 flex gap-6 p-4 sm:p-6">
         {/* Contents rail */}
-        <aside className={`${contentsOpen ? 'block' : 'hidden'} xl:block w-full xl:w-64 shrink-0 xl:sticky xl:top-24 xl:self-start xl:max-h-[calc(100vh-8rem)] xl:overflow-y-auto custom-scrollbar`}>
+        <aside className={`focus-dim ${contentsOpen ? 'block' : 'hidden'} xl:block w-full xl:w-64 shrink-0 xl:sticky xl:top-20 xl:self-start xl:max-h-[calc(100vh-6.5rem)] xl:overflow-y-auto custom-scrollbar`}>
           <ChapterRail
             current={route}
             completed={completed}
@@ -112,7 +124,7 @@ function Shell() {
         </aside>
 
         {/* The spine */}
-        <main className={`${contentsOpen ? 'hidden xl:block' : 'block'} flex-1 min-w-0`}>
+        <main id="main" className={`focus-main ${contentsOpen ? 'hidden xl:block' : 'block'} flex-1 min-w-0`}>
           <AnimatePresence mode="wait">
             <motion.div
               key={route}
@@ -142,7 +154,7 @@ function Shell() {
               {prev ? (
                 <button type="button" onClick={() => go(prev.section.id)}
                   className="group flex-1 text-left p-3 hover:bg-slate-100 transition-colors cursor-pointer bg-transparent">
-                  <span className="flex items-center gap-1.5 text-[11px] uppercase tracking-[0.14em] text-slate-400">
+                  <span className="flex items-center gap-1.5 text-[0.6875rem] uppercase tracking-[0.14em] text-slate-400">
                     <ArrowLeft style={{ width: 13, height: 13 }} /> Previous
                   </span>
                   <span className="block mt-0.5 text-sm font-semibold text-slate-700">{prev.section.title}</span>
@@ -151,7 +163,7 @@ function Shell() {
               {next ? (
                 <button type="button" onClick={() => go(next.section.id)}
                   className="group flex-1 text-right p-3 hover:bg-slate-100 transition-colors cursor-pointer bg-transparent">
-                  <span className="flex items-center justify-end gap-1.5 text-[11px] uppercase tracking-[0.14em] text-slate-400">
+                  <span className="flex items-center justify-end gap-1.5 text-[0.6875rem] uppercase tracking-[0.14em] text-slate-400">
                     Next <ArrowRight style={{ width: 13, height: 13 }} />
                   </span>
                   <span className="block mt-0.5 text-sm font-semibold text-slate-700">{next.section.title}</span>
@@ -168,11 +180,11 @@ function Shell() {
               type="button"
               aria-label="Close configuration"
               onClick={() => setConfigOpen(false)}
-              className="fixed inset-0 z-30 bg-black/20 xl:hidden cursor-default"
+              className="fixed inset-0 z-30 bg-[var(--c-scrim)] xl:hidden cursor-default"
             />
-            <aside className="fixed xl:sticky right-0 top-0 xl:top-24 z-40 xl:z-auto h-full xl:h-auto xl:self-start w-[min(22rem,90vw)] shrink-0 overflow-y-auto xl:max-h-[calc(100vh-8rem)] custom-scrollbar glass-strong xl:bg-transparent p-4 xl:p-0">
+            <aside className="focus-dim fixed xl:sticky right-0 top-0 xl:top-20 z-40 xl:z-auto h-full xl:h-auto xl:self-start w-[min(22rem,90vw)] shrink-0 overflow-y-auto xl:max-h-[calc(100vh-6.5rem)] custom-scrollbar glass-strong xl:bg-transparent p-4 xl:p-0">
               <div className="flex items-center justify-between mb-3 xl:hidden">
-                <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Configuration</p>
+                <p className="text-[0.6875rem] uppercase tracking-[0.14em] text-slate-400">Configuration</p>
                 <button type="button" onClick={() => setConfigOpen(false)} className="btn-ghost text-xs">
                   <X style={{ width: 14, height: 14 }} />
                 </button>
@@ -183,9 +195,15 @@ function Shell() {
         )}
       </div>
 
-      <footer className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 py-6 text-[11px] text-slate-400 border-t border-[var(--color-divider)]">
-        {CURRICULUM.length} parts · one reading order · every number recomputed from your configuration.
+      <footer className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 py-6 text-xs text-slate-400 border-t border-[var(--color-divider)] flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
+        <span>
+          {CURRICULUM.length} parts · one reading order · every number recomputed from your configuration.
+        </span>
+        <a href="https://denimpatel.github.io/interactive-courses/" className="text-[var(--c-accent-ink)] hover:underline">
+          More interactive guides &rarr;
+        </a>
       </footer>
     </div>
+    </MotionConfig>
   );
 }

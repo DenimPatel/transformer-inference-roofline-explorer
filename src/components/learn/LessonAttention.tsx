@@ -60,7 +60,7 @@ export default function LessonAttention({ onComplete }: { onComplete: () => void
         <SliderControl label="Sequence length (S)" value={seq} min={128} max={65536} step={128} onChange={setSeq} unit="tkns" logScale conceptId="attention-intensity" />
         <SliderControl label="Model dim (D)" value={D} min={1024} max={16384} step={256} onChange={setD} unit="" conceptId="attention-flops" />
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] text-slate-500">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[0.6875rem] text-slate-500">
           <div className="glass rounded-xl px-3 py-2">
             <div className="text-slate-400">Prefill intensity</div>
             <div className="font-mono font-bold text-slate-800">{prefillI.toFixed(0)}</div>
@@ -90,14 +90,14 @@ export default function LessonAttention({ onComplete }: { onComplete: () => void
               <XAxis dataKey="seq" scale="log" type="number" domain={['dataMin', 'dataMax']} tickFormatter={(v) => (v >= 1000 ? `${v / 1000}k` : v)} label={{ value: 'Sequence length (log)', position: 'bottom', fontSize: 10 }} />
               <YAxis scale="log" type="number" domain={[0.5, 'dataMax']} tickFormatter={(v) => (v < 1 ? v.toFixed(1) : v.toFixed(0))} label={{ value: 'Intensity (FLOPs/B, log)', angle: -90, position: 'insideLeft', fontSize: 10 }} />
               <Tooltip formatter={(v: any, n: any) => [`${Number(v).toFixed(2)}`, n]} labelFormatter={(v: any) => `S=${v}`} />
-              <ReferenceLine y={RIDGE} stroke="#d6006c" strokeDasharray="3 3" label={{ position: 'top', value: 'Ridge', fill: '#d6006c', fontSize: 10 }} />
-              <Line type="monotone" dataKey="prefill" name="Prefill (≈ S/2)" stroke="#2f8365" strokeWidth={3} dot={false} />
-              <Line type="monotone" dataKey="gen" name="Generation (≈1)" stroke="#c8963a" strokeWidth={3} dot={false} />
+              <ReferenceLine y={RIDGE} stroke="var(--chart-memory)" strokeDasharray="3 3" label={{ position: 'top', value: 'Ridge', fill: 'var(--chart-memory)', fontSize: 10 }} />
+              <Line type="monotone" dataKey="prefill" name="Prefill (≈ S/2)" stroke="var(--chart-compute)" strokeWidth={3} dot={false} />
+              <Line type="monotone" dataKey="gen" name="Generation (≈1)" stroke="var(--chart-series-3)" strokeWidth={3} dot={false} />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
         </Figure>
-        <div className="flex flex-wrap gap-2 mt-3 text-[11px] text-slate-500">
+        <div className="flex flex-wrap gap-2 mt-3 text-[0.6875rem] text-slate-500">
           <span className="glass-chip px-2.5 py-1">At S={seq.toLocaleString()}: prefill intensity {prefillI.toFixed(0)} {prefillI >= RIDGE ? '(compute-bound ✓)' : '(still below ridge)'}</span>
           <span className="glass-chip px-2.5 py-1">Generation intensity ≈ {genI.toFixed(2)} — always bandwidth-bound</span>
         </div>
@@ -111,22 +111,22 @@ export default function LessonAttention({ onComplete }: { onComplete: () => void
             <AreaChart data={flopsCurve} margin={{ top: 10, right: 20, left: -10, bottom: 10 }}>
               <defs>
                 <linearGradient id="attnFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#006786" stopOpacity={0.4} />
-                  <stop offset="95%" stopColor="#006786" stopOpacity={0.05} />
+                  <stop offset="5%" stopColor="var(--color-accent-700)" stopOpacity={0.4} />
+                  <stop offset="95%" stopColor="var(--color-accent-700)" stopOpacity={0.05} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.4} />
               <XAxis dataKey="seq" scale="log" type="number" domain={['dataMin', 'dataMax']} tickFormatter={(v) => (v >= 1000 ? `${v / 1000}k` : v)} label={{ value: 'Sequence length (log)', position: 'bottom', fontSize: 10 }} />
               <YAxis tickFormatter={(v) => Number(v).toFixed(1)} label={{ value: 'Attention / matmul FLOPs', angle: -90, position: 'insideLeft', fontSize: 10 }} />
               <Tooltip formatter={(v: any) => [`${Number(v).toFixed(2)}×`, 'Attention vs matmul']} labelFormatter={(v: any) => `S=${Number(v).toLocaleString()}`} />
-              <ReferenceLine y={1} stroke="#2f8365" strokeDasharray="3 3" label={{ position: 'top', value: 'attention = matmul (T = 8D)', fill: '#2f8365', fontSize: 10 }} />
-              <ReferenceLine x={crossover} stroke="#d6006c" strokeDasharray="3 3" label={{ position: 'top', value: `${crossover.toLocaleString()}`, fill: '#d6006c', fontSize: 10 }} />
-              <Area type="monotone" dataKey="ratio" name="Attn/Matmul" stroke="#006786" strokeWidth={3} fill="url(#attnFill)" />
+              <ReferenceLine y={1} stroke="var(--chart-compute)" strokeDasharray="3 3" label={{ position: 'top', value: 'attention = matmul (T = 8D)', fill: 'var(--chart-compute)', fontSize: 10 }} />
+              <ReferenceLine x={crossover} stroke="var(--chart-memory)" strokeDasharray="3 3" label={{ position: 'top', value: `${crossover.toLocaleString()}`, fill: 'var(--chart-memory)', fontSize: 10 }} />
+              <Area type="monotone" dataKey="ratio" name="Attn/Matmul" stroke="var(--color-accent-700)" strokeWidth={3} fill="url(#attnFill)" />
             </AreaChart>
           </ResponsiveContainer>
         </div>
         </Figure>
-        <p className="text-[13px] text-slate-600 mt-3">
+        <p className="text-[0.8125rem] text-slate-600 mt-3">
           For D ≈ {D.toLocaleString()} the crossover is near {crossover.toLocaleString()} tokens. Below that, MLP matmuls dominate FLOPs; attention is a
           memory problem (KV cache) even when it is not a FLOPs problem.
         </p>

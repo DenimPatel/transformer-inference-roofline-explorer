@@ -10,7 +10,7 @@ export default function Moe({ onComplete }: { onComplete: () => void }) {
   useEffect(() => { onComplete(); }, [onComplete]);
   return (
     <>
-      <p className="text-base text-slate-600 leading-relaxed max-w-[62ch]">
+      <p className="text-base text-slate-600 leading-relaxed max-w-[var(--pref-measure)]">
         Until now &ldquo;the model&rdquo; has been one number of parameters. Mixture-of-experts
         models split that in two: a large <strong>resident</strong> set that must sit in memory,
         and a much smaller <strong>active</strong> set that participates in any given token. The

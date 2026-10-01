@@ -12,8 +12,8 @@ function Group({ title, icon, children, conceptId }: {
 }) {
   return (
     <div className="glass-card p-5">
-      <h2 className="flex items-center text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-4">
-        <span className="mr-2 p-1.5 rounded-lg bg-white">{icon}</span> {title}
+      <h2 className="flex items-center text-[0.6875rem] font-bold text-slate-400 uppercase tracking-widest mb-4">
+        <span className="mr-2 p-1.5 rounded-lg bg-surface">{icon}</span> {title}
         {conceptId && <span className="ml-auto normal-case"><InfoPopover conceptId={conceptId} iconSize={14} /></span>}
       </h2>
       <div className="space-y-4">{children}</div>
@@ -76,7 +76,7 @@ export default function ConfigPanel({ showComparison = false }: { showComparison
             ))}
           </select>
           {findModel(c.activeModelId)?.description && (
-            <p className="mt-2 text-[11px] leading-snug text-slate-500">{findModel(c.activeModelId)?.description}</p>
+            <p className="mt-2 text-[0.6875rem] leading-snug text-slate-500">{findModel(c.activeModelId)?.description}</p>
           )}
         </div>
         <SliderControl label="Total Parameters" value={c.totalParamsB} min={1} max={10000} step={1} onChange={c.setTotalParamsB} unit="B" />
@@ -88,7 +88,7 @@ export default function ConfigPanel({ showComparison = false }: { showComparison
             {([{ v: 0.5, l: 'FP4' }, { v: 1, l: 'FP8' }, { v: 2, l: 'FP16/BF16' }] as const).map((o) => (
               <button key={o.v} type="button" onClick={() => c.setBytesPerParam(o.v)}
                 className={cn('flex-1 text-xs py-1.5 rounded-lg transition-colors cursor-pointer',
-                  c.bytesPerParam === o.v ? 'bg-white shadow text-slate-900 font-bold' : 'text-slate-500')}>
+                  c.bytesPerParam === o.v ? 'bg-surface shadow text-slate-900 font-bold' : 'text-slate-500')}>
                 {o.l}
               </button>
             ))}

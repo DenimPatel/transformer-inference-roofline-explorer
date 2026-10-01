@@ -1,4 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="14" fill="#C2410C"/>
-  <text x="32" y="43" text-anchor="middle" font-family="Manrope, Arial, sans-serif" font-weight="800" font-size="30" fill="#FFFFFF">TR</text>
+  <rect width="64" height="64" rx="14" fill="#0069D6"/>
+  <path d="M12 46 L26 22 L38 22 L52 22" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="26" cy="22" r="3.5" fill="#FFFFFF"/>
 </svg>

@@ -43,9 +43,9 @@ export default function LessonRoofline({ onComplete }: { onComplete: () => void 
             { k: 'Capacity', v: '80 GB', d: 'A hard wall, not a slope' },
           ].map((x) => (
             <div key={x.k} className="glass rounded-xl px-3 py-2">
-              <div className="text-[11px] text-slate-400">{x.k}</div>
+              <div className="text-[0.6875rem] text-slate-400">{x.k}</div>
               <div className="font-mono font-bold text-slate-800">{x.v}</div>
-              <div className="text-[10px] text-slate-400 mt-0.5 font-mono">{x.d}</div>
+              <div className="text-[0.625rem] text-slate-400 mt-0.5 font-mono">{x.d}</div>
             </div>
           ))}
         </div>
@@ -83,7 +83,7 @@ export default function LessonRoofline({ onComplete }: { onComplete: () => void 
           />
         </div>
 
-        <p className="text-[12px] text-slate-400">
+        <p className="text-[0.75rem] text-slate-400">
           For this H100 the ridge sits at ≈{ridge.toFixed(0)} FLOPs/B. Anything below it wastes FLOPs — which is exactly
           what happens to most transformer <em>generation</em> steps (see “Prefill vs generation”).
         </p>

@@ -131,11 +131,11 @@ function SectionCard({ id, icon: IconCmp, color, number, title, children }: any)
 function HeroKpi({ icon: I, label, value, sub }: any) {
   return (
     <div className="glass rounded-xl p-3 text-left">
-      <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-1">
+      <div className="flex items-center gap-1.5 text-[0.6875rem] font-semibold uppercase tracking-wide text-slate-400 mb-1">
         <I className="w-3.5 h-3.5" /> {label}
       </div>
       <div className="font-mono text-lg font-bold text-slate-900 leading-none">{value}</div>
-      <div className="text-[11px] text-slate-400 mt-1 truncate">{sub}</div>
+      <div className="text-[0.6875rem] text-slate-400 mt-1 truncate">{sub}</div>
     </div>
   );
 }
@@ -203,8 +203,8 @@ export function ServingFit() {
           {HARDWARE_PROFILES.filter((h) => GPU_IDS.includes(h.id)).map((h) => (
             <button key={h.id} type="button" onClick={() => setHwId(h.id)}
               className={cn('rounded-xl px-4 py-2 text-sm font-semibold transition-colors border',
-                hwId === h.id ? 'bg-accent text-white border-accent' : 'bg-white text-slate-600 border-slate-200 hover:border-accent/50')}>
-              {h.id} <span className="text-[10px] opacity-80">({h.arch})</span>
+                hwId === h.id ? 'bg-accent-solid text-white border-accent' : 'bg-surface text-slate-600 border-slate-200 hover:border-accent/50')}>
+              {h.id} <span className="text-[0.625rem] opacity-80">({h.arch})</span>
             </button>
           ))}
         </div>
@@ -260,8 +260,8 @@ function FitSection({ hw, model, precision, setPrecision }: any) {
         <div className="grid grid-cols-3 gap-1.5 mb-4">
           {PRECISIONS.map((p) => (
             <button key={p.bytes} type="button" onClick={() => setPrecision(p.bytes)}
-              className={cn('glass rounded-md py-1.5 text-[11px] font-semibold transition-colors',
-                precision === p.bytes ? 'bg-accent text-white' : 'text-slate-600 hover:border-accent/40')}>
+              className={cn('glass rounded-md py-1.5 text-[0.6875rem] font-semibold transition-colors',
+                precision === p.bytes ? 'bg-accent-solid text-white' : 'text-slate-600 hover:border-accent/40')}>
               {p.label}
             </button>
           ))}

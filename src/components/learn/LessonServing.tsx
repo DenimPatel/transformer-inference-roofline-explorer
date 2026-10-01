@@ -83,7 +83,7 @@ export default function LessonServing({ onComplete }: { onComplete: () => void }
                 <h4 className="font-bold text-slate-800 text-sm">{f.title}</h4>
                 <ConceptTag id={f.tag} />
               </div>
-              <p className="text-[12.5px] leading-relaxed text-slate-600">{f.body}</p>
+              <p className="text-[0.7812rem] leading-relaxed text-slate-600">{f.body}</p>
             </div>
           ))}
         </div>
@@ -96,7 +96,7 @@ export default function LessonServing({ onComplete }: { onComplete: () => void }
           For a prefill time <code className="text-xs">P_ms</code>, decode time <code className="text-xs">D_ms</code> and decode batch{' '}
           <code className="text-xs">B</code>:
         </p>
-        <div className="flex flex-wrap gap-2 text-[12px] text-slate-600 font-mono">
+        <div className="flex flex-wrap gap-2 text-[0.75rem] text-slate-600 font-mono">
           <span className="glass-chip px-2.5 py-1">prefill servers ≈ G · B · (P_ms / D_ms)</span>
         </div>
 
@@ -109,15 +109,15 @@ export default function LessonServing({ onComplete }: { onComplete: () => void }
 
         <div className="glass rounded-xl p-4 flex items-center justify-between gap-3">
           <div>
-            <div className="text-[11px] text-slate-400">Required prefill servers (P)</div>
+            <div className="text-[0.6875rem] text-slate-400">Required prefill servers (P)</div>
             <div className="text-2xl font-mono font-bold text-slate-800">{pDisplay}</div>
-            <div className="text-[11px] text-slate-400">for G = {genServers} generate server{genServers > 1 ? 's' : ''}</div>
+            <div className="text-[0.6875rem] text-slate-400">for G = {genServers} generate server{genServers > 1 ? 's' : ''}</div>
           </div>
           <div className={cn('text-sm font-bold rounded-xl px-3 py-2', pDisplay <= 8 ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700')}>
             {pDisplay <= 8 ? 'Fleet roughly balanced' : 'Prefill-bound: add prefill capacity (or shrink KV/prefix caching)'}
           </div>
         </div>
-        <p className="text-[12.5px] text-slate-500">
+        <p className="text-[0.7812rem] text-slate-500">
           For the textbook LLaMA-70B bf16 figures (910 ms prefill, 19 ms decode at BS=32) one generate server needs ≈3 prefill
           servers — the P = 3G rule. Prefix caching and smaller KV caches cut the prefill side of this balance.
         </p>

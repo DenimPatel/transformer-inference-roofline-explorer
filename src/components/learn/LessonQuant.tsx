@@ -52,10 +52,10 @@ export default function LessonQuant({ onComplete }: { onComplete: () => void }) 
               <XAxis dataKey="name" tick={{ fontSize: 9.5 }} />
               <YAxis tickFormatter={(v) => (v === 4000 ? '∞' : `${v}`)} label={{ value: 'B_crit', angle: -90, position: 'insideLeft', fontSize: 10 }} />
               <Tooltip formatter={(v: any, n: any, p: any) => [p.payload.infinite ? '∞ (always bound)' : `${Number(v).toFixed(0)}`, 'Critical batch']} labelFormatter={(l, payload) => payload?.[0]?.payload?.note || l} />
-              <ReferenceLine y={B} stroke="#605d5d" strokeDasharray="3 3" label={{ position: 'top', value: `your B=${B}`, fill: '#605d5d', fontSize: 10 }} />
+              <ReferenceLine y={B} stroke="var(--color-slate-600)" strokeDasharray="3 3" label={{ position: 'top', value: `your B=${B}`, fill: 'var(--color-slate-600)', fontSize: 10 }} />
               <Bar dataKey="bCrit" radius={[6, 6, 0, 0]}>
                 {data.map((d) => (
-                  <Cell key={d.id} fill={d.infinite ? '#ff458e' : B >= d.bCrit ? '#2f8365' : '#cbeeff'} />
+                  <Cell key={d.id} fill={d.infinite ? 'var(--chart-memory)' : B >= d.bCrit ? 'var(--chart-compute)' : 'var(--color-accent-200)'} />
                 ))}
               </Bar>
             </BarChart>
@@ -66,8 +66,8 @@ export default function LessonQuant({ onComplete }: { onComplete: () => void }) 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {data.map((d) => (
             <div key={d.id} className="glass rounded-xl px-3 py-2 flex items-center justify-between gap-2">
-              <span className="text-[12px] text-slate-600">{d.name}</span>
-              <span className={cn('text-[11px] font-bold', d.infinite ? 'text-rose-500' : isComputeAt(d.bCrit) ? 'text-emerald-600' : 'text-amber-600')}>
+              <span className="text-[0.75rem] text-slate-600">{d.name}</span>
+              <span className={cn('text-[0.6875rem] font-bold', d.infinite ? 'text-rose-500' : isComputeAt(d.bCrit) ? 'text-emerald-600' : 'text-amber-600')}>
                 {d.infinite ? 'always memory-bound' : B >= d.bCrit ? 'compute-bound' : 'memory-bound'}
               </span>
             </div>

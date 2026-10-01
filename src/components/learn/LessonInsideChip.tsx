@@ -24,10 +24,10 @@ export default function LessonInsideChip({ onComplete }: { onComplete: () => voi
   const arrayIntensity = n;
 
   const ops = useMemo(() => ([
-    { name: 'Dot product', intensity: 0.5, unit: 'VPU', color: '#c00a60' },
-    { name: 'Softmax / layernorm', intensity: 1.5, unit: 'VPU', color: '#c8963a' },
-    { name: 'Matmul, B=64', intensity: 64, unit: 'MXU', color: '#1186ac' },
-    { name: 'Matmul, B=1024', intensity: 1024, unit: 'MXU', color: '#7b4b90' },
+    { name: 'Dot product', intensity: 0.5, unit: 'VPU', color: 'var(--chart-memory)' },
+    { name: 'Softmax / layernorm', intensity: 1.5, unit: 'VPU', color: 'var(--chart-series-3)' },
+    { name: 'Matmul, B=64', intensity: 64, unit: 'MXU', color: 'var(--color-accent-600)' },
+    { name: 'Matmul, B=1024', intensity: 1024, unit: 'MXU', color: 'var(--chart-series-4)' },
   ]), []);
 
   return (
@@ -58,14 +58,14 @@ export default function LessonInsideChip({ onComplete }: { onComplete: () => voi
 
         <div className="grid sm:grid-cols-2 gap-3">
           <div className="glass rounded-xl p-4">
-            <div className="text-[11px] uppercase tracking-wide text-slate-400">Matrix unit (MXU)</div>
+            <div className="text-[0.6875rem] uppercase tracking-wide text-slate-400">Matrix unit (MXU)</div>
             <div className="font-mono font-bold text-slate-900 text-lg mt-1">{(MXU_FLOPS / 1e12).toFixed(0)} TFLOP/s</div>
             <div className="text-xs text-slate-500 mt-1">
               ridge = <span className="font-mono font-bold text-rose-600">{MXU_RIDGE.toFixed(0)}</span> FLOPs/byte
             </div>
           </div>
           <div className="glass rounded-xl p-4">
-            <div className="text-[11px] uppercase tracking-wide text-slate-400">Vector unit (VPU)</div>
+            <div className="text-[0.6875rem] uppercase tracking-wide text-slate-400">Vector unit (VPU)</div>
             <div className="font-mono font-bold text-slate-900 text-lg mt-1">{(VPU_FLOPS / 1e12).toFixed(0)} TFLOP/s</div>
             <div className="text-xs text-slate-500 mt-1">
               ridge = <span className="font-mono font-bold text-amber-600">{VPU_RIDGE.toFixed(1)}</span> FLOPs/byte
@@ -103,15 +103,15 @@ export default function LessonInsideChip({ onComplete }: { onComplete: () => voi
         />
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           <div className="glass rounded-xl px-3 py-2">
-            <div className="text-[11px] text-slate-400">MACs per cycle</div>
+            <div className="text-[0.6875rem] text-slate-400">MACs per cycle</div>
             <div className="font-mono font-bold text-slate-800">{(n * n).toLocaleString()}</div>
           </div>
           <div className="glass rounded-xl px-3 py-2">
-            <div className="text-[11px] text-slate-400">New values loaded</div>
+            <div className="text-[0.6875rem] text-slate-400">New values loaded</div>
             <div className="font-mono font-bold text-slate-800">{n}</div>
           </div>
           <div className="glass rounded-xl px-3 py-2">
-            <div className="text-[11px] text-slate-400">Structural intensity</div>
+            <div className="text-[0.6875rem] text-slate-400">Structural intensity</div>
             <div className="font-mono font-bold text-slate-800">≈ {arrayIntensity}</div>
           </div>
         </div>
@@ -140,10 +140,10 @@ export default function LessonInsideChip({ onComplete }: { onComplete: () => voi
                 tickFormatter={(v: any) => (v < 1 ? v.toFixed(1) : v.toFixed(0))}
                 label={{ value: 'Intensity (FLOPs/B, log)', angle: -90, position: 'insideLeft', fontSize: 10 }} />
               <Tooltip formatter={(v: any, _n: any, p: any) => [`${Number(v).toFixed(1)} FLOPs/B`, `Runs on the ${p.payload.unit}`]} />
-              <ReferenceLine y={VPU_RIDGE} stroke="#c8963a" strokeDasharray="3 3"
-                label={{ position: 'top', value: `VPU ridge ${VPU_RIDGE.toFixed(0)}`, fill: '#c8963a', fontSize: 10 }} />
-              <ReferenceLine y={MXU_RIDGE} stroke="#d6006c" strokeDasharray="3 3"
-                label={{ position: 'top', value: `MXU ridge ${MXU_RIDGE.toFixed(0)}`, fill: '#d6006c', fontSize: 10 }} />
+              <ReferenceLine y={VPU_RIDGE} stroke="var(--chart-series-3)" strokeDasharray="3 3"
+                label={{ position: 'top', value: `VPU ridge ${VPU_RIDGE.toFixed(0)}`, fill: 'var(--chart-series-3)', fontSize: 10 }} />
+              <ReferenceLine y={MXU_RIDGE} stroke="var(--chart-memory)" strokeDasharray="3 3"
+                label={{ position: 'top', value: `MXU ridge ${MXU_RIDGE.toFixed(0)}`, fill: 'var(--chart-memory)', fontSize: 10 }} />
               <Bar dataKey="intensity" radius={[6, 6, 0, 0]}>
                 {ops.map((o) => <Cell key={o.name} fill={o.color} />)}
               </Bar>

@@ -52,12 +52,12 @@ export default function Checkpoint({ questions, onComplete, congrats = 'Lesson c
                 {q.options.map((opt, oi) => {
                   const selected = picked === oi;
                   const isCorrect = q.answer === oi;
-                  let cls = 'glass-chip px-3 py-2 text-[13px] text-slate-600 hover:bg-slate-100';
+                  let cls = 'glass-chip px-3 py-2 text-[0.8125rem] text-slate-600 hover:bg-slate-100';
                   if (!revealed) {
-                    if (selected) cls = 'px-3 py-2 text-[13px] rounded-full bg-[var(--color-accent)] text-white';
+                    if (selected) cls = 'px-3 py-2 text-[0.8125rem] rounded-full bg-accent-solid text-white';
                   } else {
-                    if (isCorrect) cls = 'px-3 py-2 text-[13px] rounded-full bg-emerald-100 text-emerald-700';
-                    else if (selected) cls = 'px-3 py-2 text-[13px] rounded-full bg-rose-100 text-rose-700';
+                    if (isCorrect) cls = 'px-3 py-2 text-[0.8125rem] rounded-full bg-emerald-100 text-emerald-700';
+                    else if (selected) cls = 'px-3 py-2 text-[0.8125rem] rounded-full bg-rose-100 text-rose-700';
                   }
                   return (
                     <button
@@ -83,7 +83,7 @@ export default function Checkpoint({ questions, onComplete, congrats = 'Lesson c
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
-                    className={cn('text-[12px] pl-2', answers[qi] === q.answer ? 'text-emerald-600' : 'text-rose-500')}
+                    className={cn('text-[0.75rem] pl-2', answers[qi] === q.answer ? 'text-emerald-600' : 'text-rose-500')}
                   >
                     {q.explain}
                   </motion.p>
@@ -101,7 +101,7 @@ export default function Checkpoint({ questions, onComplete, congrats = 'Lesson c
             disabled={!allAnswered}
             onClick={() => setSubmitted(true)}
             className="inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-semibold text-white disabled:opacity-40 transition-opacity"
-            style={{ background: 'var(--color-accent)' }}
+            style={{ background: 'var(--c-accent-solid)' }}
           >
             Check answers
           </button>

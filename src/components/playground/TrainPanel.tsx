@@ -132,7 +132,7 @@ export default function TrainPanel({ model, trained, onTrained, onUntrained }: {
               <button type="button" onClick={() => handleTrain()}
                 disabled={docs.length === 0}
                 className="rounded-xl px-4 py-2 text-sm font-semibold text-white disabled:opacity-40"
-                style={{ background: '#7b4b90' }}>
+                style={{ background: 'var(--chart-series-4)' }}>
                 <span className="inline-flex items-center gap-1.5">
                   <GraduationCap className="w-3.5 h-3.5" /> Train
                 </span>
@@ -140,12 +140,12 @@ export default function TrainPanel({ model, trained, onTrained, onUntrained }: {
             )}
             <button type="button" onClick={() => handleSampleNames()}
               disabled={training || !trained}
-              className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-600 bg-white hover:bg-white disabled:opacity-40">
+              className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-600 bg-surface hover:bg-surface disabled:opacity-40">
               <span className="inline-flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5" /> Sample names</span>
             </button>
             <button type="button" onClick={() => handleRandomize()}
               disabled={training}
-              className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-600 bg-white hover:bg-white">
+              className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-600 bg-surface hover:bg-surface">
               <span className="inline-flex items-center gap-1.5"><RotateCcw className="w-3.5 h-3.5" /> Random weights</span>
             </button>
           </div>
@@ -154,19 +154,19 @@ export default function TrainPanel({ model, trained, onTrained, onUntrained }: {
         <div className="flex flex-wrap items-center gap-3">
           <span className="text-xs font-semibold text-slate-600">Dataset:</span>
           <button type="button" onClick={() => handleLoadSample('inline')} disabled={training}
-            className="rounded-lg px-3 py-1.5 text-xs font-semibold bg-white hover:bg-white">30 inline names</button>
+            className="rounded-lg px-3 py-1.5 text-xs font-semibold bg-surface hover:bg-surface">30 inline names</button>
           <button type="button" onClick={() => handleLoadSample('names')} disabled={training}
-            className="rounded-lg px-3 py-1.5 text-xs font-semibold bg-white hover:bg-white">
+            className="rounded-lg px-3 py-1.5 text-xs font-semibold bg-surface hover:bg-surface">
             Load names.txt subset (300)
           </button>
           <button type="button" onClick={() => handleLoadFull()} disabled={training || loadingFull}
-            className="rounded-lg px-3 py-1.5 text-xs font-semibold bg-white hover:bg-white">
+            className="rounded-lg px-3 py-1.5 text-xs font-semibold bg-surface hover:bg-surface">
             <span className="inline-flex items-center gap-1.5">
               {loadingFull && <Loader2 className="w-3 h-3 animate-spin" />}
               Load full names.txt (32k)
             </span>
           </button>
-          <span className="text-[11px] text-slate-400">{docs.length} documents ready</span>
+          <span className="text-[0.6875rem] text-slate-400">{docs.length} documents ready</span>
         </div>
         {error && <p className="text-xs text-rose-500 font-semibold">{error}</p>}
       </div>
@@ -196,14 +196,14 @@ export default function TrainPanel({ model, trained, onTrained, onUntrained }: {
               </div>
             </Figure>
           )}
-          {trained && <p className="text-[11px] text-slate-400 mt-1">Adam ran for the full run — weights now produce corpus-like tokens.</p>}
+          {trained && <p className="text-[0.6875rem] text-slate-400 mt-1">Adam ran for the full run — weights now produce corpus-like tokens.</p>}
         </div>
 
         <div className="glass rounded-xl p-4">
           <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
             Hallucinated names <span className="normal-case font-normal">· inference on the trained model</span>
           </h4>
-          <p className="text-[11px] text-slate-400 mb-3">
+          <p className="text-[0.6875rem] text-slate-400 mb-3">
             Autoregressive sampling (temperature ~0.6), mirroring the reference&rsquo;s inference loop. Click
             <strong> Sample names</strong> after training.
           </p>
@@ -215,7 +215,7 @@ export default function TrainPanel({ model, trained, onTrained, onUntrained }: {
             <div className="flex flex-wrap gap-1.5">
               {samples.map((s, i) => (
                 <span key={i} className="rounded-lg px-2.5 py-1.5 text-sm font-bold text-white"
-                  style={{ background: '#7b4b90' }}>
+                  style={{ background: 'var(--chart-series-4)' }}>
                   {s}
                 </span>
               ))}

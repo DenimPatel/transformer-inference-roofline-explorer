@@ -61,11 +61,11 @@ function SectionCard({ id, icon: IconCmp, color, number, title, children }: any)
 function HeroKpi({ icon: I, label, value, sub }: any) {
   return (
     <div className="glass rounded-xl p-3 text-left">
-      <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-1">
+      <div className="flex items-center gap-1.5 text-[0.6875rem] font-semibold uppercase tracking-wide text-slate-400 mb-1">
         <I className="w-3.5 h-3.5" /> {label}
       </div>
       <div className="font-mono text-lg font-bold text-slate-900 leading-none">{value}</div>
-      <div className="text-[11px] text-slate-400 mt-1 truncate">{sub}</div>
+      <div className="text-[0.6875rem] text-slate-400 mt-1 truncate">{sub}</div>
     </div>
   );
 }
@@ -142,9 +142,9 @@ export function SystolicArray({ n = 4, rows = 6 }: { n?: number; rows?: number }
             const fed = cycle >= r;
             return (
               <g key={`in-${r}`}>
-                <line x1={26} y1={y} x2={originX - 6} y2={y} stroke={fed ? C.sky : '#d7d3d3'} strokeWidth={2}
+                <line x1={26} y1={y} x2={originX - 6} y2={y} stroke={fed ? C.sky : 'var(--color-slate-300)'} strokeWidth={2}
                   strokeDasharray={fed ? undefined : '3 3'} />
-                <text x={12} y={y + 4} fontSize={11} fontWeight={700} fill={fed ? C.sky : '#d7d3d3'}>
+                <text x={12} y={y + 4} fontSize={11} fontWeight={700} fill={fed ? C.sky : 'var(--color-slate-300)'}>
                   x{r}
                 </text>
               </g>
@@ -157,18 +157,18 @@ export function SystolicArray({ n = 4, rows = 6 }: { n?: number; rows?: number }
               const st = cellState(r, c);
               const x = originX + c * (cellSize + gap);
               const y = originY + r * (cellSize + gap);
-              const fill = st === 'active' ? C.compute : st === 'done' ? '#eae7e7' : '#f8f4f4';
-              const stroke = st === 'active' ? C.compute : '#d7d3d3';
+              const fill = st === 'active' ? C.compute : st === 'done' ? 'var(--color-slate-200)' : 'var(--color-slate-100)';
+              const stroke = st === 'active' ? C.compute : 'var(--color-slate-300)';
               return (
                 <g key={`c-${r}-${c}`}>
                   <rect x={x} y={y} width={cellSize} height={cellSize} rx={10}
                     fill={fill} fillOpacity={st === 'active' ? 0.22 : 1} stroke={stroke} strokeWidth={st === 'active' ? 2.5 : 1} />
                   <text x={x + cellSize / 2} y={y + cellSize / 2 - 3} textAnchor="middle" fontSize={11}
-                    fontWeight={700} fill={st === 'active' ? '#17543f' : '#928e8e'}>
+                    fontWeight={700} fill={st === 'active' ? 'var(--chart-compute)' : 'var(--color-slate-400)'}>
                     w{r}{c}
                   </text>
                   <text x={x + cellSize / 2} y={y + cellSize / 2 + 12} textAnchor="middle" fontSize={9}
-                    fill={st === 'active' ? C.compute : '#d7d3d3'}>
+                    fill={st === 'active' ? C.compute : 'var(--color-slate-300)'}>
                     {st === 'active' ? 'MAC' : st === 'done' ? 'done' : 'idle'}
                   </text>
                 </g>
@@ -183,10 +183,10 @@ export function SystolicArray({ n = 4, rows = 6 }: { n?: number; rows?: number }
             const ready = cycle >= n - 1 + c;
             return (
               <g key={`out-${c}`}>
-                <line x1={x} y1={yTop} x2={x} y2={yTop + 26} stroke={ready ? C.violet : '#d7d3d3'} strokeWidth={2}
+                <line x1={x} y1={yTop} x2={x} y2={yTop + 26} stroke={ready ? C.violet : 'var(--color-slate-300)'} strokeWidth={2}
                   strokeDasharray={ready ? undefined : '3 3'} />
                 <text x={x} y={yTop + 42} textAnchor="middle" fontSize={11} fontWeight={700}
-                  fill={ready ? C.violet : '#d7d3d3'}>
+                  fill={ready ? C.violet : 'var(--color-slate-300)'}>
                   z{c}
                 </text>
               </g>
@@ -250,7 +250,7 @@ function MemoryTiers({ hw }: { hw: HardwareProfile }) {
       <div className="overflow-x-auto custom-scrollbar">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-[11px] uppercase tracking-wide text-slate-400 border-b border-slate-200">
+            <tr className="text-[0.6875rem] uppercase tracking-wide text-slate-400 border-b border-slate-200">
               <th className="py-2 pr-3 text-left">Tier</th>
               <th className="py-2 pr-3 text-right">Size</th>
               <th className="py-2 pr-3 text-right">Bandwidth</th>
@@ -262,7 +262,7 @@ function MemoryTiers({ hw }: { hw: HardwareProfile }) {
               <tr key={t.name} className="border-b border-slate-100 align-top">
                 <td className="py-2 pr-3">
                   <div className="font-semibold text-slate-800">{t.name}</div>
-                  <div className="text-[11px] text-slate-400 leading-snug max-w-[22rem]">{t.note}</div>
+                  <div className="text-[0.6875rem] text-slate-400 leading-snug max-w-[22rem]">{t.note}</div>
                 </td>
                 <td className="py-2 pr-3 text-right font-mono text-slate-600">{t.size}</td>
                 <td className="py-2 pr-3 text-right font-mono text-slate-600">
@@ -361,7 +361,7 @@ export function HwTpu() {
                 <span className="w-2.5 h-2.5 rounded-full" style={{ background: u.color }} />
                 <span className="font-bold text-slate-900">{u.unit}</span>
               </div>
-              <div className="text-[11px] uppercase tracking-wide text-slate-400 mb-2">{u.full}</div>
+              <div className="text-[0.6875rem] uppercase tracking-wide text-slate-400 mb-2">{u.full}</div>
               <p className="text-sm text-slate-600 leading-relaxed">{u.body}</p>
             </div>
           ))}
@@ -448,7 +448,7 @@ export function HwGpu() {
         <div className="overflow-x-auto custom-scrollbar mb-6">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-[11px] uppercase tracking-wide text-slate-400 border-b border-slate-200">
+              <tr className="text-[0.6875rem] uppercase tracking-wide text-slate-400 border-b border-slate-200">
                 <th className="py-2 pr-3 text-left">GPU term</th>
                 <th className="py-2 pr-3 text-left">TPU equivalent</th>
                 <th className="py-2 pr-3 text-right">H100</th>
@@ -555,7 +555,7 @@ export function HwNetwork() {
               { l: 'Scale-out link', v: hw.scaleOutBwGBs ? `${fmtNum(hw.scaleOutBwGBs, 2)} GB/s` : '—' },
             ].map((x) => (
               <div key={x.l} className="glass rounded-lg p-3">
-                <div className="text-[11px] uppercase tracking-wide text-slate-400">{x.l}</div>
+                <div className="text-[0.6875rem] uppercase tracking-wide text-slate-400">{x.l}</div>
                 <div className="font-mono font-bold text-slate-900 mt-1 text-sm">{x.v}</div>
               </div>
             ))}

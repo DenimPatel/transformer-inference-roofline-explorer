@@ -23,23 +23,23 @@ export default function ChapterRail({
   return (
     <nav aria-label="Contents" className="text-sm">
       <div className="pb-4 mb-4 border-b border-slate-200">
-        <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">Contents</p>
+        <p className="text-[0.6875rem] uppercase tracking-[0.14em] text-slate-400">Contents</p>
         <p className="mt-1 text-xs text-slate-500">
           {FLAT_SECTIONS.length} sections · about {TOTAL_MINUTES} min
         </p>
         <div className="mt-2 h-1 bg-slate-200 overflow-hidden">
           <div
             className="h-full transition-[width] duration-500"
-            style={{ width: `${pct}%`, background: 'var(--color-accent)' }}
+            style={{ width: `${pct}%`, background: 'var(--c-accent-solid)' }}
           />
         </div>
-        <p className="mt-1 text-[11px] text-slate-400">{done} of {FLAT_SECTIONS.length} read</p>
+        <p className="mt-1 text-[0.6875rem] text-slate-400">{done} of {FLAT_SECTIONS.length} read</p>
       </div>
 
       <ol className="space-y-5">
         {CURRICULUM.map((part) => (
           <li key={part.id}>
-            <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">{part.label}</p>
+            <p className="text-[0.6875rem] uppercase tracking-[0.14em] text-slate-400">{part.label}</p>
             <p className="text-sm font-semibold text-slate-700 leading-snug">{part.title}</p>
             <ol className="mt-1.5 space-y-0.5">
               {part.sections.map((s) => {
@@ -73,7 +73,7 @@ export default function ChapterRail({
       </ol>
 
       <div className="mt-6 pt-4 border-t border-slate-200 space-y-1">
-        <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400 pb-1">The bench</p>
+        <p className="text-[0.6875rem] uppercase tracking-[0.14em] text-slate-400 pb-1">The bench</p>
         {[
           { label: 'Glossary', icon: BookOpen, action: onOpenGlossary },
           { label: 'Problems', icon: PenLine, action: () => onNavigate('problems') },

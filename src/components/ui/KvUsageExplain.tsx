@@ -1,8 +1,9 @@
 import React from 'react';
 import { cn } from '../../lib/utils';
+import { tint } from '../../lib/theme';
 
-const COLOR_K = '#0088b0';
-const COLOR_V = '#2f8365';
+const COLOR_K = 'var(--color-accent)';
+const COLOR_V = 'var(--chart-compute)';
 
 // Round an element of a K/V vector for the mini display.
 function fmtCell(v: number): string {
@@ -13,11 +14,11 @@ function fmtCell(v: number): string {
 function VecRow({ label, values, color }: { label: string; values: number[]; color: string }) {
   return (
     <div className="flex items-center gap-1.5">
-      <span className="text-[9px] font-black w-3" style={{ color }}>{label}</span>
+      <span className="text-[0.5625rem] font-black w-3" style={{ color }}>{label}</span>
       <div className="flex gap-1">
         {values.map((v, i) => (
-          <span key={i} className="rounded px-1 py-0.5 text-[9px] font-mono"
-            style={{ backgroundColor: `${color}16`, color }}>
+          <span key={i} className="rounded px-1 py-0.5 text-[0.5625rem] font-mono"
+            style={{ backgroundColor: tint(color, 9), color }}>
             {fmtCell(v)}
           </span>
         ))}
@@ -61,7 +62,7 @@ export default function KvUsageExplain() {
           softmax turns them into <strong>attention weights</strong>. So K decides <em>how much</em> each earlier
           position gets to influence the output — it is the <strong>gate</strong> that selects where to look.
         </p>
-        <div className="font-mono text-[10px] text-slate-500 space-y-1.5">
+        <div className="font-mono text-[0.625rem] text-slate-500 space-y-1.5">
           <div className="flex justify-between"><span>score(k₀)</span><span>{score0.toFixed(2)} → w = {w0.toFixed(2)}</span></div>
           <div className="flex justify-between"><span>score(k₁)</span><span>{score1.toFixed(2)} → w = {w1.toFixed(2)}</span></div>
         </div>
@@ -79,19 +80,19 @@ export default function KvUsageExplain() {
           into the next token&rsquo;s hidden state.
         </p>
         <div className="space-y-1.5 mb-3">
-          <div className="text-[10px] text-slate-400 font-mono">weights × cached V → output</div>
-          <div className="flex items-center gap-1.5 text-[10px] font-mono text-slate-500">
-            <span className="text-[9px] font-black w-3 text-white">{w0.toFixed(2)}</span>
+          <div className="text-[0.625rem] text-slate-400 font-mono">weights × cached V → output</div>
+          <div className="flex items-center gap-1.5 text-[0.625rem] font-mono text-slate-500">
+            <span className="text-[0.5625rem] font-black w-3 text-white">{w0.toFixed(2)}</span>
             <span className="text-slate-400">→</span>
             <VecRow label="V₀" values={v0} color={COLOR_V} />
           </div>
-          <div className="flex items-center gap-1.5 text-[10px] font-mono text-slate-500">
-            <span className="text-[9px] font-black w-3 text-white">{w1.toFixed(2)}</span>
+          <div className="flex items-center gap-1.5 text-[0.625rem] font-mono text-slate-500">
+            <span className="text-[0.5625rem] font-black w-3 text-white">{w1.toFixed(2)}</span>
             <span className="text-slate-400">→</span>
             <VecRow label="V₁" values={v1} color={COLOR_V} />
           </div>
-          <div className="flex items-center gap-1.5 text-[10px] font-mono text-slate-700 mt-1.5">
-            <span className="text-[9px] font-black w-3 text-slate-700">out</span>
+          <div className="flex items-center gap-1.5 text-[0.625rem] font-mono text-slate-700 mt-1.5">
+            <span className="text-[0.5625rem] font-black w-3 text-slate-700">out</span>
             <span className="text-slate-400">=</span>
             <VecRow label="Σ" values={out} color={COLOR_V} />
           </div>
@@ -105,11 +106,11 @@ export default function KvUsageExplain() {
           position so a later step can <em>score against every stored K</em> and <em>blend every stored V</em> without
           recomputing the prefix.
         </p>
-        <pre className="text-[11px] bg-slate-900 text-slate-100 rounded-lg p-3 overflow-x-auto font-mono leading-relaxed">
+        <pre className="text-[0.6875rem] code-block rounded-lg p-3 overflow-x-auto font-mono leading-relaxed">
 {`score = softmax(q · kᵢ / √d)   # K selects (match)
 out   = Σᵢ score[i] · vᵢ        # V supplies (content)`}
         </pre>
-        <p className="text-[10px] text-slate-400 mt-3">
+        <p className="text-[0.625rem] text-slate-400 mt-3">
           See <code className="bg-slate-100 px-1 rounded">microgpt.ts</code> forward() and{" "}
           <code className="bg-slate-100 px-1 rounded">reference/microgpt.py</code> (lines 126-130).
         </p>

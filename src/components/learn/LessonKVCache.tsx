@@ -58,7 +58,7 @@ export default function LessonKVCache({ onComplete }: { onComplete: () => void }
                     key={o.v}
                     type="button"
                     onClick={() => setKvFactor(o.v)}
-                    className={`flex-1 text-xs py-1.5 rounded-lg transition-colors ${kvFactor === o.v ? 'bg-white shadow text-slate-800 font-bold' : 'text-slate-500'}`}
+                    className={`flex-1 text-xs py-1.5 rounded-lg transition-colors ${kvFactor === o.v ? 'bg-surface shadow text-slate-800 font-bold' : 'text-slate-500'}`}
                   >
                     {o.l}
                   </button>
@@ -70,15 +70,15 @@ export default function LessonKVCache({ onComplete }: { onComplete: () => void }
           <div className="glass-strong rounded-2xl p-4 space-y-3">
             <div className="text-xs text-slate-500">HBM footprint vs 80 GB H100</div>
             <div className="space-y-2">
-              <Bar label="Parameters (7B @ bf16)" bytes={PARAMS_BYTES} color="#0088b0" />
-              <Bar label="KV cache" bytes={kvBytes} color="#c8963a" />
+              <Bar label="Parameters (7B @ bf16)" bytes={PARAMS_BYTES} color="var(--color-accent)" />
+              <Bar label="KV cache" bytes={kvBytes} color="var(--chart-series-3)" />
             </div>
             <div className="text-xs text-slate-500">
               Total:{' '}
               <span className="font-mono font-bold text-slate-700">{(total / 1e9).toFixed(1)} GB</span> ·{' '}
               {((total / H80) * 100).toFixed(0)}% of an H100
             </div>
-            <p className="text-[11px] text-slate-400">
+            <p className="text-[0.6875rem] text-slate-400">
               KV now uses {(kvBytes / 1e9).toFixed(1)} GB — {kvFactor < 1 ? `shrunken ${(1 / kvFactor).toFixed(0)}× by head sharing` : 'full MHA size'}.
             </p>
           </div>
@@ -120,7 +120,7 @@ function Bar({ label, bytes, color }: { label: string; bytes: number; color: str
   const pct = seg(bytes);
   return (
     <div>
-      <div className="flex justify-between text-[11px] mb-1">
+      <div className="flex justify-between text-[0.6875rem] mb-1">
         <span className="text-slate-600">{label}</span>
         <span className="font-mono text-slate-500">{(bytes / 1e9).toFixed(1)} GB</span>
       </div>

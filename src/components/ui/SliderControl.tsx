@@ -62,8 +62,8 @@ export default function SliderControl({
           {conceptId && <InfoPopover conceptId={conceptId} iconSize={13} />}
         </div>
         <div className="glass-chip px-2 py-0.5 shrink-0">
-          <span className="font-mono font-semibold text-[12px] text-slate-800">
-            {value.toLocaleString()} <span className="text-[10px] text-slate-400">{unit}</span>
+          <span className="font-mono font-semibold text-[0.75rem] text-slate-800">
+            {value.toLocaleString()} <span className="text-[0.625rem] text-slate-400">{unit}</span>
           </span>
         </div>
       </div>
@@ -79,8 +79,8 @@ export default function SliderControl({
           className="glass-slider w-full"
         />
       </div>
-      {comment && <div className="text-[10px] text-slate-400 mt-1 text-right">{comment}</div>}
-      {logScale && <div className="flex justify-between text-[9px] text-slate-300 mt-1 px-0.5"><span>{min.toLocaleString()}</span><span>{max.toLocaleString()}</span></div>}
+      {comment && <div className="text-[0.625rem] text-slate-400 mt-1 text-right">{comment}</div>}
+      {logScale && <div className="flex justify-between text-[0.5625rem] text-slate-300 mt-1 px-0.5"><span>{min.toLocaleString()}</span><span>{max.toLocaleString()}</span></div>}
     </div>
   );
 }

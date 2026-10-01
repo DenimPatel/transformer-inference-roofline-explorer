@@ -34,7 +34,7 @@ export default function ConceptGlossary({ open, onClose }: ConceptGlossaryProps)
       aria-modal="true"
       aria-label="Concept glossary"
     >
-      <div className="absolute inset-0 bg-slate-900/30" onClick={onClose} />
+      <div className="absolute inset-0 bg-[var(--c-scrim)]" onClick={onClose} />
       <motion.div
         initial={{ opacity: 0, scale: 0.96, y: 12 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -82,7 +82,7 @@ export default function ConceptGlossary({ open, onClose }: ConceptGlossaryProps)
                 >
                   <span className="text-sm font-semibold text-slate-700 capitalize">{c.title}</span>
                   <span className="flex items-center gap-1.5">
-                    <span className="hidden sm:block text-[10px] text-slate-400 max-w-[220px] truncate">{c.sourceRef.split('—')[0]}</span>
+                    <span className="hidden sm:block text-[0.625rem] text-slate-400 max-w-[220px] truncate">{c.sourceRef.split('—')[0]}</span>
                     <ChevronDown
                       className={cn('text-slate-400 transition-transform', openCard && 'rotate-180')}
                       style={{ width: 16, height: 16 }}
@@ -98,16 +98,16 @@ export default function ConceptGlossary({ open, onClose }: ConceptGlossaryProps)
                       transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
                     >
                       <div className="px-4 pb-4 space-y-2">
-                        <p className="text-[12.5px] text-slate-600">{c.summary}</p>
+                        <p className="text-[0.7812rem] text-slate-600">{c.summary}</p>
                         {c.body.map((b, i) => (
-                          <p key={i} className="text-[11.5px] leading-relaxed text-slate-500">{b}</p>
+                          <p key={i} className="text-[0.7188rem] leading-relaxed text-slate-500">{b}</p>
                         ))}
                         {c.formula && (
-                          <div className="rounded-lg bg-white border border-slate-200 px-3 py-2">
-                            <code className="text-[11px] font-mono text-slate-700">{c.formula}</code>
+                          <div className="rounded-lg bg-surface border border-slate-200 px-3 py-2">
+                            <code className="text-[0.6875rem] font-mono text-slate-700">{c.formula}</code>
                           </div>
                         )}
-                        <div className="text-[10px] text-slate-400 border-t border-slate-200/70 pt-2">
+                        <div className="text-[0.625rem] text-slate-400 border-t border-slate-200/70 pt-2">
                           Source: <span className="font-mono text-slate-500">{c.sourceRef}</span>
                         </div>
                       </div>

@@ -68,7 +68,7 @@ export default function LessonNetworkRoofline({ onComplete }: { onComplete: () =
               className={cn('glass rounded-xl p-3 text-left transition-colors',
                 tierId === t.id ? 'border-accent ring-1 ring-accent/40' : 'hover:border-accent/40')}>
               <div className="font-semibold text-slate-800 text-sm">{t.label}</div>
-              <div className="text-[11px] text-slate-400">{t.note}</div>
+              <div className="text-[0.6875rem] text-slate-400">{t.note}</div>
               <div className="font-mono text-xs text-slate-600 mt-1">
                 {(t.bytes / 1e9).toFixed(t.bytes < 1e10 ? 2 : 0)} GB/s · ridge {(CHIP_FLOPS / t.bytes).toFixed(0)}
               </div>
@@ -98,15 +98,15 @@ export default function LessonNetworkRoofline({ onComplete }: { onComplete: () =
 
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           <div className="glass rounded-xl px-3 py-2">
-            <div className="text-[11px] text-slate-400">Intensity (D/2)</div>
+            <div className="text-[0.6875rem] text-slate-400">Intensity (D/2)</div>
             <div className="font-mono font-bold text-slate-800">{intensity.toFixed(0)}</div>
           </div>
           <div className="glass rounded-xl px-3 py-2">
-            <div className="text-[11px] text-slate-400">{tier.label} demands</div>
+            <div className="text-[0.6875rem] text-slate-400">{tier.label} demands</div>
             <div className="font-mono font-bold text-slate-800">{threshold.toFixed(0)}</div>
           </div>
           <div className="glass rounded-xl px-3 py-2">
-            <div className="text-[11px] text-slate-400">Compute-bound when</div>
+            <div className="text-[0.6875rem] text-slate-400">Compute-bound when</div>
             <div className="font-mono font-bold text-slate-800">D &gt; {criticalD.toFixed(0)}</div>
           </div>
         </div>
@@ -138,11 +138,11 @@ export default function LessonNetworkRoofline({ onComplete }: { onComplete: () =
                 label={{ value: '% of peak FLOPs', angle: -90, position: 'insideLeft', fontSize: 10 }} />
               <Tooltip formatter={(v: any) => [`${Number(v).toFixed(0)}%`, 'of peak']}
                 labelFormatter={(v: any) => `D = ${Number(v).toLocaleString()}`} />
-              <ReferenceLine x={8755} stroke="#d6006c" strokeDasharray="3 3"
-                label={{ position: 'top', value: 'ICI needs D > 8755', fill: '#d6006c', fontSize: 10 }} />
-              <ReferenceLine x={D} stroke="#605d5d" />
-              <Line type="monotone" dataKey="ici" name="ICI / NVLink" stroke="#0088b0" strokeWidth={3} dot={false} />
-              <Line type="monotone" dataKey="dcn" name="DCN / InfiniBand" stroke="#c8963a" strokeWidth={3} strokeDasharray="6 4" dot={false} />
+              <ReferenceLine x={8755} stroke="var(--chart-memory)" strokeDasharray="3 3"
+                label={{ position: 'top', value: 'ICI needs D > 8755', fill: 'var(--chart-memory)', fontSize: 10 }} />
+              <ReferenceLine x={D} stroke="var(--color-slate-600)" />
+              <Line type="monotone" dataKey="ici" name="ICI / NVLink" stroke="var(--color-accent)" strokeWidth={3} dot={false} />
+              <Line type="monotone" dataKey="dcn" name="DCN / InfiniBand" stroke="var(--chart-series-3)" strokeWidth={3} strokeDasharray="6 4" dot={false} />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
@@ -164,7 +164,7 @@ export default function LessonNetworkRoofline({ onComplete }: { onComplete: () =
           <div key={x.k} className="glass rounded-xl p-3">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <span className="font-semibold text-slate-800 text-sm">{x.k}</span>
-              <span className="font-mono text-[11px] font-bold text-accent">{x.r}</span>
+              <span className="font-mono text-[0.6875rem] font-bold text-accent">{x.r}</span>
             </div>
             <p className="text-xs text-slate-500 mt-1 leading-relaxed">{x.w}</p>
           </div>

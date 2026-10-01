@@ -111,7 +111,7 @@ export default function LessonIntensity({ onComplete }: { onComplete: () => void
               <div className={cn('text-sm font-bold mt-1', bound.includes('Compute') ? 'text-emerald-600' : 'text-amber-600')}>
                 {bound.includes('Compute') ? '✅ Compute-bound' : '⚠️ Memory-bound'}
               </div>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[0.6875rem] text-slate-400">
                 Critical batch ≈ {RIDGE} tokens. Cross it and you stop wasting FLOPs.
               </p>
             </GlassCard>
@@ -124,10 +124,10 @@ export default function LessonIntensity({ onComplete }: { onComplete: () => void
                 <XAxis dataKey="batch" type="number" scale="log" domain={['dataMin', 'dataMax']} tickFormatter={(v) => `${v}`} label={{ value: 'Token batch (log)', position: 'bottom', fontSize: 10 }} />
                 <YAxis label={{ value: 'Intensity', angle: -90, position: 'insideLeft', fontSize: 10 }} />
                 <Tooltip />
-                <Line type="monotone" dataKey="approx" name="≈ B" stroke="#928e8e" strokeWidth={2} strokeDasharray="4 4" dot={false} />
-                <Line type="monotone" dataKey="intensity" name="Exact" stroke="#0088b0" strokeWidth={3} dot={false} />
-                <ReferenceLine y={RIDGE} stroke="#ff458e" strokeDasharray="3 3" label={{ position: 'top', value: 'Ridge', fill: '#ff458e', fontSize: 10 }} />
-                <ReferenceLine x={B} stroke="#605d5d" />
+                <Line type="monotone" dataKey="approx" name="≈ B" stroke="var(--color-slate-400)" strokeWidth={2} strokeDasharray="4 4" dot={false} />
+                <Line type="monotone" dataKey="intensity" name="Exact" stroke="var(--color-accent)" strokeWidth={3} dot={false} />
+                <ReferenceLine y={RIDGE} stroke="var(--chart-memory)" strokeDasharray="3 3" label={{ position: 'top', value: 'Ridge', fill: 'var(--chart-memory)', fontSize: 10 }} />
+                <ReferenceLine x={B} stroke="var(--color-slate-600)" />
               </ComposedChart>
             </ResponsiveContainer>
           </div>

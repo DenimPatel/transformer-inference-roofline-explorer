@@ -27,10 +27,10 @@ export default function LessonMemory({ onComplete }: { onComplete: () => void })
   }, []);
 
   const ops = [
-    { name: 'Dot product (vector)', intensity: 0.5, color: '#c00a60' },
-    { name: 'Attention (gate)', intensity: 1, color: '#c8963a' },
-    { name: 'Tiled matmul (tile=128)', intensity: 64, color: '#1186ac' },
-    { name: 'Matmul, B=1024', intensity: 1024, color: '#7b4b90' },
+    { name: 'Dot product (vector)', intensity: 0.5, color: 'var(--chart-memory)' },
+    { name: 'Attention (gate)', intensity: 1, color: 'var(--chart-series-3)' },
+    { name: 'Tiled matmul (tile=128)', intensity: 64, color: 'var(--color-accent-600)' },
+    { name: 'Matmul, B=1024', intensity: 1024, color: 'var(--chart-series-4)' },
   ];
 
   return (
@@ -68,7 +68,7 @@ export default function LessonMemory({ onComplete }: { onComplete: () => void })
             For an <i>(m,k)·(k,n)</i> matmul with tiles <i>bm × bk</i> and <i>bk × bn</i>, write{' '}
             <i>tm = m/bm</i>, <i>tn = n/bn</i>, <i>tk = k/bk</i>:
           </p>
-          <div className="glass rounded-lg p-3 font-mono text-[11px] text-slate-700 space-y-1 overflow-x-auto">
+          <div className="glass rounded-lg p-3 font-mono text-[0.6875rem] text-slate-700 space-y-1 overflow-x-auto">
             <div>FLOPs = 2 · tm · tn · tk · bm · bn · bk</div>
             <div>Bytes = 2 · tm · tn · ( tk · (bm·bk + bk·bn) + bm·bn )</div>
             <div className="text-slate-400">drop the output term, cancel tm·tn·tk and bk:</div>
@@ -96,15 +96,15 @@ export default function LessonMemory({ onComplete }: { onComplete: () => void })
 
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           <div className="glass rounded-xl px-3 py-2">
-            <div className="text-[11px] text-slate-400">Tiled intensity</div>
+            <div className="text-[0.6875rem] text-slate-400">Tiled intensity</div>
             <div className="font-mono font-bold text-slate-800">{tileIntensity.toFixed(0)} FLOPs/B</div>
           </div>
           <div className="glass rounded-xl px-3 py-2">
-            <div className="text-[11px] text-slate-400">HBM ridge</div>
+            <div className="text-[0.6875rem] text-slate-400">HBM ridge</div>
             <div className="font-mono font-bold text-slate-800">{HBM_RIDGE}</div>
           </div>
           <div className="glass rounded-xl px-3 py-2">
-            <div className="text-[11px] text-slate-400">On-chip threshold</div>
+            <div className="text-[0.6875rem] text-slate-400">On-chip threshold</div>
             <div className="font-mono font-bold text-slate-800">~{VMEM_INTENSITY}</div>
           </div>
         </div>
@@ -115,7 +115,7 @@ export default function LessonMemory({ onComplete }: { onComplete: () => void })
             : 'This tile is below the HBM ridge — it must be re-loaded from HBM, wasting bandwidth. A bigger tile (or keeping data in VMEM) fixes this.'}
         </div>
 
-        <div className="flex flex-wrap gap-2 text-[11px] text-slate-500">
+        <div className="flex flex-wrap gap-2 text-[0.6875rem] text-slate-500">
           {[
             'Dot product: intensity ≈ 1/2 — effectively always bandwidth-bound',
             'Vector (softmax/relu) ops run on a much slower unit with a lower ridge',
@@ -136,8 +136,8 @@ export default function LessonMemory({ onComplete }: { onComplete: () => void })
               <XAxis dataKey="name" tick={{ fontSize: 10 }} />
               <YAxis scale="log" domain={[0.3, 4000]} type="number" tickFormatter={(v: any) => (v < 1 ? v.toFixed(1) : v.toFixed(0))} label={{ value: 'Intensity (FLOPs/B, log)', angle: -90, position: 'insideLeft', fontSize: 10 }} />
               <Tooltip formatter={(v: any) => [`${Number(v).toFixed(1)} FLOPs/B`, 'Intensity']} />
-              <ReferenceLine y={VMEM_INTENSITY} stroke="#2f8365" strokeDasharray="3 3" label={{ position: 'top', value: 'VMEM ~20', fill: '#2f8365', fontSize: 10 }} />
-              <ReferenceLine y={HBM_RIDGE} stroke="#d6006c" strokeDasharray="3 3" label={{ position: 'top', value: `HBM ${HBM_RIDGE}`, fill: '#d6006c', fontSize: 10 }} />
+              <ReferenceLine y={VMEM_INTENSITY} stroke="var(--chart-compute)" strokeDasharray="3 3" label={{ position: 'top', value: 'VMEM ~20', fill: 'var(--chart-compute)', fontSize: 10 }} />
+              <ReferenceLine y={HBM_RIDGE} stroke="var(--chart-memory)" strokeDasharray="3 3" label={{ position: 'top', value: `HBM ${HBM_RIDGE}`, fill: 'var(--chart-memory)', fontSize: 10 }} />
               <Bar dataKey="intensity" radius={[6, 6, 0, 0]}>
                 {ops.map((o) => (
                   <Cell key={o.name} fill={o.color} />
@@ -155,9 +155,9 @@ export default function LessonMemory({ onComplete }: { onComplete: () => void })
               <XAxis dataKey="tile" scale="log" type="number" domain={['dataMin', 'dataMax']} tickFormatter={(v) => `${v}`} label={{ value: 'Tile size (log)', position: 'bottom', fontSize: 10 }} />
               <YAxis label={{ value: 'Effective intensity', angle: -90, position: 'insideLeft', fontSize: 10 }} />
               <Tooltip formatter={(v: any) => [`${Number(v).toFixed(0)}`, 'Intensity']} labelFormatter={(v: any) => `tile ${v}`} />
-              <ReferenceLine y={HBM_RIDGE} stroke="#d6006c" strokeDasharray="3 3" label={{ position: 'top', value: 'HBM ridge', fill: '#d6006c', fontSize: 10 }} />
-              <ReferenceLine x={tile} stroke="#605d5d" />
-              <Line type="monotone" dataKey="intensity" stroke="#0088b0" strokeWidth={3} dot={false} />
+              <ReferenceLine y={HBM_RIDGE} stroke="var(--chart-memory)" strokeDasharray="3 3" label={{ position: 'top', value: 'HBM ridge', fill: 'var(--chart-memory)', fontSize: 10 }} />
+              <ReferenceLine x={tile} stroke="var(--color-slate-600)" />
+              <Line type="monotone" dataKey="intensity" stroke="var(--color-accent)" strokeWidth={3} dot={false} />
             </LineChart>
           </ResponsiveContainer>
         </div>

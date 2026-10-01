@@ -33,16 +33,16 @@ export default function Section({
     >
       <header className="space-y-2">
         {(part || number) && (
-          <p className="text-[11px] uppercase tracking-[0.14em] text-slate-400">
+          <p className="text-[0.6875rem] uppercase tracking-[0.14em] text-slate-400">
             {[part, number].filter(Boolean).join(' · ')}
           </p>
         )}
         <h2 className="text-3xl font-bold text-slate-800 tracking-tight">{title}</h2>
         {standfirst && (
-          <p className="text-lg text-slate-600 leading-relaxed max-w-[62ch]">{standfirst}</p>
+          <p className="text-lg text-slate-600 leading-relaxed max-w-[var(--pref-measure)]">{standfirst}</p>
         )}
         {sourceRef && (
-          <p className="text-[11px] text-slate-400 flex items-center gap-1.5">
+          <p className="text-[0.6875rem] text-slate-400 flex items-center gap-1.5">
             <BookOpen style={{ width: 12, height: 12 }} /> {sourceRef}
           </p>
         )}
