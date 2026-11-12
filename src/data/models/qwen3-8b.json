@@ -7,7 +7,7 @@
   "totalParamsB": 8,
   "activeParamsB": 8,
   "contextLen": 131072,
-  "kvPerTokenKb": 128,
+  "kvPerTokenKb": 144,
   "bytesPerParam": 2,
   "description": "Compact dense model, very easy to serve with high batch utilization on consumer-to-datacenter GPUs."
 }

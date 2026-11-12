@@ -9,14 +9,14 @@ analysis — arithmetic intensity, batch size, latency, and cost tradeoffs.
 ## Structure
 
 The site is a single linear curriculum rather than a set of tabs. `src/lib/curriculum.ts`
-is the one source of truth for it: five parts, nineteen sections, read top to bottom,
+is the one source of truth for it: five parts, twenty sections, read top to bottom,
 answering one question — what does it cost to serve one token, and why?
 
 | Part | Covers |
 | --- | --- |
 | 0 · Start here | The headline number, the three budgets, and the prerequisites |
 | I · The machine | Inside the chip, the memory hierarchy, the fabric |
-| II · The model | One token end to end, attention, the KV cache, mixture of experts |
+| II · The model | One token end to end, one token on an H100, attention, the KV cache, mixture of experts |
 | III · The collision | Arithmetic intensity, the roofline and the ridge, prefill vs generation, quantization, the second ridge |
 | IV · The system | Latency vs throughput, sharding, serving in practice, does it fit |
 | V · The bill | Total cost of ownership, comparing hardware |
