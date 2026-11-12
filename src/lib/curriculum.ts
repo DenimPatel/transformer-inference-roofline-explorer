@@ -5,6 +5,7 @@ import InsideTheChip from '../components/sections/InsideTheChip';
 import MemoryHierarchy from '../components/sections/MemoryHierarchy';
 import TheFabric from '../components/sections/TheFabric';
 import OneToken from '../components/sections/OneToken';
+import OneTokenOnGpu from '../components/sections/OneTokenOnGpu';
 import Attention from '../components/sections/Attention';
 import KvCache from '../components/sections/KvCache';
 import Moe from '../components/sections/Moe';
@@ -121,6 +122,15 @@ export const CURRICULUM: Part[] = [
         minutes: 8,
         concepts: ['prefill', 'generation', 'kv-cache', 'flops-per-token'],
         Component: OneToken,
+      },
+      {
+        id: 'one-token-on-gpu',
+        title: 'One token on an H100',
+        standfirst:
+          'Follow the same forward pass through real silicon: which part of the chip holds each byte, where it travels, and why the answer to “how fast?” is almost always “as fast as HBM can stream the weights”.',
+        minutes: 9,
+        concepts: ['memory-hierarchy', 'sm-streaming-multiprocessor', 'bandwidth', 'memory-bound', 'kv-cache', 'linear-attention'],
+        Component: OneTokenOnGpu,
       },
       {
         id: 'attention',
